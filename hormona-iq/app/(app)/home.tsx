@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import {
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -24,7 +25,7 @@ import Animated, {
   useReducedMotion,
 } from 'react-native-reanimated';
 import { useEffect } from 'react';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 import {
   buttons,
@@ -792,6 +793,9 @@ export default function HomeScreen(): ReactElement {
       <Pressable
         style={[buttons.primary, { height: 60, marginTop: 24, marginBottom: 8 }]}
         onPress={() => router.push('/(app)/log')}
+        {...(Platform.OS === 'web'
+          ? { onClick: () => router.push('/(app)/log') }
+          : {})}
         accessibilityRole="button"
         accessibilityLabel="Log today"
       >
@@ -819,7 +823,16 @@ export default function HomeScreen(): ReactElement {
           accessibilityLabel="Log an episode"
         >
           <View style={[s.toolGlyph, { backgroundColor: colors.coralSoft }]}>
-            <Text style={[s.toolGlyphText, { color: colors.coral }]}>⚡</Text>
+            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M3 14 Q6 8 9 14 T15 14 T21 14"
+                stroke={colors.coral}
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </Svg>
           </View>
           <Text style={s.toolTitle}>Log an episode</Text>
           <Text style={s.toolBody}>Rage, panic, dissociation</Text>
@@ -831,11 +844,16 @@ export default function HomeScreen(): ReactElement {
           accessibilityLabel="Open safety plan"
         >
           <View style={[s.toolGlyph, { backgroundColor: colors.mintMist }]}>
-            <Text
-              style={[s.toolGlyphText, { color: colors.eucalyptusDeep }]}
-            >
-              ♡
-            </Text>
+            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M12 3 L20 6 V12 Q20 17.5 12 21 Q4 17.5 4 12 V6 Z"
+                stroke={colors.eucalyptusDeep}
+                strokeWidth={1.6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </Svg>
           </View>
           <Text style={s.toolTitle}>Safety plan</Text>
           <Text style={s.toolBody}>Built when well, ready now</Text>
@@ -901,7 +919,8 @@ export default function HomeScreen(): ReactElement {
 
       {/* Medical disclaimer */}
       <Text style={s.disclaimer}>
-        HormonaIQ is not a substitute for medical advice.
+        HormonaIQ provides tracking tools, not medical advice. Consult your
+        healthcare provider.
       </Text>
 
       {/* Tier-2 modal sheet */}
@@ -1071,14 +1090,15 @@ const s = StyleSheet.create({
   },
   tier1Link: {
     fontFamily: fonts.sans,
-    fontSize: 12,
-    lineHeight: 18,
-    color: colors.ink2,
+    fontSize: 13,
+    lineHeight: 19,
+    color: '#5C4A7A',
     textAlign: 'center',
   },
   tier1Underline: {
     textDecorationLine: 'underline',
-    color: colors.eucalyptusDeep,
+    color: '#5C4A7A',
+    fontFamily: fonts.sansSemibold,
   },
   toolsGrid: {
     flexDirection: 'row',

@@ -18,6 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useReducedMotion } from 'react-native-reanimated';
+import Svg, { Path as SvgPath, Rect as SvgRect } from 'react-native-svg';
 
 import {
   buttons,
@@ -920,7 +921,26 @@ export default function LogScreen(): ReactElement {
 
         {/* T-79 — privacy footer */}
         <View style={s.privacyFooter}>
-          <Text style={s.privacyText}>🔒 On this device. Encrypted.</Text>
+          <View style={s.privacyRow}>
+            <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+              <SvgRect
+                x={4}
+                y={10}
+                width={16}
+                height={11}
+                rx={2}
+                stroke={colors.ink3}
+                strokeWidth={1.6}
+              />
+              <SvgPath
+                d="M8 10V7a4 4 0 0 1 8 0v3"
+                stroke={colors.ink3}
+                strokeWidth={1.6}
+                strokeLinecap="round"
+              />
+            </Svg>
+            <Text style={s.privacyText}>On this device. Encrypted.</Text>
+          </View>
           {si !== null && si >= 4 && (
             <Text style={s.privacyText}>this entry is not stored beyond 72 hours</Text>
           )}
@@ -1193,6 +1213,11 @@ const s = StyleSheet.create({
     marginTop: 18,
     paddingVertical: 10,
     alignItems: 'center',
+  },
+  privacyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   privacyText: {
     fontFamily: fonts.sans,

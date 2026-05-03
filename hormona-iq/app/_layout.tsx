@@ -2,7 +2,7 @@
 // providers, and hands off to the expo-router slot.
 
 import { useCallback, useEffect, type ReactElement } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { Slot, SplashScreen } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -61,15 +61,17 @@ export default function RootLayout(): ReactElement | null {
     return null;
   }
 
+  const Root = Platform.OS === 'web' ? View : GestureHandlerRootView;
+
   return (
-    <GestureHandlerRootView style={styles.root} onLayout={onLayout}>
+    <Root style={styles.root} onLayout={onLayout}>
       <SafeAreaProvider>
         <StatusBar style="dark" />
         <View style={styles.root}>
           <Slot />
         </View>
       </SafeAreaProvider>
-    </GestureHandlerRootView>
+    </Root>
   );
 }
 

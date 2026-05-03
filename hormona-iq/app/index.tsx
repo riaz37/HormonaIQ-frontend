@@ -6,7 +6,7 @@ import { LandingScreen } from '../src/components/landing/LandingScreen';
 export default function Index() {
   useEffect(() => {
     if (Platform.OS !== 'web') {
-      router.replace('/(onboarding)' as never);
+      router.replace('/(onboarding)/start');
     }
   }, []);
 

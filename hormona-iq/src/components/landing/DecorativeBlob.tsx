@@ -74,11 +74,8 @@ export function DecorativeBlob({
   };
 
   return (
-    <Animated.View
-      pointerEvents="none"
-      style={[baseStyle, style, animatedStyle]}
-    >
-      <View style={StyleSheet.absoluteFill} />
+    <Animated.View style={[baseStyle, style, animatedStyle, { pointerEvents: 'none' }]}>
+      <View style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]} />
     </Animated.View>
   );
 }

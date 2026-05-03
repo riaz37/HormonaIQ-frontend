@@ -738,8 +738,7 @@ export default function InsightsScreen(): ReactElement {
             </Text>
             <Text style={[typography.body, { marginBottom: 8 }]}>
               Your DRSP report needs 2 cycles with at least 7 consecutive
-              luteal-phase days and 5 consecutive follicular-phase days each
-              (per C-PASS / spec §6.3).
+              luteal-phase days and 5 consecutive follicular-phase days each.
             </Text>
             <Text style={[typography.caption, { fontSize: 13 }]}>
               Cycle{' '}

@@ -548,7 +548,7 @@ function PMDDPDFModule({ state }: PMDDPDFProps) {
   return (
     <View>
       <MHeader
-        eyebrow="F9 · YOUR DRSP LOG SUMMARY"
+        eyebrow="YOUR DRSP LOG SUMMARY"
         title="Physician-ready, "
         titleAccent="2 cycles deep."
         sub="Generated from your prospective DRSP record. Not a diagnosis."

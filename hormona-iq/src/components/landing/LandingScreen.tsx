@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ReactElement } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -8,19 +9,184 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { colors, fonts, radius, shadows } from '../../constants/tokens';
 import { DecorativeBlob } from './DecorativeBlob';
 import { WaitlistForm } from './WaitlistForm';
 import { FAQItem } from './FAQItem';
 
+type IconComponent = (props: { size?: number }) => ReactElement;
+
+// ─────────────────────────────────────────────
+// Inline SVG icons — Morning Garden organic motifs
+// ─────────────────────────────────────────────
+
+function LeafSprig({
+  size = 24,
+  fill = colors.eucalyptus,
+}: {
+  size?: number;
+  fill?: string;
+}): ReactElement {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 22V8"
+        stroke={fill}
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+      <Path
+        d="M12 16Q6.5 15.2 5 9.5Q10.5 9.8 12 16Z"
+        fill={fill}
+        opacity={0.85}
+      />
+      <Path
+        d="M12 12Q17.5 11.2 19 5.5Q13.5 5.8 12 12Z"
+        fill={fill}
+        opacity={0.65}
+      />
+    </Svg>
+  );
+}
+
+function PromiseLeaf1(): ReactElement {
+  return <LeafSprig size={28} fill={colors.eucalyptus} />;
+}
+function PromiseLeaf2(): ReactElement {
+  return <LeafSprig size={28} fill={colors.eucalyptusSoft} />;
+}
+function PromiseLeaf3(): ReactElement {
+  return (
+    <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 22V8"
+        stroke={colors.eucalyptus}
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+      <Path
+        d="M12 16Q6.5 15.2 5 9.5Q10.5 9.8 12 16Z"
+        fill={colors.mintMist}
+      />
+      <Path
+        d="M12 12Q17.5 11.2 19 5.5Q13.5 5.8 12 12Z"
+        fill={colors.mintMist}
+      />
+    </Svg>
+  );
+}
+
+// PMDD — phase-segment arc
+function IconPMDD(): ReactElement {
+  return (
+    <Svg width={26} height={26} viewBox="0 0 24 24" fill="none">
+      <Circle
+        cx={12}
+        cy={12}
+        r={9}
+        stroke={colors.eucalyptus}
+        strokeWidth={1.4}
+      />
+      <Path d="M12 3 A9 9 0 0 1 12 21 Z" fill={colors.eucalyptus} />
+    </Svg>
+  );
+}
+
+// PCOS — overlapping circles
+function IconPCOS(): ReactElement {
+  return (
+    <Svg width={26} height={26} viewBox="0 0 24 24" fill="none">
+      <Circle
+        cx={9}
+        cy={12}
+        r={6}
+        stroke={colors.eucalyptus}
+        strokeWidth={1.4}
+      />
+      <Circle
+        cx={15}
+        cy={12}
+        r={6}
+        stroke={colors.eucalyptus}
+        strokeWidth={1.4}
+      />
+    </Svg>
+  );
+}
+
+// Perimenopause — half-circle horizon
+function IconPeri(): ReactElement {
+  return (
+    <Svg width={26} height={26} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M3 15 A9 9 0 0 1 21 15"
+        stroke={colors.eucalyptus}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        fill="none"
+      />
+      <Path d="M2 15h20" stroke={colors.eucalyptus} strokeWidth={1.4} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+// ADHD — spark/lightning bolt
+function IconADHD(): ReactElement {
+  return (
+    <Svg width={26} height={26} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M13 2 L5 13 H11 L9 22 L19 10 H13 L15 2 Z"
+        stroke={colors.eucalyptus}
+        strokeWidth={1.4}
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Svg>
+  );
+}
+
+// Endometriosis — 4-petal flower
+function IconEndo(): ReactElement {
+  return (
+    <Svg width={26} height={26} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 4 Q15 8 12 12 Q9 8 12 4 Z"
+        stroke={colors.eucalyptus}
+        strokeWidth={1.3}
+        fill="none"
+      />
+      <Path
+        d="M12 20 Q15 16 12 12 Q9 16 12 20 Z"
+        stroke={colors.eucalyptus}
+        strokeWidth={1.3}
+        fill="none"
+      />
+      <Path
+        d="M4 12 Q8 9 12 12 Q8 15 4 12 Z"
+        stroke={colors.eucalyptus}
+        strokeWidth={1.3}
+        fill="none"
+      />
+      <Path
+        d="M20 12 Q16 9 12 12 Q16 15 20 12 Z"
+        stroke={colors.eucalyptus}
+        strokeWidth={1.3}
+        fill="none"
+      />
+      <Circle cx={12} cy={12} r={1.4} fill={colors.eucalyptus} />
+    </Svg>
+  );
+}
+
 interface ConditionEntry {
   name: string;
   desc: string;
-  emoji: string;
+  Icon: IconComponent;
 }
 
 interface PromiseEntry {
-  icon: string;
+  Icon: IconComponent;
   title: string;
   body: string;
 }
@@ -35,49 +201,49 @@ const CONDITIONS: ReadonlyArray<ConditionEntry> = [
     name: 'PMDD',
     desc:
       'For the half of every month you disappear. We track it on the DRSP — the scale your psychiatrist already trusts.',
-    emoji: '🌗',
+    Icon: IconPMDD,
   },
   {
     name: 'PCOS',
     desc:
       'Cycles 21–120 days are normal here. Lab values, androgen symptoms, insulin patterns — not just your period.',
-    emoji: '🌀',
+    Icon: IconPCOS,
   },
   {
     name: 'Perimenopause',
     desc:
       'Greene Scale scoring, hot flash timing, HRT effectiveness. Including premature onset before 40.',
-    emoji: '🌾',
+    Icon: IconPeri,
   },
   {
     name: 'ADHD overlap',
     desc:
       '46% of women with ADHD also have PMDD. We track how your meds work across your cycle.',
-    emoji: '🌟',
+    Icon: IconADHD,
   },
   {
     name: 'Endometriosis & more',
     desc:
       "Many of you carry more than one condition. We don’t make you start over for each.",
-    emoji: '🌺',
+    Icon: IconEndo,
   },
 ] as const;
 
 const PROMISES: ReadonlyArray<PromiseEntry> = [
   {
-    icon: '🌿',
+    Icon: PromiseLeaf1,
     title: 'Clinical scales, not vibes',
     body:
       'DRSP for PMDD. Greene Scale for perimenopause. Rotterdam phenotyping for PCOS. Mapped to what your doctor uses.',
   },
   {
-    icon: '🌼',
+    Icon: PromiseLeaf2,
     title: 'Adult language, every page',
     body:
       'No euphemisms. No "flow days." No emoji-only mood pickers. We talk to you like the expert on your own body.',
   },
   {
-    icon: '🌳',
+    Icon: PromiseLeaf3,
     title: 'Device-first, never sold',
     body:
       'Your data stays on your phone. End-to-end encrypted if you sync. No advertising SDKs. Period.',
@@ -120,7 +286,7 @@ const FAQS: ReadonlyArray<FAQEntry> = [
 const PLAY_STORE_URL = 'https://play.google.com/store';
 
 function openOnboarding(): void {
-  router.push('/(onboarding)' as never);
+  router.push('/(onboarding)/start');
 }
 
 export function LandingScreen() {
@@ -266,13 +432,18 @@ export function LandingScreen() {
             isWide ? styles.promiseGridWide : isMid ? styles.promiseGridMid : null,
           ]}
         >
-          {PROMISES.map((p) => (
-            <View key={p.title} style={styles.promiseCard}>
-              <Text style={styles.promiseIcon}>{p.icon}</Text>
-              <Text style={styles.h2}>{p.title}</Text>
-              <Text style={styles.body}>{p.body}</Text>
-            </View>
-          ))}
+          {PROMISES.map((p) => {
+            const Icon = p.Icon;
+            return (
+              <View key={p.title} style={styles.promiseCard}>
+                <View style={styles.promiseIconWrap}>
+                  <Icon />
+                </View>
+                <Text style={styles.h2}>{p.title}</Text>
+                <Text style={styles.body}>{p.body}</Text>
+              </View>
+            );
+          })}
         </View>
 
         {/* Conditions */}
@@ -289,28 +460,35 @@ export function LandingScreen() {
             isWide ? styles.conditionsGridWide : isMid ? styles.conditionsGridMid : null,
           ]}
         >
-          {CONDITIONS.map((c) => (
-            <Pressable
-              key={c.name}
-              onPress={openOnboarding}
-              accessibilityRole="button"
-              accessibilityLabel={`Built for ${c.name}`}
-              style={({ pressed }) => [
-                styles.conditionCard,
-                pressed && styles.conditionCardActive,
-              ]}
-            >
-              <Text style={styles.conditionEmoji}>{c.emoji}</Text>
-              <Text style={[styles.h2, { marginBottom: 6 }]}>{c.name}</Text>
-              <Text style={[styles.body, { flex: 1 }]}>{c.desc}</Text>
-              <Text style={styles.conditionLink}>Built for {c.name} →</Text>
-            </Pressable>
-          ))}
+          {CONDITIONS.map((c) => {
+            const Icon = c.Icon;
+            return (
+              <Pressable
+                key={c.name}
+                onPress={openOnboarding}
+                accessibilityRole="button"
+                accessibilityLabel={`Built for ${c.name}`}
+                style={({ pressed }) => [
+                  styles.conditionCard,
+                  isWide && styles.conditionCardWide,
+                  isMid && !isWide && styles.conditionCardMid,
+                  pressed && styles.conditionCardActive,
+                ]}
+              >
+                <View style={styles.conditionIconWrap}>
+                  <Icon />
+                </View>
+                <Text style={[styles.h2, { marginBottom: 6 }]}>{c.name}</Text>
+                <Text style={[styles.body, { flex: 1 }]}>{c.desc}</Text>
+                <Text style={styles.conditionLink}>Built for {c.name} →</Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         {/* Email capture */}
         <View style={styles.waitlistWrap}>
-          <View style={styles.waitlistCard}>
+          <View style={[styles.waitlistCard, isWide && styles.waitlistCardWide]}>
             <Text style={[styles.display, { fontSize: displaySize, lineHeight: displaySize * 1.05, marginBottom: 12 }]}>
               Join the{' '}
               <Text style={[styles.displayItalic, { fontSize: displaySize, lineHeight: displaySize * 1.05 }]}>
@@ -614,9 +792,16 @@ const styles = StyleSheet.create({
 
   // Promise strip
   promiseGrid: {
-    marginTop: 96,
+    marginTop: 64,
     flexDirection: 'column',
     gap: 20,
+  },
+  promiseIconWrap: {
+    width: 32,
+    height: 32,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
   promiseGridMid: {
     flexDirection: 'row',
@@ -655,7 +840,7 @@ const styles = StyleSheet.create({
 
   // Conditions
   conditionsHeading: {
-    marginTop: 120,
+    marginTop: 96,
     marginBottom: 28,
   },
   display: {
@@ -676,14 +861,16 @@ const styles = StyleSheet.create({
   conditionsGridMid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 14,
   },
   conditionsGridWide: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 14,
   },
   conditionCard: {
-    flexBasis: 260,
     flexGrow: 1,
+    flexBasis: '100%',
     minWidth: 0,
     padding: 22,
     backgroundColor: colors.paper,
@@ -693,14 +880,24 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     ...shadows.sm,
   },
+  conditionCardMid: {
+    flexBasis: '48%',
+    maxWidth: '49%',
+  },
+  conditionCardWide: {
+    flexBasis: '31%',
+    maxWidth: '32.5%',
+  },
   conditionCardActive: {
     transform: [{ translateY: -4 }],
     ...shadows.md,
   },
-  conditionEmoji: {
-    fontSize: 26,
-    lineHeight: 30,
-    marginBottom: 8,
+  conditionIconWrap: {
+    width: 30,
+    height: 30,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    marginBottom: 10,
   },
   conditionLink: {
     marginTop: 14,
@@ -713,7 +910,8 @@ const styles = StyleSheet.create({
 
   // Waitlist
   waitlistWrap: {
-    marginTop: 120,
+    marginTop: 96,
+    alignItems: 'center',
   },
   waitlistCard: {
     backgroundColor: colors.mintMist,
@@ -722,7 +920,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(63, 111, 90, 0.1)',
-    maxWidth: 720,
+    width: '100%',
+    maxWidth: 640,
+  },
+  waitlistCardWide: {
+    alignSelf: 'center',
   },
 
   // FAQ

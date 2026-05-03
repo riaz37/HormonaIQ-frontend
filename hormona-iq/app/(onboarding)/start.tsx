@@ -789,6 +789,7 @@ export default function OnboardingScreen(): ReactElement {
             <TouchableOpacity
               style={[buttons.primary, s.ctaFull, { marginTop: spacing.md }]}
               onPress={submitDob}
+              {...(Platform.OS === 'web' ? { onClick: submitDob } : {})}
               accessibilityRole="button"
               accessibilityLabel="Continue"
               activeOpacity={0.85}

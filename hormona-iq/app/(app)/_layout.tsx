@@ -3,7 +3,7 @@
 // 240-274): warm gradient, sage outer border, pill radius, eucalyptus active.
 
 import { Tabs } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path } from 'react-native-svg';
 import type { ReactElement, ReactNode } from 'react';
@@ -122,24 +122,25 @@ export default function AppTabsLayout(): ReactElement {
               if (!config) return null;
               const focused = state.index === index;
               const Icon = config.Icon;
+              const handlePress = (): void => {
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                if (!focused && !event.defaultPrevented) {
+                  navigation.navigate(route.name);
+                }
+              };
               return (
-                <View
+                <Pressable
                   key={route.key}
                   style={[styles.tab, focused && styles.tabActive]}
-                  accessible
                   accessibilityRole="button"
                   accessibilityLabel={config.label}
                   accessibilityState={{ selected: focused }}
-                  onTouchEnd={() => {
-                    const event = navigation.emit({
-                      type: 'tabPress',
-                      target: route.key,
-                      canPreventDefault: true,
-                    });
-                    if (!focused && !event.defaultPrevented) {
-                      navigation.navigate(route.name);
-                    }
-                  }}
+                  onPress={handlePress}
+                  {...(Platform.OS === 'web' ? { onClick: handlePress } : {})}
                 >
                   <Icon focused={focused} />
                   <Text
@@ -147,7 +148,7 @@ export default function AppTabsLayout(): ReactElement {
                   >
                     {config.label}
                   </Text>
-                </View>
+                </Pressable>
               );
             })}
           </LinearGradient>

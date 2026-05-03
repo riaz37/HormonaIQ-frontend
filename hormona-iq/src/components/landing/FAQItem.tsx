@@ -80,9 +80,8 @@ export function FAQItem({ question, answer }: FAQItemProps) {
           height animation. Rendered with absolute positioning + opacity 0. */}
       {contentHeight === 0 ? (
         <View
-          style={styles.measurer}
+          style={[styles.measurer, { pointerEvents: 'none' }]}
           onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}
-          pointerEvents="none"
           aria-hidden
         >
           <Text style={styles.answer}>{answer}</Text>

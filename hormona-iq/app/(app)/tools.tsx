@@ -5,6 +5,7 @@
 import { useState, useMemo } from 'react';
 import type { ReactElement } from 'react';
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -425,6 +426,7 @@ function CollapsibleGroup({
     <View style={[s.groupPanel, { backgroundColor: bgColor }]}>
       <TouchableOpacity
         onPress={handleToggle}
+        {...(Platform.OS === 'web' ? { onClick: handleToggle } : {})}
         accessibilityLabel={`${isOpen ? 'Collapse' : 'Expand'} ${group.label} group`}
         accessibilityRole="button"
         style={[s.groupHeader, { marginBottom: isOpen ? spacing.md : 0 }]}
@@ -497,6 +499,7 @@ function ToolTile({ item, groupId, index, reduceMotion }: ToolTileProps): ReactE
     <Animated.View style={[s.tileWrapper, animatedStyle]}>
       <TouchableOpacity
         onPress={item.go}
+        {...(Platform.OS === 'web' ? { onClick: item.go } : {})}
         accessibilityLabel={`${item.name}: ${item.desc}`}
         accessibilityRole="button"
         style={[cardStyle, s.tile]}
@@ -746,7 +749,7 @@ export default function ToolsScreen(): ReactElement {
       panel: 'group-cream',
       titleIcon: IconLock,
       items: [
-        { id: 'F5', name: 'Onboarding', desc: 'Re-run setup', I: IconCompass, go: () => router.push('/(onboarding)') },
+        { id: 'F5', name: 'Onboarding', desc: 'Re-run setup', I: IconCompass, go: () => router.push('/(onboarding)/start') },
         { id: 'F6', name: 'Privacy dashboard', desc: 'Where your data lives', I: IconLock, featured: true, go: () => router.push('/(app)/modules/privacy') },
         { id: 'F10', name: 'Notifications', desc: 'Phase-aware push', I: IconBell, go: () => router.push('/(app)/modules/notif') },
       ],
@@ -876,10 +879,12 @@ export default function ToolsScreen(): ReactElement {
         >
           {filterTabs.map((tab) => {
             const active = filter === tab.k;
+            const handleFilter = (): void => setFilter(tab.k);
             return (
               <TouchableOpacity
                 key={tab.k}
-                onPress={() => setFilter(tab.k)}
+                onPress={handleFilter}
+                {...(Platform.OS === 'web' ? { onClick: handleFilter } : {})}
                 accessibilityLabel={`Filter by ${tab.label}`}
                 accessibilityRole="button"
                 style={[cmp.chip, active && cmp.chipActive]}
