@@ -31,7 +31,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {
   // On web/dev fast refresh this can reject after auto-hide; ignore.
 });
 
-export default function RootLayout(): ReactElement | null {
+export default function RootLayout(): ReactElement {
   const [fontsLoaded, fontError] = useFonts({
     InstrumentSerif_400Regular,
     InstrumentSerif_400Regular_Italic,
@@ -57,10 +57,10 @@ export default function RootLayout(): ReactElement | null {
     }
   }, [ready]);
 
-  if (!ready) {
-    return null;
-  }
-
+  // Always render — returning null breaks SSR hydration on web because the
+  // server renders the full tree (fonts are synchronous in SSR) but the client
+  // first-renders null, causing a mismatch that prevents React from attaching
+  // event handlers. The splash screen covers the brief un-fonted flash.
   const Root = Platform.OS === 'web' ? View : GestureHandlerRootView;
 
   return (

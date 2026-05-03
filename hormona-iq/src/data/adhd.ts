@@ -1,0 +1,618 @@
+// ADHD module data (F122–F141)
+
+import type { ModuleDef } from './types';
+
+export const adhdModules: readonly ModuleDef[] = [
+  {
+    id: 'adhdOnboarding',
+    title: 'ADHD Setup',
+    subtitle: 'Three-branch onboarding: diagnosis status, presentation type, and comorbidities.',
+    condition: 'adhd',
+    icon: '🧭',
+    sections: [
+      {
+        title: 'DIAGNOSIS STATUS',
+        body: 'Where you are with diagnosis shapes what we show first.',
+        type: 'checklist',
+        items: [
+          "I've been diagnosed (adult or recent diagnosis)",
+          'Recently diagnosed — within 12 months',
+          "I think I have it, awaiting assessment",
+        ],
+      },
+      {
+        title: 'PRESENTATION TYPE',
+        body: 'What does your ADHD presentation look like?',
+        type: 'checklist',
+        items: ['Inattentive', 'Hyperactive-Impulsive', 'Combined', "I'm not sure"],
+      },
+      {
+        title: 'PRIMARY CHALLENGES',
+        body: 'What matters most to track right now?',
+        type: 'checklist',
+        items: [
+          'Focus',
+          'Organisation',
+          'Time management',
+          'Emotional regulation',
+          'Relationships',
+          'Work performance',
+          'Sleep',
+          'Impulsivity',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'adhdFocusTracker',
+    title: 'Focus Tracker',
+    subtitle: 'Quick focus check-in across the day.',
+    condition: 'adhd',
+    icon: '🎯',
+    sections: [
+      {
+        title: 'FOCUS RIGHT NOW · NRS 0–10',
+        body: '0 = scattered, 10 = locked in.',
+        type: 'scale',
+      },
+      {
+        title: 'FOCUS BLOCKERS',
+        type: 'checklist',
+        items: [
+          'Notifications / phone',
+          'Open-plan noise',
+          'Internal restlessness',
+          'Task feels boring',
+          'Task feels overwhelming',
+          'Hungry / dehydrated',
+          'Pre-medication window',
+        ],
+      },
+      {
+        title: 'TODAY ROLL-UP',
+        body: 'Average focus and number of check-ins logged today.',
+        type: 'tracker',
+      },
+    ],
+  },
+  {
+    id: 'adhdMoodEnergy',
+    title: 'Mood + Energy',
+    subtitle: 'Twice-daily mood and energy capture for ADHD pattern detection.',
+    condition: 'adhd',
+    icon: '⚡',
+    sections: [
+      {
+        title: 'MOOD · 1–5',
+        body: '1 = low / flat, 5 = bright and steady.',
+        type: 'scale',
+      },
+      {
+        title: 'ENERGY · 1–5',
+        body: '1 = depleted, 5 = activated.',
+        type: 'scale',
+      },
+      {
+        title: 'TODAY MARKERS',
+        type: 'checklist',
+        items: [
+          'Slept ≥ 7 hours',
+          'Took medication on schedule',
+          'Moved body',
+          'Protein at breakfast',
+          'Crashed in afternoon',
+          'RSD episode',
+        ],
+      },
+      {
+        title: '14-DAY MOOD × ENERGY',
+        type: 'tracker',
+      },
+    ],
+  },
+  {
+    id: 'adhdCycleBrain',
+    title: 'Cycle × Brain',
+    subtitle: 'How your ADHD shifts across the menstrual cycle.',
+    condition: 'adhd',
+    icon: '🔄',
+    sections: [
+      {
+        title: 'PHASE TODAY',
+        type: 'checklist',
+        items: ['Menstrual', 'Follicular', 'Ovulatory', 'Early luteal', 'Late luteal'],
+      },
+      {
+        title: 'BRAIN TODAY · NRS 0–10',
+        body: 'Rate each domain. Lower = harder.',
+        type: 'scale',
+        items: [
+          'Attention',
+          'Working memory',
+          'Emotional regulation',
+          'Medication effect',
+        ],
+      },
+      {
+        title: '60-DAY CYCLE × BRAIN',
+        body: 'Unlocks once two full cycles are logged.',
+        type: 'tracker',
+      },
+    ],
+  },
+  {
+    id: 'adhdDailyLogRich',
+    title: 'Daily ADHD Log',
+    subtitle: 'Five domains + masking effort + medication. Cycle context auto-captured.',
+    condition: 'adhd',
+    icon: '🧠',
+    sections: [
+      {
+        title: 'OVERALL TODAY',
+        body: 'How is your brain working today overall? 1 = crashed, 5 = in the zone.',
+        type: 'scale',
+      },
+      {
+        title: 'FIVE DOMAINS · NRS 0–10',
+        type: 'scale',
+        items: [
+          'Attention / Focus',
+          'Impulsivity',
+          'Executive function (planning, starting, finishing)',
+          'Working memory',
+          'Emotional regulation',
+        ],
+      },
+      {
+        title: 'MASKING EFFORT · NRS 0–10',
+        body: '0 = fully myself, 10 = exhausting all-day performance.',
+        type: 'scale',
+      },
+      {
+        title: 'DISCRETE EVENTS TODAY',
+        type: 'checklist',
+        items: [
+          'Intense emotional reaction (RSD-like)',
+          'Hyperfocus episode',
+          'Time blindness caused real impact',
+          'Skin-pick / hair-pull / nail-bite episode',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'asrs5',
+    title: 'ASRS-5',
+    subtitle: 'WHO Adult ADHD Self-Report Scale — 6-item validated screener. Monthly.',
+    condition: 'adhd',
+    icon: '📋',
+    sections: [
+      {
+        title: 'ASRS-5 QUESTIONNAIRE',
+        body: 'Rate each item: 0 = Never, 1 = Rarely, 2 = Sometimes, 3 = Often, 4 = Very Often. ≥4 of 6 rated "Often" or "Very Often" = positive screen.',
+        type: 'scale',
+        items: [
+          'Trouble wrapping up final details of a project',
+          'Difficulty getting things in order for a task',
+          'Problems remembering appointments or obligations',
+          'Avoiding or delaying tasks requiring a lot of thought',
+          'Fidgeting or squirming during long sitting periods',
+          'Feeling overly active and compelled to do things',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'adhdRs',
+    title: 'ADHD-RS-5',
+    subtitle: '18-item DSM-5-mapped symptom severity scale.',
+    condition: 'adhd',
+    icon: '📋',
+    sections: [
+      {
+        title: 'ABOUT ADHD-RS-5',
+        body: 'The ADHD Rating Scale (18 items) maps directly to DSM-5 criteria. Rate each symptom 0–3. Total 0–54; higher = more severe.',
+        type: 'info',
+        items: [
+          'Items 1–9 — Inattention subscale',
+          'Items 10–18 — Hyperactivity-impulsivity subscale',
+          'Clinical threshold varies by age and gender',
+        ],
+      },
+      {
+        title: 'RATE SYMPTOMS',
+        type: 'scale',
+      },
+    ],
+  },
+  {
+    id: 'caarsEL',
+    title: 'CAARS Emotional Lability',
+    subtitle: '8-item emotional lability subscale with T-score conversion.',
+    condition: 'adhd',
+    icon: '📋',
+    sections: [
+      {
+        title: 'EMOTIONAL LABILITY SUBSCALE',
+        body: 'Emotional dysregulation is a core but under-recognised feature of ADHD. Rate each item 0–3.',
+        type: 'scale',
+        items: [
+          'I have quick or extreme mood changes',
+          'My mood is easily affected by small events',
+          "I get upset easily by things that probably don't matter",
+          'I am easily frustrated or annoyed',
+          'My emotions feel out of control',
+          'I react more strongly than situations warrant',
+          'I have trouble calming down once upset',
+          'Small setbacks feel catastrophic in the moment',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'wfirs',
+    title: 'WFIRS-S',
+    subtitle: 'Weiss Functional Impairment Rating Scale — 50-item self-report.',
+    condition: 'adhd',
+    icon: '📋',
+    sections: [
+      {
+        title: 'ABOUT WFIRS-S',
+        body: 'The WFIRS-S measures how ADHD affects daily functioning across 6 life domains. Use monthly to track treatment impact.',
+        type: 'info',
+        items: [
+          'Family relationships',
+          'Work / school performance',
+          'Life skills (finances, self-care)',
+          'Child or partner relationship',
+          'Social functioning',
+          'Risky activities',
+        ],
+      },
+      {
+        title: 'RATE IMPAIRMENT',
+        body: 'Rate each item 0 = never/not at all, 3 = often/very much.',
+        type: 'scale',
+      },
+    ],
+  },
+  {
+    id: 'isi',
+    title: 'ISI',
+    subtitle: 'Insomnia Severity Index — 7-item validated sleep measure.',
+    condition: 'adhd',
+    icon: '🌙',
+    sections: [
+      {
+        title: 'ISI QUESTIONNAIRE',
+        body: 'Rate each item 0–4 based on the past 2 weeks.',
+        type: 'scale',
+        items: [
+          'Severity of difficulty falling asleep',
+          'Severity of difficulty staying asleep',
+          'Severity of waking up too early',
+          'Satisfaction with current sleep',
+          'Interference with daily functioning',
+          'Noticeability of impairment by others',
+          'Distress caused by sleep problem',
+        ],
+      },
+      {
+        title: 'SCORE INTERPRETATION',
+        type: 'info',
+        items: [
+          '0–7 — no clinically significant insomnia',
+          '8–14 — subthreshold insomnia',
+          '15–21 — moderate clinical insomnia',
+          '22–28 — severe clinical insomnia',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'adhdRSDEpisode',
+    title: 'RSD Episode Log',
+    subtitle: 'Rejection Sensitive Dysphoria quick-capture and pattern tracker.',
+    condition: 'adhd',
+    icon: '♡',
+    sections: [
+      {
+        title: 'WHAT IS RSD?',
+        body: 'Rejection Sensitive Dysphoria (RSD) is an intense, often overwhelming emotional response to perceived or actual rejection, criticism, or failure. It is highly prevalent in ADHD.',
+        type: 'info',
+      },
+      {
+        title: 'LOG EPISODE',
+        body: 'Log an RSD or intense emotional reaction episode.',
+        type: 'tracker',
+      },
+      {
+        title: 'EPISODE DETAILS',
+        type: 'checklist',
+        items: [
+          'Triggered by criticism',
+          'Triggered by perceived rejection',
+          'Triggered by failure or mistake',
+          'Physical symptoms (chest, stomach)',
+          'Rage response',
+          'Shutdown / freeze response',
+          'Resolved within 1 hour',
+          'Resolved within a day',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'adhdHyperfocus',
+    title: 'Hyperfocus + Crash Log',
+    subtitle: 'Episode logging for hyperfocus periods and subsequent crashes.',
+    condition: 'adhd',
+    icon: '⚡',
+    sections: [
+      {
+        title: 'LOG HYPERFOCUS EPISODE',
+        body: 'Track when hyperfocus starts, how long it lasts, and the crash that follows.',
+        type: 'tracker',
+      },
+      {
+        title: 'EPISODE DETAILS',
+        type: 'checklist',
+        items: [
+          'Duration > 2 hours',
+          'Duration > 4 hours',
+          'Forgot to eat or drink',
+          'Missed other commitments',
+          'Followed by energy crash',
+          'Followed by emotional crash',
+          'Productive (wanted outcome)',
+          'Unproductive (lost to distraction)',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'adhdMedLogReal',
+    title: 'ADHD Med Log + BP',
+    subtitle: 'Real medication tracker with blood pressure, timing, and efficacy.',
+    condition: 'adhd',
+    icon: '💊',
+    sections: [
+      {
+        title: "TODAY'S MEDICATION",
+        type: 'checklist',
+        items: ['Morning dose taken', 'Afternoon booster taken (if prescribed)', 'Dose missed'],
+      },
+      {
+        title: 'BLOOD PRESSURE',
+        body: 'Stimulants can raise blood pressure. Log your BP when prompted by your provider.',
+        type: 'form',
+      },
+      {
+        title: 'MED EFFICACY TODAY · NRS 0–10',
+        body: '0 = no effect, 10 = full symptom coverage.',
+        type: 'scale',
+      },
+    ],
+  },
+  {
+    id: 'adhdHormonalEngine',
+    title: 'Hormonal-ADHD Engine',
+    subtitle: 'Cycle correlation analysis across 60 days of logged ADHD symptoms.',
+    condition: 'adhd',
+    icon: '🔄',
+    sections: [
+      {
+        title: 'HORMONE-ADHD INTERACTION',
+        body: 'Oestrogen boosts dopamine and norepinephrine — the neurotransmitters central to ADHD. As oestrogen drops in the late luteal phase, ADHD symptoms typically worsen. This engine maps your pattern.',
+        type: 'info',
+        items: [
+          'Follicular phase — higher oestrogen, often best ADHD function',
+          'Ovulatory peak — highest oestrogen, often peak focus',
+          'Luteal phase — falling oestrogen, worsening ADHD',
+          'Late luteal — lowest oestrogen, worst ADHD (+ PMDD if present)',
+          'Menstrual — hormones begin rising, gradual improvement',
+        ],
+      },
+      {
+        title: '60-DAY CORRELATION',
+        body: 'Your attention and executive function scores mapped against cycle phase.',
+        type: 'tracker',
+      },
+    ],
+  },
+  {
+    id: 'adhdMaskingDaily',
+    title: 'Masking Effort',
+    subtitle: 'Daily NRS masking effort score with burnout detection flag.',
+    condition: 'adhd',
+    icon: '👁️',
+    sections: [
+      {
+        title: 'MASKING EFFORT TODAY · NRS 0–10',
+        body: '0 = fully myself, 10 = exhausting performance all day.',
+        type: 'scale',
+      },
+      {
+        title: 'MASKING BURNOUT SIGNS',
+        body: 'Sustained high masking (≥7 for 5+ consecutive days) is associated with autistic and ADHD burnout.',
+        type: 'checklist',
+        items: [
+          'Exhausted after work / socialising',
+          'Need significant recovery time alone',
+          'Suppressing stimming or natural behaviours',
+          "Pretending to understand when you don't",
+          'Hiding impulsivity or emotion at high cost',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'adhdCircadian',
+    title: 'Sleep Circadian Log',
+    subtitle: 'DLMO phase delay detection for ADHD circadian rhythm patterns.',
+    condition: 'adhd',
+    icon: '🌙',
+    sections: [
+      {
+        title: 'ADHD AND CIRCADIAN RHYTHM',
+        body: 'Up to 75% of people with ADHD have Delayed Sleep Phase Syndrome (DSPS). The melatonin onset (DLMO) is typically delayed 1.5–3 hours versus neurotypical individuals.',
+        type: 'info',
+      },
+      {
+        title: 'LOG SLEEP TIMING',
+        type: 'form',
+      },
+      {
+        title: 'CIRCADIAN CHECKLIST',
+        type: 'checklist',
+        items: [
+          'Feel most alert after 10pm',
+          'Difficulty falling asleep before midnight',
+          'Wake feeling unrefreshed even after 8+ hours',
+          'Extremely difficult to wake before 8am',
+          'Function better with later start times',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'brownEFA',
+    title: 'Brown EF/A Scales',
+    subtitle: '5-cluster executive function and attention monthly self-rating.',
+    condition: 'adhd',
+    icon: '🧠',
+    sections: [
+      {
+        title: '5 EF/A CLUSTERS',
+        body: 'Rate how much each cluster has caused problems for you this month.',
+        type: 'scale',
+        items: [
+          'Activation (organising, prioritising, starting tasks)',
+          'Focus (sustaining and shifting attention)',
+          'Effort (regulating alertness, effort, processing speed)',
+          'Emotion (managing frustration, mood)',
+          'Memory (working memory, accessing recall)',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'adhdPhysicianReportReal',
+    title: 'ADHD Physician Report',
+    subtitle: 'Cycle × medication effectiveness PDF for your prescriber.',
+    condition: 'adhd',
+    icon: '⬇️',
+    sections: [
+      {
+        title: 'REPORT SECTIONS',
+        body: 'Your ADHD physician report contains cycle-correlated ADHD data for your prescriber.',
+        type: 'info',
+        items: [
+          'ADHD-RS and ASRS-5 scores over time',
+          'Daily log domain averages by cycle phase',
+          'Medication adherence and efficacy',
+          'Hormonal-ADHD correlation chart',
+          'RSD and hyperfocus episode log',
+          'Brown EF/A monthly trends',
+          'PHQ-9 and GAD-7 comorbidity screens',
+          'Accommodation letter (ADA-ready, on request)',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'adhdTimeBlindness',
+    title: 'Time Blindness Log',
+    subtitle: 'Impact tracking and strategy library for ADHD time perception deficit.',
+    condition: 'adhd',
+    icon: '⏳',
+    sections: [
+      {
+        title: 'TIME BLINDNESS IMPACT TODAY',
+        type: 'checklist',
+        items: [
+          'Late for commitment',
+          'Underestimated task duration',
+          'Lost track of time while focused',
+          'Overcommitted schedule',
+          'Missed deadline',
+          'No impact today',
+        ],
+      },
+      {
+        title: 'STRATEGIES',
+        body: 'Evidence-based strategies for time blindness in ADHD.',
+        type: 'info',
+        items: [
+          'Visual timers (Time Timer, Alexa)',
+          'Body doubling for transitions',
+          '"Time anchors" — recurring alarms',
+          'Over-estimate all time by 50%',
+          'External cues rather than internal sense of time',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'adhdBfrb',
+    title: 'BFRB + Sensory Log',
+    subtitle: 'Body-focused repetitive behaviour and sensory sensitivity episode tracking.',
+    condition: 'adhd',
+    icon: '〰️',
+    sections: [
+      {
+        title: 'BFRB LOG',
+        body: 'Body-focused repetitive behaviours (BFRBs) are common in ADHD and autism. Tracking helps identify triggers.',
+        type: 'checklist',
+        items: ['Skin picking', 'Hair pulling (trichotillomania)', 'Nail biting', 'Cheek biting', 'Lip picking'],
+      },
+      {
+        title: 'SENSORY SENSITIVITIES TODAY',
+        type: 'checklist',
+        items: [
+          'Sound / auditory overload',
+          'Texture / tactile discomfort',
+          'Light / visual overload',
+          'Smell sensitivity',
+          'Clothing / tag discomfort',
+          'Temperature sensitivity',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'adhdSupplements',
+    title: 'Supplements + Lifestyle',
+    subtitle: 'Omega-3, exercise, melatonin, and other evidence-rated ADHD lifestyle factors.',
+    condition: 'adhd',
+    icon: '✨',
+    sections: [
+      {
+        title: 'EVIDENCE-RATED SUPPLEMENTS',
+        type: 'info',
+        items: [
+          'Omega-3 (EPA ≥1000 mg/day) — moderate evidence, meta-analyses positive',
+          'Magnesium glycinate — low evidence, some sleep benefit',
+          'Zinc — low-to-moderate evidence in deficient populations',
+          'Iron — only if ferritin < 30; supplement with testing',
+          'Melatonin 0.5–1 mg (DSPS) — good evidence for circadian shift',
+        ],
+      },
+      {
+        title: 'LIFESTYLE FACTORS',
+        type: 'info',
+        items: [
+          'Aerobic exercise ≥30 min, 3×/week — acute and sustained ADHD benefit',
+          'Sleep consistency — circadian alignment improves dopamine function',
+          'Protein with breakfast — tyrosine precursor for dopamine synthesis',
+          'Reduce ultra-processed carbohydrates — glycaemic variability worsens focus',
+        ],
+      },
+      {
+        title: 'DAILY ADHERENCE',
+        type: 'checklist',
+        items: ['Omega-3 taken', 'Exercise done', 'Consistent sleep time', 'Protein breakfast'],
+      },
+    ],
+  },
+] as const;

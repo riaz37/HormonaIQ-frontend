@@ -1,0 +1,174 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// SafetyTab — F35 · SAFETY PLAN
+// Tab id: 'safetyPlan'
+// ─────────────────────────────────────────────────────────────────────────────
+
+import React, { useCallback, useState } from 'react';
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+import { buttons, cards, typography } from '../../constants/styles';
+import { colors, fonts } from '../../constants/tokens';
+import { MHeader } from './primitives';
+import { phaseForDay } from './types';
+import type { PMDDState, SafetyPlanItem } from './types';
+
+// ─────────────────────────────────────────────
+// Data
+// ─────────────────────────────────────────────
+
+const DEFAULT_SAFETY_ITEMS: SafetyPlanItem[] = [
+  {
+    k: 'warning',
+    l: 'Warning signs',
+    v: 'Snapping at partner · waking at 4am · canceling plans',
+  },
+  {
+    k: 'cope',
+    l: 'Things that help me cope',
+    v: 'Walk outside · cold shower · noise-cancelling headphones',
+  },
+  {
+    k: 'people',
+    l: 'People I can text',
+    v: 'Maya · Mom · Dr. Reyes',
+  },
+  {
+    k: 'pro',
+    l: 'Professionals',
+    v: 'Therapist Jen — Tue/Thu · 988 Lifeline',
+  },
+  {
+    k: 'safe',
+    l: 'Make environment safe',
+    v: 'Alcohol out of house · meds in lockbox',
+  },
+];
+
+// ─────────────────────────────────────────────
+// Props
+// ─────────────────────────────────────────────
+
+interface SafetyTabProps {
+  state: PMDDState;
+  setState: React.Dispatch<React.SetStateAction<PMDDState>>;
+}
+
+// ─────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────
+
+export default function SafetyTab({ state, setState }: SafetyTabProps) {
+  const [items] = useState<SafetyPlanItem[]>(DEFAULT_SAFETY_ITEMS);
+  const phase = phaseForDay(state.cycleDay, state.cycleLen);
+  const lutealLocked = phase === 'L' && !state.safetyPlanEditOverride;
+
+  const requestOverride = useCallback(() => {
+    Alert.alert(
+      'Edit safety plan?',
+      'Your safety plan was built when you were well. Are you sure you want to edit it now?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Edit anyway',
+          onPress: () =>
+            setState((prev) => ({ ...prev, safetyPlanEditOverride: true })),
+        },
+      ],
+    );
+  }, [setState]);
+
+  return (
+    <View>
+      <MHeader
+        eyebrow="F35 · SAFETY PLAN"
+        title="Built when you were "
+        titleAccent="well."
+        sub="Surfaces automatically before high-risk luteal days."
+      />
+      {items.map((it) => (
+        <View key={it.k} style={[cards.cardWarm, s.safetyItem]}>
+          <Text style={[typography.caption, { marginBottom: 4 }]}>{it.l}</Text>
+          <Text style={[typography.body, { fontSize: 13, lineHeight: 22 }]}>
+            {it.v}
+          </Text>
+        </View>
+      ))}
+      {lutealLocked ? (
+        <>
+          <View
+            style={[
+              buttons.soft,
+              s.fullWidth,
+              { marginTop: 8, opacity: 0.45 },
+            ]}
+          >
+            <Text style={[buttons.softLabel, { textAlign: 'center' }]}>
+              Update plan (read-only in luteal)
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[s.ghostBtn, s.fullWidth, { marginTop: 6 }]}
+            onPress={requestOverride}
+            activeOpacity={0.75}
+            accessibilityRole="button"
+            accessibilityLabel="Request to edit safety plan anyway"
+          >
+            <Text style={s.ghostBtnLabel}>I want to edit anyway</Text>
+          </TouchableOpacity>
+          <Text style={s.safetyLockCaption}>
+            Editing is read-only during your luteal phase to protect a plan you
+            built when well.
+          </Text>
+        </>
+      ) : (
+        <TouchableOpacity
+          style={[buttons.soft, s.fullWidth, { marginTop: 8 }]}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Update safety plan"
+        >
+          <Text style={buttons.softLabel}>Update plan</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Styles
+// ─────────────────────────────────────────────
+
+const s = StyleSheet.create({
+  fullWidth: {
+    width: '100%',
+  },
+  ghostBtn: {
+    minHeight: 44,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  ghostBtnLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 13,
+    color: colors.eucalyptusDeep,
+  },
+  safetyItem: {
+    padding: 14,
+    marginBottom: 8,
+  },
+  safetyLockCaption: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    marginTop: 8,
+    textAlign: 'center',
+    color: colors.ink3,
+  },
+});

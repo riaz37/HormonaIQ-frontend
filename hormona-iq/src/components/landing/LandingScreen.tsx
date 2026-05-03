@@ -1,14 +1,13 @@
 import React from 'react';
 import type { ReactElement } from 'react';
 import {
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
 } from 'react-native';
-import { router } from 'expo-router';
+import { Link } from 'expo-router';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { colors, fonts, radius, shadows } from '../../constants/tokens';
 import { DecorativeBlob } from './DecorativeBlob';
@@ -285,10 +284,6 @@ const FAQS: ReadonlyArray<FAQEntry> = [
 
 const PLAY_STORE_URL = 'https://play.google.com/store';
 
-function openOnboarding(): void {
-  router.push('/(onboarding)/start');
-}
-
 export function LandingScreen() {
   const { width } = useWindowDimensions();
   const isWide = width >= 880;
@@ -325,17 +320,13 @@ export function LandingScreen() {
           <Text style={styles.logo} accessibilityRole="header">
             HormonaIQ
           </Text>
-          <Pressable
-            onPress={openOnboarding}
-            accessibilityRole="button"
+          <Link
+            href="/(onboarding)/start"
             accessibilityLabel="Open the app"
-            style={({ pressed }) => [
-              styles.navButton,
-              pressed && { opacity: 0.85 },
-            ]}
+            style={styles.navButton}
           >
             <Text style={styles.navButtonLabel}>Open the app →</Text>
-          </Pressable>
+          </Link>
         </View>
 
         {/* Hero */}
@@ -363,51 +354,36 @@ export function LandingScreen() {
             </Text>
 
             <View style={styles.ctaRow}>
-              <Pressable
-                onPress={openOnboarding}
-                accessibilityRole="button"
+              <Link
+                href="/(onboarding)/start"
                 accessibilityLabel="Join the waitlist"
-                style={({ pressed }) => [
-                  styles.btnPrimary,
-                  pressed && { opacity: 0.9 },
-                ]}
+                style={styles.btnPrimary}
               >
                 <Text style={styles.btnPrimaryLabel}>Join the waitlist →</Text>
-              </Pressable>
+              </Link>
 
-              <Pressable
-                onPress={openOnboarding}
-                accessibilityRole="button"
+              <Link
+                href="/(onboarding)/start"
                 accessibilityLabel="See how it works"
-                style={({ pressed }) => [
-                  styles.btnOutline,
-                  pressed && { backgroundColor: colors.mintPale },
-                ]}
+                style={styles.btnOutline}
               >
                 <Text style={styles.btnOutlineLabel}>See how it works</Text>
-              </Pressable>
+              </Link>
             </View>
 
             <Text style={styles.trust}>
               Reviewed by clinicians who treat PMDD, PCOS, and perimenopause
             </Text>
 
-            <Pressable
-              onPress={() => {
-                if (typeof window !== 'undefined') {
-                  window.open(PLAY_STORE_URL, '_blank', 'noopener');
-                }
-              }}
-              accessibilityRole="link"
+            <Link
+              href={PLAY_STORE_URL}
+              target="_blank"
               accessibilityLabel="Available on Google Play"
-              style={({ pressed }) => [
-                styles.playBadge,
-                pressed && { opacity: 0.85 },
-              ]}
+              style={styles.playBadge}
             >
               <Text style={styles.playBadgeKicker}>Now live</Text>
               <Text style={styles.playBadgeLabel}>Available on Google Play →</Text>
-            </Pressable>
+            </Link>
           </View>
 
           {/* Hero visual — CycleRing placeholder */}
@@ -463,16 +439,14 @@ export function LandingScreen() {
           {CONDITIONS.map((c) => {
             const Icon = c.Icon;
             return (
-              <Pressable
+              <Link
                 key={c.name}
-                onPress={openOnboarding}
-                accessibilityRole="button"
+                href="/(onboarding)/start"
                 accessibilityLabel={`Built for ${c.name}`}
-                style={({ pressed }) => [
+                style={[
                   styles.conditionCard,
                   isWide && styles.conditionCardWide,
                   isMid && !isWide && styles.conditionCardMid,
-                  pressed && styles.conditionCardActive,
                 ]}
               >
                 <View style={styles.conditionIconWrap}>
@@ -481,7 +455,7 @@ export function LandingScreen() {
                 <Text style={[styles.h2, { marginBottom: 6 }]}>{c.name}</Text>
                 <Text style={[styles.body, { flex: 1 }]}>{c.desc}</Text>
                 <Text style={styles.conditionLink}>Built for {c.name} →</Text>
-              </Pressable>
+              </Link>
             );
           })}
         </View>
