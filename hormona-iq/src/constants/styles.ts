@@ -276,7 +276,7 @@ export const components = StyleSheet.create({
 // Layout — `.screen`, `.tabbar`, `.topbar`.
 export const layout = StyleSheet.create({
   screen: {
-    flex: 1,
+    flexGrow: 1,
     paddingTop: 22,
     paddingHorizontal: 24,
     paddingBottom: 32,
