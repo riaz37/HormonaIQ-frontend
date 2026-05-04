@@ -235,6 +235,8 @@ export default function ProfileScreen(): ReactElement {
 
   const toggleTheme = (): void => setTheme(theme === 'dark' ? 'light' : 'dark');
 
+  const avatarInitial = state.email?.[0]?.toUpperCase() ?? '?';
+
   const tags: string[] = [
     ...conditions,
     ...(adhdFlag ? ['ADHD'] : []),
@@ -253,13 +255,10 @@ export default function ProfileScreen(): ReactElement {
         <View style={[s.headerCard, { marginBottom: 24 }]}>
           <View style={s.headerRow}>
             <View style={s.avatarCircle}>
-              <Text style={s.avatarGlyph}>S</Text>
+              <Text style={s.avatarGlyph}>{avatarInitial}</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={typography.displaySm}>Your space</Text>
-              <Text style={[typography.caption, { color: colors.ink2, marginTop: 2 }]}>
-                Member since April 2026
-              </Text>
             </View>
           </View>
           {tags.length > 0 && (
@@ -451,10 +450,11 @@ export default function ProfileScreen(): ReactElement {
           <View style={s.group}>
             <Text style={[typography.eyebrow, s.groupTitle]}>OPTIONAL</Text>
             <View style={[s.groupCard, cards.cardWarm, s.stripSage]}>
+              <View style={s.accentDot} />
               <Text
                 style={[
                   typography.body,
-                  { fontWeight: '600', marginBottom: 4 },
+                  { fontFamily: fonts.sansSemibold, marginBottom: 4 },
                 ]}
               >
                 Save your data to the cloud
@@ -540,6 +540,7 @@ export default function ProfileScreen(): ReactElement {
           stripStyle={s.stripSage}
         >
           <>
+            <View style={s.accentDot} />
             <Row
               label="Delete all data"
               right={<TextLink color={colors.danger}>Delete</TextLink>}
@@ -985,9 +986,9 @@ const s = StyleSheet.create({
     gap: 8,
   },
   textSizeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: colors.mintMist,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1008,8 +1009,14 @@ const s = StyleSheet.create({
 
   // ── Stripe accents ─────────────────────────────────────────────────────
   stripSage: {
-    borderLeftWidth: 3,
-    borderLeftColor: colors.eucalyptus,
+    // accent dot is rendered as the first child View at each usage site
+  },
+  accentDot: {
+    width: 4,
+    backgroundColor: colors.eucalyptus,
+    borderRadius: 2,
+    alignSelf: 'stretch',
+    marginBottom: spacing.sm,
   },
 
   // ── Buttons ────────────────────────────────────────────────────────────

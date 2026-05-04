@@ -430,8 +430,10 @@ export default function LogScreen(): ReactElement {
         {/* R7 — F88 Spotting / unexpected bleeding capture */}
         {showSpotting && (
           <View style={[cards.cardWarm, s.spottingCard]}>
+            <View style={s.spottingAccent} />
+            <View style={s.spottingContent}>
             <Text style={[typography.eyebrow, { marginBottom: 6 }]}>
-              F88 · UNEXPECTED BLEEDING TODAY?
+              UNEXPECTED BLEEDING TODAY?
             </Text>
             <Text style={[typography.caption, { fontSize: 12, marginBottom: 10 }]}>
               {isPostmeno
@@ -464,6 +466,7 @@ export default function LogScreen(): ReactElement {
                   </TouchableOpacity>
                 );
               })}
+            </View>
             </View>
           </View>
         )}
@@ -503,7 +506,7 @@ export default function LogScreen(): ReactElement {
             accessibilityLabel="Previous cycle day"
             accessibilityRole="button"
           >
-            <Text style={s.iconBtnText}>‹</Text>
+            <Text style={s.iconBtnText}>←</Text>
           </TouchableOpacity>
           <View style={{ alignItems: 'center' }}>
             <Text style={[typography.data, { fontSize: 16, color: colors.eucalyptusDeep }]}>
@@ -522,7 +525,7 @@ export default function LogScreen(): ReactElement {
             accessibilityLabel="Next cycle day"
             accessibilityRole="button"
           >
-            <Text style={s.iconBtnText}>›</Text>
+            <Text style={s.iconBtnText}>→</Text>
           </TouchableOpacity>
         </View>
 
@@ -573,13 +576,13 @@ export default function LogScreen(): ReactElement {
             accessibilityRole="button"
             disabled={recording}
           >
-            <Text style={s.micBtnText}>{recording ? '●' : '🎙'}</Text>
+            <Text style={s.micBtnText}>{recording ? '●' : 'Rec'}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Save CTA */}
         <PillButton
-          label="✦ Save today's entry"
+          label="Save today's entry"
           onPress={save}
           variant="primary"
           size="lg"
@@ -693,8 +696,18 @@ const s = StyleSheet.create({
   spottingCard: {
     padding: 14,
     marginBottom: 16,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.coralSoft,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 10,
+  },
+  spottingAccent: {
+    width: 4,
+    backgroundColor: colors.coralSoft,
+    borderRadius: 2,
+    alignSelf: 'stretch',
+  },
+  spottingContent: {
+    flex: 1,
   },
 
   // Chip row (spotting)

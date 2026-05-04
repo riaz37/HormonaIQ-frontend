@@ -257,7 +257,7 @@ export default function OnboardingShell(): ReactElement {
           accessibilityLabel="Go back"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={s.chevron}>‹</Text>
+          <Text style={s.chevron}>←</Text>
         </TouchableOpacity>
 
         <ProgressDots total={5} current={visibleIndex} />

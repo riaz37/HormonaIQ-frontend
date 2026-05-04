@@ -26,12 +26,16 @@ export const colors = {
   coral: '#E89F86',
   coralSoft: '#F5C8B5',
   rose: '#D88A95',
+  lavender: '#5C4A7A',
   danger: '#B95446',
 
   // Severity scale
   severityMild: '#5C8A75',
   severityMod: '#E8C97A',
   severitySevere: '#C97962',
+
+  // Neutral dark — use where a neutral (non-green) dark is needed on coloured surfaces
+  charcoal: 'rgba(0,0,0,0.78)',
 
   // Surface tokens (semantic, not brand)
   border: 'rgba(60, 95, 75, 0.14)',

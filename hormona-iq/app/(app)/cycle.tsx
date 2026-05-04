@@ -55,7 +55,7 @@ interface PeriodLogEntry {
 
 interface CycleState {
   cycleLen: number;
-  lastPeriod: string; // YYYY-MM-DD
+  lastPeriod: string | null; // YYYY-MM-DD, or null when not yet set
   irregular: boolean;
   cyclePaused: boolean;
   conditions: string[];
@@ -92,7 +92,7 @@ interface WeekDay {
 // ─────────────────────────────────────────────
 const INITIAL_STATE: CycleState = {
   cycleLen: 28,
-  lastPeriod: '2024-12-15',
+  lastPeriod: null,
   irregular: false,
   cyclePaused: false,
   conditions: ['PMDD'],
@@ -123,6 +123,17 @@ const PHASE_NAMES_DISPLAY: Record<PhaseCode, string> = {
   Ls: 'Late luteal',
   M: 'Menstrual',
   '?': 'Variable',
+};
+
+// 3-character abbreviations for tight calendar cells
+const PHASE_SHORT: Record<PhaseCode, string> = {
+  F: 'Fol',
+  O: 'Ovu',
+  L: 'Lut',
+  Lm: 'Lut',
+  Ls: 'Lut',
+  M: 'Men',
+  '?': '—',
 };
 
 function phaseToCode(p: Phase): PhaseCode {
@@ -373,6 +384,7 @@ export default function CycleScreen(): ReactElement {
   );
   const [monthOffset, setMonthOffset] = useState(0);
   const [selected, setSelected] = useState<CalendarCell | null>(null);
+  const [dateModalOpen, setDateModalOpen] = useState(false);
 
   // T-85 — when cycle paused, calendar is disabled
   if (state.cyclePaused) {
@@ -405,11 +417,12 @@ export default function CycleScreen(): ReactElement {
   const year = target.getFullYear();
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const lastPeriod = new Date(state.lastPeriod);
+  const lastPeriod = state.lastPeriod != null ? new Date(state.lastPeriod) : null;
   const cycleLen = state.cycleLen;
   const irregular = !!(state.irregular || (state.conditions ?? []).includes('PCOS'));
 
   function dayInfo(date: Date): DayInfo | null {
+    if (lastPeriod == null) return null;
     const diff = Math.floor((date.getTime() - lastPeriod.getTime()) / 86400000);
     if (diff < 0) return null;
     const cycleDay = (diff % cycleLen) + 1;
@@ -480,11 +493,11 @@ export default function CycleScreen(): ReactElement {
     [state.entries],
   );
 
-  // Today's cycleDay — for ring view focus
-  const todayDiff = Math.floor(
-    (today.getTime() - lastPeriod.getTime()) / 86400000,
-  );
-  const todayCycleDay = ((todayDiff % cycleLen) + cycleLen) % cycleLen + 1;
+  // Today's cycleDay — for ring view focus (null when lastPeriod not set)
+  const todayCycleDay =
+    lastPeriod != null
+      ? ((Math.floor((today.getTime() - lastPeriod.getTime()) / 86400000) % cycleLen) + cycleLen) % cycleLen + 1
+      : null;
 
   // T-82 — phase segment tap → switch to month view
   const onTapPhaseSegment = (): void => {
@@ -492,7 +505,7 @@ export default function CycleScreen(): ReactElement {
     setMonthOffset(0);
   };
 
-  const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const;
+  const DAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] as const;
   const WEEK_DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
   const VIEW_TABS: CalendarView[] = ['ring', 'month', 'week'];
 
@@ -516,7 +529,7 @@ export default function CycleScreen(): ReactElement {
                 accessibilityLabel="Previous month"
                 accessibilityState={{ disabled: monthOffset >= 6 }}
               >
-                <Text style={s.iconBtnText}>‹</Text>
+                <Text style={s.iconBtnText}>←</Text>
               </TouchableOpacity>
             )}
             <View>
@@ -537,7 +550,7 @@ export default function CycleScreen(): ReactElement {
                 accessibilityRole="button"
                 accessibilityLabel="Next month"
               >
-                <Text style={s.iconBtnText}>›</Text>
+                <Text style={s.iconBtnText}>→</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -566,77 +579,98 @@ export default function CycleScreen(): ReactElement {
           </View>
         </View>
 
+        {/* ── No period date banner ──────────────────────────── */}
+        {state.lastPeriod == null && (
+          <View style={s.noPeriodBanner}>
+            <Text style={s.noPeriodBannerText}>
+              Add your last period date to see your cycle
+            </Text>
+            <TouchableOpacity
+              style={s.noPeriodBannerBtn}
+              onPress={() => setDateModalOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Enter last period date"
+            >
+              <Text style={s.noPeriodBannerBtnLabel}>Enter date</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* ── RING VIEW ─────────────────────────────────────── */}
         {view === 'ring' && (
           <>
-            <View style={s.ringWrap}>
-              <CycleRing
-                cycleDay={todayCycleDay}
-                cycleLen={cycleLen}
-                size={300}
-                onPress={onTapPhaseSegment}
-              />
-            </View>
-            <Text style={[typography.caption, { textAlign: 'center', marginBottom: 22 }]}>
-              Tap a phase segment to view that month
-            </Text>
+            {todayCycleDay != null && (
+              <>
+                <View style={s.ringWrap}>
+                  <CycleRing
+                    cycleDay={todayCycleDay}
+                    cycleLen={cycleLen}
+                    size={300}
+                    onPress={onTapPhaseSegment}
+                  />
+                </View>
+                <Text style={[typography.caption, { textAlign: 'center', marginBottom: 22 }]}>
+                  Tap a phase segment to view that month
+                </Text>
 
-            <View style={{ marginBottom: 20 }}>
-              <PhaseLegend />
-            </View>
+                <View style={{ marginBottom: 20 }}>
+                  <PhaseLegend />
+                </View>
 
-            <Text style={[typography.eyebrow, { marginBottom: 10 }]}>
-              RECENTLY LOGGED
-            </Text>
-            {loggedDays.length === 0 ? (
-              <Text style={typography.caption}>
-                Your logged days will appear here.
-              </Text>
-            ) : (
-              <View style={{ gap: 8 }}>
-                {loggedDays.map(([dateKey, entry]) => {
-                  const dt = new Date(dateKey);
-                  const info = dayInfo(dt);
-                  if (!info) return null;
-                  return (
-                    <View
-                      key={dateKey}
-                      style={[cards.cardPaper, s.loggedRow]}
-                    >
-                      <View>
-                        <Text style={[typography.data, { fontSize: 13 }]}>
-                          {dt.toLocaleDateString(undefined, {
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </Text>
-                        <Text
-                          style={[typography.caption, { fontSize: 11, marginTop: 2 }]}
-                        >
-                          Day {info.cycleDay} · {PHASE_NAMES_DISPLAY[info.phase]}
-                        </Text>
-                      </View>
-                      {info.sev != null && (
+                <Text style={[typography.eyebrow, { marginBottom: 10 }]}>
+                  RECENTLY LOGGED
+                </Text>
+                {loggedDays.length === 0 ? (
+                  <Text style={typography.caption}>
+                    Your logged days will appear here.
+                  </Text>
+                ) : (
+                  <View style={{ gap: 8 }}>
+                    {loggedDays.map(([dateKey, entry]) => {
+                      const dt = new Date(dateKey);
+                      const info = dayInfo(dt);
+                      if (!info) return null;
+                      return (
                         <View
-                          style={[
-                            cmp.phasePill,
-                            { backgroundColor: PHASE_FILL[info.phase] },
-                          ]}
+                          key={dateKey}
+                          style={[cards.cardPaper, s.loggedRow]}
                         >
-                          <View
-                            style={[
-                              cmp.phaseDot,
-                              { backgroundColor: sevColor(info.sev) },
-                            ]}
-                          />
-                          <Text style={cmp.phasePillLabel}>{info.sev}</Text>
+                          <View>
+                            <Text style={[typography.data, { fontSize: 13 }]}>
+                              {dt.toLocaleDateString(undefined, {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </Text>
+                            <Text
+                              style={[typography.caption, { fontSize: 11, marginTop: 2 }]}
+                            >
+                              Day {info.cycleDay} · {PHASE_NAMES_DISPLAY[info.phase]}
+                            </Text>
+                          </View>
+                          {info.sev != null && (
+                            <View
+                              style={[
+                                cmp.phasePill,
+                                { backgroundColor: PHASE_FILL[info.phase] },
+                              ]}
+                            >
+                              <View
+                                style={[
+                                  cmp.phaseDot,
+                                  { backgroundColor: sevColor(info.sev) },
+                                ]}
+                              />
+                              <Text style={cmp.phasePillLabel}>{info.sev}</Text>
+                            </View>
+                          )}
                         </View>
-                      )}
-                    </View>
-                  );
-                })}
-              </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </>
             )}
           </>
         )}
@@ -720,7 +754,7 @@ export default function CycleScreen(): ReactElement {
                   {WEEK_DAY_LABELS[w.date.getDay()]}
                 </Text>
                 <Text style={s.weekColCycleDay}>
-                  D{w.info?.cycleDay ?? '—'}
+                  Day {w.info?.cycleDay ?? '—'}
                 </Text>
                 <View style={{ flex: 1 }} />
                 {w.info?.sev != null && (
@@ -864,6 +898,65 @@ export default function CycleScreen(): ReactElement {
           )}
         </Pressable>
       </Modal>
+
+      {/* ── Enter last period date modal ────────────────────── */}
+      <Modal
+        visible={dateModalOpen}
+        animationType={reduceMotion ? 'none' : 'slide'}
+        transparent
+        onRequestClose={() => setDateModalOpen(false)}
+      >
+        <Pressable
+          style={s.modalBackdrop}
+          onPress={() => setDateModalOpen(false)}
+          accessibilityRole="button"
+          accessibilityLabel="Close date entry"
+        >
+          <Pressable
+            style={s.modalSheet}
+            onPress={(e) => e.stopPropagation()}
+            accessibilityRole="none"
+          >
+            <Text style={[typography.eyebrow, { marginBottom: 6 }]}>
+              LAST PERIOD DATE
+            </Text>
+            <Text style={[typography.body, { color: colors.ink2, marginBottom: 20 }]}>
+              Enter the first day of your most recent period. This calibrates your cycle phases.
+            </Text>
+            {/* Quick-select: last 10 days */}
+            <View style={s.datePickerGrid}>
+              {Array.from({ length: 10 }, (_, i) => {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i);
+                const key = d.toISOString().slice(0, 10);
+                const label = i === 0 ? 'Today' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                return (
+                  <TouchableOpacity
+                    key={key}
+                    style={s.datePickerOption}
+                    onPress={() => {
+                      setState((prev) => ({ ...prev, lastPeriod: key }));
+                      setDateModalOpen(false);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set last period to ${label}`}
+                  >
+                    <Text style={s.datePickerOptionLabel}>{label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <TouchableOpacity
+              style={[buttons.outline, { marginTop: 16 }]}
+              onPress={() => setDateModalOpen(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel"
+            >
+              <Text style={buttons.outlineLabel}>Cancel</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -998,7 +1091,7 @@ const s = StyleSheet.create({
   calDayNum: {
     fontFamily: fonts.sans,
     fontSize: 13,
-    color: 'rgba(0,0,0,0.78)',
+    color: colors.charcoal,
   },
   calDotRow: {
     flexDirection: 'row',
@@ -1031,14 +1124,14 @@ const s = StyleSheet.create({
     fontFamily: fonts.sansMedium,
     fontSize: 10,
     fontWeight: '500',
-    color: 'rgba(0,0,0,0.78)',
+    color: colors.charcoal,
     opacity: 0.7,
     textTransform: 'capitalize',
   },
   weekColCycleDay: {
     fontFamily: fonts.mono,
     fontSize: 18,
-    color: 'rgba(0,0,0,0.78)',
+    color: colors.charcoal,
     marginTop: 2,
   },
   weekColSevBar: {
@@ -1070,5 +1163,55 @@ const s = StyleSheet.create({
     padding: 10,
     backgroundColor: colors.mintPale,
     borderRadius: radius.sm,
+  },
+  // No period date banner
+  noPeriodBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    backgroundColor: colors.mintPale,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: 14,
+    marginBottom: 18,
+  },
+  noPeriodBannerText: {
+    flex: 1,
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    color: colors.ink2,
+    lineHeight: 18,
+  },
+  noPeriodBannerBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: colors.eucalyptus,
+    borderRadius: radius.pill,
+  },
+  noPeriodBannerBtnLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 12,
+    color: colors.paper,
+  },
+  // Date picker quick-select grid
+  datePickerGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  datePickerOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: colors.mintPale,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  datePickerOptionLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 13,
+    color: colors.ink,
   },
 });

@@ -19,9 +19,9 @@ export interface FeelingOption {
 }
 
 export const FEELINGS: FeelingOption[] = [
-  { label: 'Steady', tone: colors.sageLight, sub: 'Like myself' },
+  { label: 'Steady', tone: colors.eucalyptus, sub: 'Like myself' },
   { label: 'Slight', tone: colors.butter, sub: 'A little off' },
-  { label: 'Off', tone: colors.coral, sub: 'Noticeable' },
+  { label: 'Off', tone: colors.coralSoft, sub: 'Noticeable' },
   { label: 'Heavy', tone: colors.coral, sub: 'Hard to manage' },
   { label: 'Hard', tone: colors.rose, sub: 'Functionally impaired' },
 ];

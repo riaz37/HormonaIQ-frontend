@@ -2,13 +2,14 @@
 // optional HBC, optional perimenopausal status, and the "that makes sense" hero.
 // Props-only — no direct store access.
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import type { ReactElement } from 'react';
 import {
+  Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -24,6 +25,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { buttons, typography } from '../../constants/styles';
 import { colors, fonts, radius } from '../../constants/tokens';
 import type { HbcType, PerimenopausalStatus, TrackingHistory } from './types';
+import { SelectPicker } from './SelectPicker';
 
 // ─────────────────────────────────────────────
 // Constants
@@ -65,101 +67,9 @@ function phaseLabel(cycleDay: number, cycleLen: number): string {
 }
 
 // ─────────────────────────────────────────────
-// SelectPicker (local — for HBC and peri)
-// ─────────────────────────────────────────────
-
-interface SelectOption<T extends string> {
-  readonly value: T;
-  readonly label: string;
-}
-
-function SelectPicker<T extends string>({
-  options,
-  value,
-  onChange,
-  placeholder,
-  accessibilityLabel,
-}: {
-  options: readonly SelectOption<T>[];
-  value: T | null;
-  onChange: (v: T) => void;
-  placeholder?: string;
-  accessibilityLabel?: string;
-}): ReactElement {
-  return (
-    <View style={selectStyles.container} accessibilityLabel={accessibilityLabel}>
-      {placeholder && !value && (
-        <Text style={selectStyles.placeholder}>{placeholder}</Text>
-      )}
-      {options.map((opt) => {
-        const selected = value === opt.value;
-        return (
-          <TouchableOpacity
-            key={opt.value}
-            onPress={() => onChange(opt.value)}
-            activeOpacity={0.7}
-            style={[selectStyles.option, selected && selectStyles.optionSelected]}
-            accessibilityRole="radio"
-            accessibilityState={{ selected }}
-            accessibilityLabel={opt.label}
-          >
-            <Text style={[selectStyles.optionLabel, selected && selectStyles.optionLabelSelected]}>
-              {opt.label}
-            </Text>
-            {selected && <Text style={selectStyles.checkmark}>✓</Text>}
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-}
-
-const selectStyles = StyleSheet.create({
-  container: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    overflow: 'hidden',
-    backgroundColor: colors.paper,
-  },
-  placeholder: {
-    fontFamily: fonts.sans,
-    fontSize: 14,
-    color: colors.ink3,
-    padding: 12,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    minHeight: 44,
-    backgroundColor: colors.paper,
-  },
-  optionSelected: {
-    backgroundColor: colors.mintPale,
-  },
-  optionLabel: {
-    fontFamily: fonts.sans,
-    fontSize: 14,
-    color: colors.ink,
-  },
-  optionLabelSelected: {
-    fontFamily: fonts.sansMedium,
-    color: colors.eucalyptusDeep,
-  },
-  checkmark: {
-    fontFamily: fonts.sansMedium,
-    fontSize: 14,
-    color: colors.eucalyptus,
-  },
-});
-
-// ─────────────────────────────────────────────
 // Stepper
+// Supports tap (±1) and long-press (±5) for fast traversal
+// across the wide min=14–max=120 range.
 // ─────────────────────────────────────────────
 
 function Stepper({
@@ -175,13 +85,49 @@ function Stepper({
   onChange: (v: number) => void;
   unit: string;
 }): ReactElement {
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const repeatTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const clearTimers = useCallback((): void => {
+    if (longPressTimer.current !== null) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    if (repeatTimer.current !== null) {
+      clearInterval(repeatTimer.current);
+      repeatTimer.current = null;
+    }
+  }, []);
+
+  const valueRef = useRef(value);
+  useEffect(() => { valueRef.current = value; }, [value]);
+
+  const startLongPress = useCallback(
+    (delta: number): void => {
+      longPressTimer.current = setTimeout(() => {
+        // Immediately apply a ±5 step on long-press trigger
+        onChange(Math.min(max, Math.max(min, valueRef.current + delta * 5)));
+        // Then keep repeating every 200ms while held
+        repeatTimer.current = setInterval(() => {
+          valueRef.current = Math.min(max, Math.max(min, valueRef.current + delta * 5));
+          onChange(valueRef.current);
+        }, 200);
+      }, 400);
+    },
+    [min, max, onChange],
+  );
+
   return (
     <View style={stepperStyles.row}>
       <TouchableOpacity
         onPress={() => onChange(Math.max(min, value - 1))}
+        onLongPress={() => startLongPress(-1)}
+        onPressOut={clearTimers}
+        delayLongPress={400}
         style={stepperStyles.btn}
         accessibilityRole="button"
-        accessibilityLabel={`Decrease ${unit}`}
+        accessibilityLabel={`Decrease ${unit}. Long press to decrease by 5.`}
+        accessibilityHint="Single tap −1, long press −5"
         disabled={value <= min}
       >
         <Text style={stepperStyles.btnLabel}>−</Text>
@@ -191,9 +137,13 @@ function Stepper({
       </Text>
       <TouchableOpacity
         onPress={() => onChange(Math.min(max, value + 1))}
+        onLongPress={() => startLongPress(1)}
+        onPressOut={clearTimers}
+        delayLongPress={400}
         style={stepperStyles.btn}
         accessibilityRole="button"
-        accessibilityLabel={`Increase ${unit}`}
+        accessibilityLabel={`Increase ${unit}. Long press to increase by 5.`}
+        accessibilityHint="Single tap +1, long press +5"
         disabled={value >= max}
       >
         <Text style={stepperStyles.btnLabel}>+</Text>
@@ -230,6 +180,321 @@ const stepperStyles = StyleSheet.create({
     color: colors.ink,
     minWidth: 90,
     textAlign: 'center',
+  },
+});
+
+// ─────────────────────────────────────────────
+// DateWheelPicker — modal picker for last-period date.
+// @react-native-community/datetimepicker is not installed,
+// so we use three coordinated ScrollView wheels (year/month/day).
+// ─────────────────────────────────────────────
+
+const MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+function daysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+function parseDateString(dateStr: string): { year: number; month: number; day: number } {
+  const parts = dateStr.split('-');
+  const year = parseInt(parts[0] ?? '1995', 10);
+  const month = parseInt(parts[1] ?? '1', 10);
+  const day = parseInt(parts[2] ?? '1', 10);
+  return { year, month, day };
+}
+
+function formatDateString(year: number, month: number, day: number): string {
+  const mm = String(month).padStart(2, '0');
+  const dd = String(day).padStart(2, '0');
+  return `${year}-${mm}-${dd}`;
+}
+
+interface DateWheelPickerProps {
+  value: string;
+  onChange: (v: string) => void;
+  accessibilityLabel?: string;
+}
+
+function DateWheelPicker({ value, onChange, accessibilityLabel }: DateWheelPickerProps): ReactElement {
+  const [open, setOpen] = useState(false);
+  const parsed = parseDateString(value);
+  const [draftYear, setDraftYear] = useState(parsed.year);
+  const [draftMonth, setDraftMonth] = useState(parsed.month);
+  const [draftDay, setDraftDay] = useState(parsed.day);
+
+  const currentYear = new Date().getFullYear();
+  const years: number[] = [];
+  for (let y = currentYear; y >= 1940; y--) {
+    years.push(y);
+  }
+
+  const maxDay = daysInMonth(draftYear, draftMonth);
+  const clampedDay = Math.min(draftDay, maxDay);
+
+  const handleOpen = (): void => {
+    const p = parseDateString(value);
+    setDraftYear(p.year);
+    setDraftMonth(p.month);
+    setDraftDay(p.day);
+    setOpen(true);
+  };
+
+  const handleConfirm = (): void => {
+    const safeDay = Math.min(draftDay, daysInMonth(draftYear, draftMonth));
+    onChange(formatDateString(draftYear, draftMonth, safeDay));
+    setOpen(false);
+  };
+
+  const displayLabel = value
+    ? `${MONTHS[(parsed.month - 1)] ?? ''} ${parsed.day}, ${parsed.year}`
+    : 'Select date';
+
+  return (
+    <>
+      <TouchableOpacity
+        onPress={handleOpen}
+        activeOpacity={0.8}
+        style={dateStyles.trigger}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel ?? 'Open date picker'}
+        accessibilityHint="Double tap to select date"
+      >
+        <Text style={[dateStyles.triggerText, !value && dateStyles.triggerPlaceholder]}>
+          {displayLabel}
+        </Text>
+        <Text style={dateStyles.triggerChevron}>▾</Text>
+      </TouchableOpacity>
+
+      <Modal
+        visible={open}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setOpen(false)}
+      >
+        <View style={dateStyles.backdrop}>
+          <View style={dateStyles.sheet}>
+            <View style={dateStyles.sheetHandle} />
+            <Text style={dateStyles.sheetTitle}>Last period start date</Text>
+
+            <View style={dateStyles.wheelsRow}>
+              {/* Month wheel */}
+              <View style={dateStyles.wheelWrap}>
+                <Text style={dateStyles.wheelLabel}>Month</Text>
+                <ScrollView style={dateStyles.wheel} showsVerticalScrollIndicator={false}>
+                  {MONTHS.map((m, i) => {
+                    const mNum = i + 1;
+                    const sel = draftMonth === mNum;
+                    return (
+                      <TouchableOpacity
+                        key={m}
+                        onPress={() => setDraftMonth(mNum)}
+                        style={[dateStyles.wheelItem, sel && dateStyles.wheelItemSelected]}
+                      >
+                        <Text style={[dateStyles.wheelItemText, sel && dateStyles.wheelItemTextSelected]}>
+                          {m}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              {/* Day wheel */}
+              <View style={dateStyles.wheelWrap}>
+                <Text style={dateStyles.wheelLabel}>Day</Text>
+                <ScrollView style={dateStyles.wheel} showsVerticalScrollIndicator={false}>
+                  {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => {
+                    const sel = clampedDay === d;
+                    return (
+                      <TouchableOpacity
+                        key={d}
+                        onPress={() => setDraftDay(d)}
+                        style={[dateStyles.wheelItem, sel && dateStyles.wheelItemSelected]}
+                      >
+                        <Text style={[dateStyles.wheelItemText, sel && dateStyles.wheelItemTextSelected]}>
+                          {d}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              {/* Year wheel */}
+              <View style={dateStyles.wheelWrap}>
+                <Text style={dateStyles.wheelLabel}>Year</Text>
+                <ScrollView style={dateStyles.wheel} showsVerticalScrollIndicator={false}>
+                  {years.map((y) => {
+                    const sel = draftYear === y;
+                    return (
+                      <TouchableOpacity
+                        key={y}
+                        onPress={() => setDraftYear(y)}
+                        style={[dateStyles.wheelItem, sel && dateStyles.wheelItemSelected]}
+                      >
+                        <Text style={[dateStyles.wheelItemText, sel && dateStyles.wheelItemTextSelected]}>
+                          {y}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            </View>
+
+            <View style={dateStyles.actions}>
+              <TouchableOpacity
+                onPress={() => setOpen(false)}
+                style={dateStyles.cancelBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+              >
+                <Text style={dateStyles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleConfirm}
+                style={dateStyles.confirmBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Confirm date"
+              >
+                <Text style={dateStyles.confirmText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
+}
+
+const dateStyles = StyleSheet.create({
+  trigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 48,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    paddingHorizontal: 14,
+    backgroundColor: colors.paper,
+  },
+  triggerText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  triggerPlaceholder: {
+    color: colors.ink3,
+    fontFamily: fonts.sans,
+  },
+  triggerChevron: {
+    fontSize: 14,
+    color: colors.ink3,
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(27,46,37,0.4)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: colors.paper,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 32 : 24,
+    paddingHorizontal: 16,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.inkDisabled,
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
+  sheetTitle: {
+    fontFamily: fonts.sansSemibold,
+    fontSize: 15,
+    color: colors.ink,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  wheelsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  wheelWrap: {
+    flex: 1,
+  },
+  wheelLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 11,
+    letterSpacing: 1,
+    color: colors.ink3,
+    textAlign: 'center',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+  },
+  wheel: {
+    maxHeight: 220,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    backgroundColor: colors.cream,
+  },
+  wheelItem: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 40,
+  },
+  wheelItemSelected: {
+    backgroundColor: colors.mintPale,
+  },
+  wheelItemText: {
+    fontFamily: fonts.sans,
+    fontSize: 14,
+    color: colors.ink2,
+  },
+  wheelItemTextSelected: {
+    fontFamily: fonts.sansMedium,
+    color: colors.eucalyptusDeep,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  cancelBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 15,
+    color: colors.ink2,
+  },
+  confirmBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: radius.sm,
+    backgroundColor: colors.eucalyptus,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 15,
+    color: colors.paper,
   },
 });
 
@@ -469,14 +734,10 @@ export function StepCycleBasics({
       <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
         When did your last period start?
       </Text>
-      <TextInput
-        style={s.textInput}
+      <DateWheelPicker
         value={lastPeriod}
-        onChangeText={onLastPeriodChange}
-        placeholder="YYYY-MM-DD"
-        placeholderTextColor={colors.ink3}
-        keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'default'}
-        accessibilityLabel="Last period start date, format YYYY-MM-DD"
+        onChange={onLastPeriodChange}
+        accessibilityLabel="Last period start date"
       />
 
       {/* Cycle length stepper */}
@@ -604,17 +865,6 @@ const s = StyleSheet.create({
     maxWidth: 520,
     alignSelf: 'center',
     width: '100%',
-  },
-  textInput: {
-    height: 48,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    paddingHorizontal: 14,
-    fontFamily: fonts.sans,
-    fontSize: 15,
-    color: colors.ink,
-    backgroundColor: colors.paper,
   },
   checkCard: {
     backgroundColor: 'rgba(255,255,255,0.6)',

@@ -1,9 +1,12 @@
 // StepYob — Step 1: Year of birth / age, block, and guardian sub-screens.
 // Props-only — no direct store access.
 
+import { useState } from 'react';
 import type { ReactElement } from 'react';
 import {
+  Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -50,7 +53,10 @@ function Sprig({ size = 28 }: { size?: number }): ReactElement {
 }
 
 // ─────────────────────────────────────────────
-// SelectPicker — used for year of birth
+// SelectPicker — modal-style picker for year of birth.
+// Shows selected value in a tappable row; opens a Modal
+// with a scrollable list capped at 300 px so the Continue
+// button remains visible below.
 // ─────────────────────────────────────────────
 
 interface SelectOption<T extends string> {
@@ -71,54 +77,159 @@ function SelectPicker<T extends string>({
   placeholder?: string;
   accessibilityLabel?: string;
 }): ReactElement {
+  const [open, setOpen] = useState(false);
+
+  const selectedLabel =
+    value !== null
+      ? (options.find((o) => o.value === value)?.label ?? value)
+      : null;
+
+  const handleSelect = (v: T): void => {
+    onChange(v);
+    setOpen(false);
+  };
+
   return (
-    <View style={selectStyles.container} accessibilityLabel={accessibilityLabel}>
-      {placeholder && !value && (
-        <Text style={selectStyles.placeholder}>{placeholder}</Text>
-      )}
-      {options.map((opt) => {
-        const selected = value === opt.value;
-        return (
-          <TouchableOpacity
-            key={opt.value}
-            onPress={() => onChange(opt.value)}
-            activeOpacity={0.7}
-            style={[selectStyles.option, selected && selectStyles.optionSelected]}
-            accessibilityRole="radio"
-            accessibilityState={{ selected }}
-            accessibilityLabel={opt.label}
+    <>
+      {/* Tappable display row */}
+      <TouchableOpacity
+        onPress={() => setOpen(true)}
+        activeOpacity={0.8}
+        style={selectStyles.trigger}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel ?? 'Open picker'}
+        accessibilityHint="Double tap to open year selection"
+      >
+        <Text
+          style={[
+            selectStyles.triggerText,
+            !selectedLabel && selectStyles.triggerPlaceholder,
+          ]}
+        >
+          {selectedLabel ?? placeholder ?? 'Select…'}
+        </Text>
+        <Text style={selectStyles.triggerChevron}>▾</Text>
+      </TouchableOpacity>
+
+      {/* Modal picker */}
+      <Modal
+        visible={open}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpen(false)}
+      >
+        <TouchableOpacity
+          style={selectStyles.backdrop}
+          activeOpacity={1}
+          onPress={() => setOpen(false)}
+          accessibilityLabel="Close picker"
+        >
+          <View
+            style={selectStyles.sheet}
+            // Prevent backdrop tap from closing when tapping inside sheet
+            onStartShouldSetResponder={() => true}
           >
-            <Text style={[selectStyles.optionLabel, selected && selectStyles.optionLabelSelected]}>
-              {opt.label}
-            </Text>
-            {selected && <Text style={selectStyles.checkmark}>✓</Text>}
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+            <View style={selectStyles.sheetHandle} />
+            <ScrollView
+              style={selectStyles.list}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {options.map((opt) => {
+                const selected = value === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() => handleSelect(opt.value)}
+                    activeOpacity={0.7}
+                    style={[selectStyles.option, selected && selectStyles.optionSelected]}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected }}
+                    accessibilityLabel={opt.label}
+                  >
+                    <Text
+                      style={[
+                        selectStyles.optionLabel,
+                        selected && selectStyles.optionLabelSelected,
+                      ]}
+                    >
+                      {opt.label}
+                    </Text>
+                    {selected && <Text style={selectStyles.checkmark}>✓</Text>}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
   );
 }
 
 const selectStyles = StyleSheet.create({
-  container: {
-    borderWidth: 1,
+  // Tappable trigger row
+  trigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 48,
+    borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.sm,
-    overflow: 'hidden',
+    paddingHorizontal: 14,
     backgroundColor: colors.paper,
   },
-  placeholder: {
+  triggerText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 16,
+    color: colors.ink,
+  },
+  triggerPlaceholder: {
+    color: colors.ink3,
     fontFamily: fonts.sans,
+  },
+  triggerChevron: {
     fontSize: 14,
     color: colors.ink3,
-    padding: 12,
   },
+
+  // Modal backdrop
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(27,46,37,0.4)',
+    justifyContent: 'flex-end',
+  },
+
+  // Bottom sheet
+  sheet: {
+    backgroundColor: colors.paper,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    paddingTop: 10,
+    paddingBottom: 24,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.inkDisabled,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+
+  // Scrollable list capped so the Continue button stays visible
+  list: {
+    maxHeight: 300,
+  },
+
+  // Individual option rows
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     minHeight: 44,
@@ -129,7 +240,7 @@ const selectStyles = StyleSheet.create({
   },
   optionLabel: {
     fontFamily: fonts.sans,
-    fontSize: 14,
+    fontSize: 15,
     color: colors.ink,
   },
   optionLabelSelected: {

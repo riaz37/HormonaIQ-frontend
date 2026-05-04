@@ -247,6 +247,10 @@ export default function InsightsScreen(): ReactElement {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
 
+  const reportMonth = new Date()
+    .toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    .toUpperCase();
+
   const [state, setState] = useState<InsightsState>(INITIAL_STATE);
   const [docEmail, setDocEmail] = useState('');
   const [showReport, setShowReport] = useState(false);
@@ -442,6 +446,14 @@ export default function InsightsScreen(): ReactElement {
               Once you've logged for two cycles, I can chart your pattern and
               show you the differential.
             </Text>
+            <Pressable
+              style={[buttons.primary, { marginTop: 16, alignSelf: 'stretch' }]}
+              onPress={() => router.push('/(app)/log')}
+              accessibilityRole="button"
+              accessibilityLabel="Start logging"
+            >
+              <Text style={buttons.primaryLabel}>Start logging</Text>
+            </Pressable>
           </View>
         )}
 
@@ -604,7 +616,7 @@ export default function InsightsScreen(): ReactElement {
                 {/* Preview header */}
                 <View style={s.previewHeader}>
                   <Text style={s.previewHeaderLabel}>
-                    YOUR DRSP LOG SUMMARY — APR 2026
+                    YOUR DRSP LOG SUMMARY — {reportMonth}
                   </Text>
                   <Text style={s.previewLogoText}>HormonaIQ</Text>
                 </View>

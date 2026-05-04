@@ -135,6 +135,17 @@ const PHASE_NAMES: Record<PhaseCode, string> = {
   '?': 'Variable',
 };
 
+// Short labels for the 7-day week strip (≤4 chars to fit dayPill)
+const PHASE_LABEL: Record<string, string> = {
+  F: 'Fol',
+  O: 'Ovu',
+  L: 'Lut',
+  Lm: 'Lut',
+  Ls: 'Late',
+  M: 'Men',
+  '?': '—',
+};
+
 const PHASE_VIBE_WORDS: Record<PhaseCode, string> = {
   F: 'Follicular',
   O: 'Peak',
@@ -575,34 +586,37 @@ export default function HomeScreen(): ReactElement {
 
       {/* Period-start prompt */}
       {showPeriodStartPrompt && (
-        <View style={[cards.cardWarm, s.stripRose, { marginTop: 18 }]}>
-          <Text
-            style={[typography.eyebrow, { color: colors.rose, marginBottom: 6 }]}
-          >
-            A quick check
-          </Text>
-          <Text
-            style={[typography.body, { fontSize: 14, marginBottom: 12 }]}
-          >
-            Did your period start today?
-          </Text>
-          <View style={s.row}>
-            <Pressable
-              style={[buttons.soft, { flex: 1 }]}
-              onPress={() => markPeriodStarted()}
-              accessibilityRole="button"
-              accessibilityLabel="Yes, log period started"
+        <View style={[cards.cardWarm, { marginTop: 18, flexDirection: 'row', gap: 14 }]}>
+          <View style={[s.accentBar, { backgroundColor: colors.rose }]} />
+          <View style={{ flex: 1 }}>
+            <Text
+              style={[typography.eyebrow, { color: colors.rose, marginBottom: 6 }]}
             >
-              <Text style={buttons.softLabel}>Yes — log it</Text>
-            </Pressable>
-            <Pressable
-              style={s.ghostBtn}
-              onPress={dismissPeriodPrompt}
-              accessibilityRole="button"
-              accessibilityLabel="Not yet"
+              A quick check
+            </Text>
+            <Text
+              style={[typography.body, { fontSize: 14, marginBottom: 12 }]}
             >
-              <Text style={s.ghostBtnLabel}>Not yet</Text>
-            </Pressable>
+              Did your period start today?
+            </Text>
+            <View style={s.row}>
+              <Pressable
+                style={[buttons.soft, { flex: 1 }]}
+                onPress={() => markPeriodStarted()}
+                accessibilityRole="button"
+                accessibilityLabel="Yes, log period started"
+              >
+                <Text style={buttons.softLabel}>Yes — log it</Text>
+              </Pressable>
+              <Pressable
+                style={s.ghostBtn}
+                onPress={dismissPeriodPrompt}
+                accessibilityRole="button"
+                accessibilityLabel="Not yet"
+              >
+                <Text style={s.ghostBtnLabel}>Not yet</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       )}
@@ -629,7 +643,7 @@ export default function HomeScreen(): ReactElement {
             style={[s.dayPill, i === 0 && s.dayPillToday]}
           >
             <Text style={s.dayPillNum}>{d.cycleDay}</Text>
-            <Text style={s.dayPillPhase}>{d.phase}</Text>
+            <Text style={s.dayPillPhase}>{PHASE_LABEL[d.phase] ?? '—'}</Text>
             <View style={[s.dayPillDot, { backgroundColor: d.color }]} />
           </View>
         ))}
@@ -637,107 +651,116 @@ export default function HomeScreen(): ReactElement {
 
       {/* T-09 — endometrial 75 */}
       {showEndo75 && (
-        <View style={[cards.cardWarm, s.stripButter, { marginTop: 18 }]}>
-          <Text
-            style={[
-              typography.eyebrow,
-              { color: colors.butterDeep, marginBottom: 6 },
-            ]}
-          >
-            A note on cycle length
-          </Text>
-          <Text
-            style={[typography.body, { fontSize: 14, marginBottom: 12 }]}
-          >
-            It's been 75 days since your last logged period. In PCOS, longer
-            cycles are common — but cycles over 90 days without a withdrawal
-            bleed are worth discussing with your doctor.
-          </Text>
-          <Pressable
-            style={s.ghostBtn}
-            onPress={acknowledgeEndo}
-            accessibilityRole="button"
-            accessibilityLabel="I spoke to my doctor about this"
-          >
-            <Text style={s.ghostBtnLabel}>I spoke to my doctor about this</Text>
-          </Pressable>
+        <View style={[cards.cardWarm, { marginTop: 18, flexDirection: 'row', gap: 14 }]}>
+          <View style={[s.accentBar, { backgroundColor: colors.butterDeep }]} />
+          <View style={{ flex: 1 }}>
+            <Text
+              style={[
+                typography.eyebrow,
+                { color: colors.butterDeep, marginBottom: 6 },
+              ]}
+            >
+              A note on cycle length
+            </Text>
+            <Text
+              style={[typography.body, { fontSize: 14, marginBottom: 12 }]}
+            >
+              It's been 75 days since your last logged period. In PCOS, longer
+              cycles are common — but cycles over 90 days without a withdrawal
+              bleed are worth discussing with your doctor.
+            </Text>
+            <Pressable
+              style={s.ghostBtn}
+              onPress={acknowledgeEndo}
+              accessibilityRole="button"
+              accessibilityLabel="I spoke to my doctor about this"
+            >
+              <Text style={s.ghostBtnLabel}>I spoke to my doctor about this</Text>
+            </Pressable>
+          </View>
         </View>
       )}
 
       {/* T-09 — endometrial 90+ */}
       {showEndo90 && (
-        <View style={[cards.cardWarm, s.stripSage, { marginTop: 18 }]}>
-          <Text
-            style={[
-              typography.eyebrow,
-              { color: colors.eucalyptusDeep, marginBottom: 6 },
-            ]}
-          >
-            Worth a conversation
-          </Text>
-          <Text
-            style={[typography.body, { fontSize: 14, marginBottom: 14 }]}
-          >
-            You've been in an extended cycle for 90+ days. In PCOS, prolonged
-            amenorrhea without progestogen protection can cause endometrial
-            changes. We recommend discussing this with your doctor at your
-            next appointment.
-          </Text>
-          <Pressable
-            style={[buttons.soft, { marginBottom: 8 }]}
-            onPress={acknowledgeEndo}
-            accessibilityRole="button"
-            accessibilityLabel="Pre-fill appointment note"
-          >
-            <Text style={buttons.softLabel}>Pre-fill appointment note</Text>
-          </Pressable>
-          <Pressable
-            style={s.ghostBtn}
-            onPress={acknowledgeEndo}
-            accessibilityRole="button"
-            accessibilityLabel="I spoke to my doctor about this"
-          >
-            <Text style={s.ghostBtnLabel}>I spoke to my doctor about this</Text>
-          </Pressable>
+        <View style={[cards.cardWarm, { marginTop: 18, flexDirection: 'row', gap: 14 }]}>
+          <View style={[s.accentBar, { backgroundColor: colors.eucalyptus }]} />
+          <View style={{ flex: 1 }}>
+            <Text
+              style={[
+                typography.eyebrow,
+                { color: colors.eucalyptusDeep, marginBottom: 6 },
+              ]}
+            >
+              Worth a conversation
+            </Text>
+            <Text
+              style={[typography.body, { fontSize: 14, marginBottom: 14 }]}
+            >
+              You've been in an extended cycle for 90+ days. In PCOS, prolonged
+              amenorrhea without progestogen protection can cause endometrial
+              changes. We recommend discussing this with your doctor at your
+              next appointment.
+            </Text>
+            <Pressable
+              style={[buttons.soft, { marginBottom: 8 }]}
+              onPress={acknowledgeEndo}
+              accessibilityRole="button"
+              accessibilityLabel="Pre-fill appointment note"
+            >
+              <Text style={buttons.softLabel}>Pre-fill appointment note</Text>
+            </Pressable>
+            <Pressable
+              style={s.ghostBtn}
+              onPress={acknowledgeEndo}
+              accessibilityRole="button"
+              accessibilityLabel="I spoke to my doctor about this"
+            >
+              <Text style={s.ghostBtnLabel}>I spoke to my doctor about this</Text>
+            </Pressable>
+          </View>
         </View>
       )}
 
       {/* T-16 brain fog suggest */}
       {showBfSuggest && (
-        <View style={[cards.cardWarm, s.stripEucalyptus, { marginTop: 18 }]}>
-          <Text style={[typography.eyebrow, { marginBottom: 6 }]}>
-            Want to simplify?
-          </Text>
-          <Text
-            style={[typography.body, { fontSize: 14, marginBottom: 10 }]}
-          >
-            Want to simplify the app for today? Brain Fog Mode hides extras.
-          </Text>
-          <View style={s.row}>
-            <Pressable
-              style={[buttons.soft, { flex: 1 }]}
-              onPress={() =>
-                setState((sv) => ({
-                  ...sv,
-                  brainFogMode: true,
-                  brainFogSuggested: true,
-                }))
-              }
-              accessibilityRole="button"
-              accessibilityLabel="Yes, simplify the interface"
+        <View style={[cards.cardWarm, { marginTop: 18, flexDirection: 'row', gap: 14 }]}>
+          <View style={[s.accentBar, { backgroundColor: colors.eucalyptusSoft }]} />
+          <View style={{ flex: 1 }}>
+            <Text style={[typography.eyebrow, { marginBottom: 6 }]}>
+              Want to simplify?
+            </Text>
+            <Text
+              style={[typography.body, { fontSize: 14, marginBottom: 10 }]}
             >
-              <Text style={buttons.softLabel}>Yes, simplify</Text>
-            </Pressable>
-            <Pressable
-              style={[s.ghostBtn, { flex: 1 }]}
-              onPress={() =>
-                setState((sv) => ({ ...sv, brainFogSuggested: true }))
-              }
-              accessibilityRole="button"
-              accessibilityLabel="No thanks"
-            >
-              <Text style={s.ghostBtnLabel}>No thanks</Text>
-            </Pressable>
+              Want to simplify the app for today? Brain Fog Mode hides extras.
+            </Text>
+            <View style={s.row}>
+              <Pressable
+                style={[buttons.soft, { flex: 1 }]}
+                onPress={() =>
+                  setState((sv) => ({
+                    ...sv,
+                    brainFogMode: true,
+                    brainFogSuggested: true,
+                  }))
+                }
+                accessibilityRole="button"
+                accessibilityLabel="Yes, simplify the interface"
+              >
+                <Text style={buttons.softLabel}>Yes, simplify</Text>
+              </Pressable>
+              <Pressable
+                style={[s.ghostBtn, { flex: 1 }]}
+                onPress={() =>
+                  setState((sv) => ({ ...sv, brainFogSuggested: true }))
+                }
+                accessibilityRole="button"
+                accessibilityLabel="No thanks"
+              >
+                <Text style={s.ghostBtnLabel}>No thanks</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       )}
@@ -1066,21 +1089,10 @@ const s = StyleSheet.create({
     color: colors.eucalyptus,
     textTransform: 'uppercase',
   },
-  stripRose: {
-    borderLeftWidth: 3,
-    borderLeftColor: colors.rose,
-  },
-  stripButter: {
-    borderLeftWidth: 3,
-    borderLeftColor: colors.butterDeep,
-  },
-  stripSage: {
-    borderLeftWidth: 3,
-    borderLeftColor: colors.eucalyptus,
-  },
-  stripEucalyptus: {
-    borderLeftWidth: 3,
-    borderLeftColor: colors.eucalyptusSoft,
+  accentBar: {
+    width: 4,
+    borderRadius: 2,
+    alignSelf: 'stretch',
   },
   tier1Wrap: {
     marginTop: 16,
@@ -1092,12 +1104,12 @@ const s = StyleSheet.create({
     fontFamily: fonts.sans,
     fontSize: 13,
     lineHeight: 19,
-    color: '#5C4A7A',
+    color: colors.lavender,
     textAlign: 'center',
   },
   tier1Underline: {
     textDecorationLine: 'underline',
-    color: '#5C4A7A',
+    color: colors.lavender,
     fontFamily: fonts.sansSemibold,
   },
   toolsGrid: {
