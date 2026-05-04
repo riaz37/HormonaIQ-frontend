@@ -12,10 +12,10 @@ import type { NotifChoice } from './types';
 // Constants
 // ─────────────────────────────────────────────
 
-const NOTIFICATION_EXAMPLES: readonly { readonly icon: string; readonly line: string }[] = [
-  { icon: '🔔', line: 'Day 22: heads up — your usual harder window starts in 2 days.' },
-  { icon: '✦', line: "Sunday: I'm seeing two patterns this week — open Ora when you have a minute." },
-  { icon: '♡', line: "Day 5: the hard part is lifting. Rest counts." },
+const NOTIFICATION_EXAMPLES: readonly { readonly line: string }[] = [
+  { line: 'Day 22: heads up — your usual harder window starts in 2 days.' },
+  { line: "Sunday: I'm seeing two patterns this week — open Ora when you have a minute." },
+  { line: "Day 5: the hard part is lifting. Rest counts." },
 ];
 
 // ─────────────────────────────────────────────
@@ -55,7 +55,7 @@ export function StepNotifications({
         {NOTIFICATION_EXAMPLES.map((ex, i) => (
           <View key={i} style={s.notifExample}>
             <View style={s.notifIconWrap}>
-              <Text style={{ fontSize: 14 }}>{ex.icon}</Text>
+              <View style={s.notifDot} />
             </View>
             <Text style={[typography.caption, { fontSize: 13, color: colors.ink2, flex: 1 }]}>
               {ex.line}
@@ -139,17 +139,23 @@ const s = StyleSheet.create({
   },
   notifIconWrap: {
     flexShrink: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: colors.mintPale,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  notifDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.eucalyptus,
+  },
   notifBtn: {
-    height: 52,
+    minHeight: 52,
     borderRadius: radius.pill,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.eucalyptus,
     backgroundColor: 'transparent',
     alignItems: 'center',

@@ -4,6 +4,7 @@
 import type { ReactElement } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { typography } from '../../constants/styles';
+import { spacing } from '../../constants/tokens';
 import { ChipTag } from '../../components/ui/ChipTag';
 
 // ─────────────────────────────────────────────
@@ -20,6 +21,8 @@ export const PHYSICAL_LIST = [
   'Skin changes',
 ];
 
+const NONE_KEY = 'none';
+
 // ─────────────────────────────────────────────
 // Props
 // ─────────────────────────────────────────────
@@ -27,16 +30,28 @@ export const PHYSICAL_LIST = [
 export interface PhysicalSymptomsProps {
   selected: string[];
   onToggle: (symptom: string) => void;
+  onSelectNone: () => void;
 }
 
 // ─────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────
 
-export function PhysicalSymptoms({ selected, onToggle }: PhysicalSymptomsProps): ReactElement {
+export function PhysicalSymptoms({
+  selected,
+  onToggle,
+  onSelectNone,
+}: PhysicalSymptomsProps): ReactElement {
+  const noneSelected = selected.length === 0 || selected.includes(NONE_KEY);
+
+  const handleSymptomPress = (symptom: string): void => {
+    // Toggling a real symptom always deselects "None"
+    onToggle(symptom);
+  };
+
   return (
     <>
-      <Text style={[typography.h2, { marginTop: 18, marginBottom: 12 }]}>
+      <Text style={[typography.h2, { marginTop: spacing.lg, marginBottom: spacing.sm }]}>
         Physical (tap any)
       </Text>
       <View style={s.chipRow}>
@@ -45,9 +60,15 @@ export function PhysicalSymptoms({ selected, onToggle }: PhysicalSymptomsProps):
             key={p}
             label={p}
             selected={selected.includes(p)}
-            onPress={() => onToggle(p)}
+            onPress={() => handleSymptomPress(p)}
           />
         ))}
+        <ChipTag
+          key={NONE_KEY}
+          label="None of these"
+          selected={noneSelected}
+          onPress={onSelectNone}
+        />
       </View>
     </>
   );

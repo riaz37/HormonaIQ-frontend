@@ -80,7 +80,7 @@ interface GreeneScores {
 }
 
 interface PerimenopauseState {
-  yearOfBirth: number;
+  yearOfBirth: number | null;
   conditions: string[];
   hotFlashLog: HotFlashEvent[];
   hrtTracking: Record<string, HrtDayEntry>;
@@ -99,7 +99,7 @@ interface PerimenopauseState {
 }
 
 const INITIAL_STATE: PerimenopauseState = {
-  yearOfBirth: 1985,
+  yearOfBirth: null,
   conditions: ['Perimenopause'],
   hotFlashLog: [],
   hrtTracking: {},
@@ -318,7 +318,7 @@ function HotFlashModule({ state, setState }: HotFlashModuleProps): ReactElement 
                   </Text>
                 </View>
                 <View style={[sh.phasePill, { backgroundColor: colors.coralSoft }]}>
-                  <Text style={[sh.phasePillLabel, { color: 'rgba(0,0,0,0.7)' }]}>
+                  <Text style={[sh.phasePillLabel, { color: colors.overlayDark }]}>
                     {isNight(h.at) ? 'Night sweat' : 'Day flash'}
                   </Text>
                 </View>
@@ -480,13 +480,16 @@ function StrawModule({ state }: StrawModuleProps): ReactElement {
           titleAccent="more cycle data."
           sub="Stages are derived from cycle interval data over the last 12 months."
         />
-        <View style={[cards.cardWarm, { padding: 22, marginBottom: 14, borderLeftWidth: 3, borderLeftColor: colors.butterDeep }]}>
-          <Text style={[typography.body, { marginBottom: 8 }]}>
-            Not enough cycle data yet — log 6+ months of cycles to auto-stage.
-          </Text>
-          <Text style={[typography.caption, { fontSize: 12 }]}>
-            Currently {entriesCount}/60 days logged.
-          </Text>
+        <View style={[cards.cardWarm, { padding: 22, marginBottom: 14, flexDirection: 'row', gap: 10 }]}>
+          <View style={{ width: 4, backgroundColor: colors.butterDeep, borderRadius: 2, alignSelf: 'stretch' }} />
+          <View style={{ flex: 1 }}>
+            <Text style={[typography.body, { marginBottom: 8 }]}>
+              Not enough cycle data yet — log 6+ months of cycles to auto-stage.
+            </Text>
+            <Text style={[typography.caption, { fontSize: 12 }]}>
+              Currently {entriesCount}/60 days logged.
+            </Text>
+          </View>
         </View>
         {stages.map((p) => (
           <View key={p.s} style={[cards.card, { padding: 12, marginBottom: 6, opacity: 0.6 }]}>
@@ -510,33 +513,39 @@ function StrawModule({ state }: StrawModuleProps): ReactElement {
         sub={`Auto-staged: ${stageReason || 'from cycle interval data'} — confirm with your clinician.${state.hbcActive ? ' Tentative while on hormonal contraception.' : ''}`}
       />
       {state.hbcActive && (
-        <View style={[cards.cardWarm, { padding: 16, marginBottom: 14, borderLeftWidth: 3, borderLeftColor: colors.coral }]}>
-          <Text style={[typography.eyebrow, { marginBottom: 6, color: colors.coral }]}>
-            STAGING TENTATIVE — HBC ACTIVE
-          </Text>
-          <Text style={[typography.body, { fontSize: 13, marginBottom: 8 }]}>
-            <Text style={{ fontFamily: fonts.sansBold }}>
-              You're on {state.hbcType ? state.hbcType.replace(/_/g, ' ') : 'hormonal birth control'}.
+        <View style={[cards.cardWarm, { padding: 16, marginBottom: 14, flexDirection: 'row', gap: 10 }]}>
+          <View style={{ width: 4, backgroundColor: colors.coral, borderRadius: 2, alignSelf: 'stretch' }} />
+          <View style={{ flex: 1 }}>
+            <Text style={[typography.eyebrow, { marginBottom: 6, color: colors.coral }]}>
+              STAGING TENTATIVE — HBC ACTIVE
             </Text>
-            {' '}HBC suppresses FSH and creates regular bleeding patterns regardless of where you are in the menopausal transition.
-          </Text>
-          <Text style={[typography.caption, { fontSize: 12 }]}>
-            Cycle-interval staging is unreliable while on HBC. To get accurate STRAW+10 staging, your provider may suggest pausing HBC briefly, or using FSH/AMH labs interpreted with HBC context. Discuss with your provider.
-          </Text>
+            <Text style={[typography.body, { fontSize: 13, marginBottom: 8 }]}>
+              <Text style={{ fontFamily: fonts.sansBold }}>
+                You're on {state.hbcType ? state.hbcType.replace(/_/g, ' ') : 'hormonal birth control'}.
+              </Text>
+              {' '}HBC suppresses FSH and creates regular bleeding patterns regardless of where you are in the menopausal transition.
+            </Text>
+            <Text style={[typography.caption, { fontSize: 12 }]}>
+              Cycle-interval staging is unreliable while on HBC. To get accurate STRAW+10 staging, your provider may suggest pausing HBC briefly, or using FSH/AMH labs interpreted with HBC context. Discuss with your provider.
+            </Text>
+          </View>
         </View>
       )}
       {earlyOnset && (
-        <View style={[cards.cardWarm, { padding: 14, marginBottom: 14, borderLeftWidth: 3, borderLeftColor: colors.coral }]}>
-          <Text style={[typography.eyebrow, { marginBottom: 6, color: colors.coral }]}>
-            EARLY-ONSET FRAMING
-          </Text>
-          <Text style={[typography.body, { fontSize: 13, marginBottom: 8 }]}>
-            <Text style={{ fontFamily: fonts.sansBold }}>Premature ovarian insufficiency / early perimenopause.</Text>
-            {` You're ${age} — younger than the typical onset window.`}
-          </Text>
-          <Text style={[typography.caption, { fontSize: 12 }]}>
-            Bone density and cardiovascular monitoring are an extra clinical priority for early-onset.
-          </Text>
+        <View style={[cards.cardWarm, { padding: 14, marginBottom: 14, flexDirection: 'row', gap: 10 }]}>
+          <View style={{ width: 4, backgroundColor: colors.coral, borderRadius: 2, alignSelf: 'stretch' }} />
+          <View style={{ flex: 1 }}>
+            <Text style={[typography.eyebrow, { marginBottom: 6, color: colors.coral }]}>
+              EARLY-ONSET FRAMING
+            </Text>
+            <Text style={[typography.body, { fontSize: 13, marginBottom: 8 }]}>
+              <Text style={{ fontFamily: fonts.sansBold }}>Premature ovarian insufficiency / early perimenopause.</Text>
+              {` You're ${age} — younger than the typical onset window.`}
+            </Text>
+            <Text style={[typography.caption, { fontSize: 12 }]}>
+              Bone density and cardiovascular monitoring are an extra clinical priority for early-onset.
+            </Text>
+          </View>
         </View>
       )}
       <View style={[cards.cardWarm, { padding: 18, marginBottom: 14, alignItems: 'center' }]}>
@@ -1388,8 +1397,7 @@ const sh = StyleSheet.create({
     borderColor: colors.eucalyptus,
   },
   greeneScaleNum: {
-    fontFamily: fonts.mono,
-    fontWeight: '600',
+    fontFamily: fonts.monoMedium,
     fontSize: 14,
     color: colors.ink,
   },
@@ -1404,7 +1412,7 @@ const sh = StyleSheet.create({
     textAlign: 'center',
   },
   greeneScaleAnchorActive: {
-    color: 'rgba(255,255,255,0.8)',
+    color: colors.overlayLight,
   },
   legendItem: {
     flexDirection: 'row',

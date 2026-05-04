@@ -75,6 +75,7 @@ export function TrackerLog({
         onPress={onAdd}
         accessibilityRole="button"
         accessibilityLabel={addLabel}
+        accessibilityHint="Creates a new log entry with the current timestamp"
         style={({ pressed }) => [buttons.primary, pressed && styles.btnPressed]}
       >
         <PlusGlyph />
@@ -95,6 +96,8 @@ export function TrackerLog({
             <View
               key={entry.id}
               style={[styles.row, idx === 0 && styles.rowFirst]}
+              accessible={true}
+              accessibilityRole="none"
               accessibilityLabel={`${entry.label}, ${formatTimestamp(entry.timestamp)}`}
             >
               <View style={styles.timestampCol}>
@@ -103,11 +106,11 @@ export function TrackerLog({
                 </Text>
               </View>
               <View style={styles.bodyCol}>
-                <Text style={styles.entryLabel} numberOfLines={2}>
+                <Text style={styles.entryLabel} numberOfLines={2} ellipsizeMode="tail">
                   {entry.label}
                 </Text>
                 {entry.detail !== undefined && (
-                  <Text style={styles.entryDetail} numberOfLines={2}>
+                  <Text style={styles.entryDetail} numberOfLines={2} ellipsizeMode="tail">
                     {entry.detail}
                   </Text>
                 )}

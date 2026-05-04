@@ -293,7 +293,7 @@ export function ScaleRow({
               key={n}
               onPress={() => onChange(n)}
               accessibilityRole="button"
-              accessibilityLabel={`${n} of ${steps}`}
+              accessibilityLabel={`Rating ${n} of ${steps}`}
               accessibilityState={{ selected: active }}
               style={s.scaleCircleHit}
             >
@@ -521,7 +521,7 @@ export function MSection({
           accessibilityRole="button"
           accessibilityLabel={`${title}, ${collapsed ? 'expand' : 'collapse'} section`}
           accessibilityState={{ expanded: !collapsed }}
-          hitSlop={8}
+          hitSlop={spacing.sm}
         >
           {headerInner}
         </Pressable>
@@ -638,6 +638,7 @@ const s = StyleSheet.create({
   // MHeader
   mHeaderWrap: {
     marginBottom: spacing.md,
+    paddingLeft: 0,
   },
   mHeaderTitle: {
     marginBottom: spacing.xs,
@@ -650,11 +651,11 @@ const s = StyleSheet.create({
   backButton: {
     width: 44,
     height: 44,
-    marginLeft: -10,
     marginBottom: spacing.xs,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'flex-start',
   },
   backButtonPressed: {
     backgroundColor: colors.mintPale,
@@ -674,9 +675,8 @@ const s = StyleSheet.create({
     gap: 6,
   },
   statValue: {
-    fontFamily: fonts.mono,
+    fontFamily: fonts.monoMedium,
     fontSize: 22,
-    fontWeight: '500',
     color: colors.ink,
   },
   statSub: {
@@ -698,6 +698,7 @@ const s = StyleSheet.create({
   },
   nrsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 4,
   },
   nrsCell: {
@@ -717,9 +718,8 @@ const s = StyleSheet.create({
     opacity: 0.4,
   },
   nrsCellLabel: {
-    fontFamily: fonts.monoMedium,
+    fontFamily: fonts.sansSemibold,
     fontSize: 13,
-    fontWeight: '600',
   },
 
   // ScaleRow
@@ -795,7 +795,6 @@ const s = StyleSheet.create({
   },
   evidenceLabel: {
     fontSize: 11,
-    fontWeight: '500',
     fontFamily: fonts.sansMedium,
   },
 
@@ -852,7 +851,7 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.sm,
-    minHeight: 28,
+    minHeight: 44,
   },
   sectionHeaderTrailing: {
     flexDirection: 'row',

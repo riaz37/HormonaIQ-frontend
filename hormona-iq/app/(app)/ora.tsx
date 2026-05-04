@@ -226,7 +226,7 @@ function OraFeedbackRow({
         <Text style={fbStyles.ackText}>Got it. I'll dial that back.</Text>
       ) : showHelpfulAck ? (
         <Text style={[fbStyles.ackText, { color: colors.eucalyptus }]}>
-          ✓ noted
+          Noted
         </Text>
       ) : (
         <View style={fbStyles.row}>
@@ -238,7 +238,7 @@ function OraFeedbackRow({
           >
             <Text style={fbStyles.linkText}>Helpful</Text>
           </Pressable>
-          <Text style={fbStyles.sep}>·</Text>
+          <View style={fbStyles.sep} />
           <Pressable
             onPress={() => choose('not_relevant')}
             accessibilityRole="button"
@@ -247,7 +247,7 @@ function OraFeedbackRow({
           >
             <Text style={fbStyles.linkText}>Not for me</Text>
           </Pressable>
-          <Text style={fbStyles.sep}>·</Text>
+          <View style={fbStyles.sep} />
           <Pressable
             onPress={() => choose('wrong')}
             accessibilityRole="button"
@@ -298,7 +298,7 @@ const fbStyles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(63,111,90,0.12)',
+    borderTopColor: colors.borderSubtle,
   },
   row: {
     flexDirection: 'row',
@@ -316,10 +316,11 @@ const fbStyles = StyleSheet.create({
     color: colors.eucalyptus,
   },
   sep: {
-    fontFamily: fonts.sans,
-    fontSize: 12,
-    color: colors.ink3,
-    paddingHorizontal: spacing.xs,
+    width: 1,
+    height: 12,
+    backgroundColor: colors.border,
+    alignSelf: 'center',
+    marginHorizontal: spacing.xs,
   },
   ackText: {
     fontFamily: fonts.sans,
@@ -579,7 +580,7 @@ export default function OraScreen(): ReactElement {
         <View style={[s.oraCard, { marginBottom: 16 }]}>
           <View style={s.oraLabelRow}>
             <Text style={[typography.italicDisplay, s.oraGlyph]}>O</Text>
-            <Text style={s.oraLabelText}>ORA · EARLY READ</Text>
+            <Text style={s.oraLabelText}>ORA  EARLY READ</Text>
           </View>
           <Text style={[typography.body, { marginTop: 6 }]}>
             One cycle in. I'm seeing what looks like a luteal-phase shift around
@@ -614,10 +615,10 @@ export default function OraScreen(): ReactElement {
           <Pressable
             onPress={() => setShowTransparency((v) => !v)}
             accessibilityRole="button"
-            accessibilityLabel="Toggle data transparency"
+            accessibilityLabel="More information"
             style={s.infoBtn}
           >
-            <Text style={s.infoBtnText}>ⓘ</Text>
+            <Text style={s.infoBtnText}>?</Text>
           </Pressable>
         </View>
         <Text style={[typography.body, { marginTop: 6 }]}>
@@ -671,7 +672,7 @@ export default function OraScreen(): ReactElement {
               >
                 Ora
               </Text>
-              {' · '}
+              {'  '}
               {oraOn ? 'On' : 'Off'}
             </Text>
           </View>
@@ -700,16 +701,16 @@ export default function OraScreen(): ReactElement {
               <View style={[s.oraCard, { marginBottom: 18 }]}>
                 <View style={s.oraLabelRow}>
                   <Text style={[typography.italicDisplay, s.oraGlyph]}>O</Text>
-                  <Text style={s.oraLabelText}>ORA · WHAT I SEE</Text>
+                  <Text style={s.oraLabelText}>ORA  WHAT I SEE</Text>
                 </View>
                 <View style={{ marginTop: 8, gap: 6 }}>
-                  <Text style={[typography.body, { fontSize: 13 }]}>
+                  <Text style={[typography.body, { fontSize: 12 }]}>
                     <Text style={{ fontFamily: fonts.sansSemibold }}>
                       What I use:{' '}
                     </Text>
                     your DRSP scores and cycle dates from the last 90 days.
                   </Text>
-                  <Text style={[typography.body, { fontSize: 13 }]}>
+                  <Text style={[typography.body, { fontSize: 12 }]}>
                     <Text style={{ fontFamily: fonts.sansSemibold }}>
                       What I don't see:{' '}
                     </Text>
@@ -740,7 +741,7 @@ export default function OraScreen(): ReactElement {
                 <Text
                   style={[
                     typography.body,
-                    { fontSize: 13, color: colors.ink2 },
+                    { fontSize: 12, color: colors.ink2 },
                   ]}
                 >
                   Voice diet logging is hidden because you opted out at
@@ -779,7 +780,7 @@ export default function OraScreen(): ReactElement {
                       { backgroundColor: recording ? colors.coral : colors.eucalyptus },
                     ]}
                   >
-                    <Text style={s.micBtnText}>{recording ? '●' : '🎙'}</Text>
+                    <Text style={s.micBtnText}>{recording ? '●' : 'Rec'}</Text>
                   </Pressable>
                   <Pressable
                     style={[buttons.soft, s.sendBtn]}
@@ -797,8 +798,8 @@ export default function OraScreen(): ReactElement {
                 )}
                 {foodResponse !== null && (
                   <View style={[s.oraCard, { marginTop: 12 }]}>
-                    <Text style={s.oraLabelText}>ORA · FOOD CONTEXT</Text>
-                    <Text style={[typography.body, { marginTop: 4, fontSize: 13 }]}>
+                    <Text style={s.oraLabelText}>ORA  FOOD CONTEXT</Text>
+                    <Text style={[typography.body, { marginTop: 4, fontSize: 12 }]}>
                       {foodResponse}
                     </Text>
                   </View>
@@ -821,7 +822,7 @@ export default function OraScreen(): ReactElement {
               accessibilityRole="button"
               accessibilityLabel="Prepare for my appointment"
             >
-              <Text style={buttons.softLabel}>✦ Prepare for my appointment</Text>
+              <Text style={buttons.softLabel}>Prepare for my appointment</Text>
             </Pressable>
 
             {/* DRSP chart */}
@@ -1009,7 +1010,7 @@ const s = StyleSheet.create({
     borderRadius: radius.md,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(63,111,90,0.1)',
+    borderColor: colors.borderSubtle,
   },
   oraLabelRow: {
     flexDirection: 'row',
@@ -1055,7 +1056,7 @@ const s = StyleSheet.create({
     marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(63,111,90,0.18)',
+    borderTopColor: colors.borderStrong,
   },
   transparencyText: {
     fontFamily: fonts.sans,
@@ -1153,7 +1154,7 @@ const s = StyleSheet.create({
   // Modal
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(27, 46, 37, 0.45)',
+    backgroundColor: colors.overlayModal,
     justifyContent: 'flex-end',
   },
   modalSheet: {

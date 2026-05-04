@@ -106,7 +106,7 @@ export default function DrspLogTab({ state }: DrspLogTabProps) {
         accessibilityRole="button"
         accessibilityLabel="Download DRSP PDF report"
       >
-        <Text style={buttons.primaryLabel}>⤓ Download PDF</Text>
+        <Text style={buttons.primaryLabel}>↓ Download PDF</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[buttons.outline, s.fullWidth, { marginTop: 8 }]}

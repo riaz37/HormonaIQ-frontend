@@ -115,19 +115,21 @@ export function ModuleSheet({
         accessibilityLabel="Close module sheet"
         accessibilityRole="button"
       >
-        {/* Sheet — stopPropagation equivalent: don't pass press to backdrop */}
+        {/* Sheet — React Native has no touch event bubbling — modal structure prevents backdrop press */}
         <Animated.View style={[s.sheet, animatedSheetStyle]}>
-          <Pressable onPress={(e) => e.stopPropagation()}>
+          <Pressable>
             {/* Sticky header with grab handle */}
-            <View
+            <Pressable
               style={s.header}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
-              accessibilityLabel={`${id} module — swipe down to close`}
+              onPress={onClose}
+              accessibilityLabel="Close panel"
+              accessibilityRole="button"
             >
               {/* T-65 grab handle */}
               <View style={s.grabHandle} />
-            </View>
+            </Pressable>
 
             {/* Module content */}
             <ScrollView
@@ -172,7 +174,7 @@ export function Fallback({ id }: FallbackProps): ReactElement {
 const s = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(27, 46, 37, 0.45)',
+    backgroundColor: colors.overlayModal,
     justifyContent: 'flex-end',
   },
   sheet: {

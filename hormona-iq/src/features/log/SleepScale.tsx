@@ -4,6 +4,7 @@
 import type { ReactElement } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { components as cmp, typography } from '../../constants/styles';
+import { colors, spacing } from '../../constants/tokens';
 
 // ─────────────────────────────────────────────
 // Data
@@ -28,7 +29,8 @@ export interface SleepScaleProps {
 export function SleepScale({ sleep, onSleepChange }: SleepScaleProps): ReactElement {
   return (
     <>
-      <Text style={[typography.h2, { marginBottom: 12 }]}>Last night's sleep</Text>
+      <Text style={[typography.h2, { marginBottom: 4 }]}>Last night's sleep</Text>
+      <Text style={s.scaleHeader}>Sleep disruption last night</Text>
       <View style={[s.scaleRow, { marginBottom: 8 }]}>
         {SLEEP_LIST.map((label, i) => {
           const isActive = sleep === i + 1;
@@ -45,7 +47,7 @@ export function SleepScale({ sleep, onSleepChange }: SleepScaleProps): ReactElem
                 style={[
                   cmp.scaleBtnLabel,
                   isActive && cmp.scaleBtnLabelActive,
-                  { fontSize: 11 },
+                  s.optionLabel,
                 ]}
               >
                 {label}
@@ -69,5 +71,13 @@ const s = StyleSheet.create({
   },
   scaleBtnFlex: {
     flex: 1,
+  },
+  optionLabel: {
+    fontSize: 11,
+  },
+  scaleHeader: {
+    fontSize: 13,
+    color: colors.ink,
+    marginBottom: spacing.sm,
   },
 });

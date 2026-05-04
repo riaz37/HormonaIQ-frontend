@@ -377,9 +377,9 @@ function IconChevDown({ width = 16, height = 16, color = 'currentColor' }: IconP
 
 const PANEL_BG: Record<GroupPanel, string> = {
   'group-mint-warm': colors.mintPale,
-  'group-sage': '#EEF4EE',
-  'group-blush': '#FAF0EE',
-  'group-butter': '#FBF6E9',
+  'group-sage': colors.panelSage,
+  'group-blush': colors.panelBlush,
+  'group-butter': colors.panelButter,
   'group-cream': colors.cream,
 };
 
@@ -866,7 +866,7 @@ export default function ToolsScreen(): ReactElement {
             accessibilityLabel="Search tools"
             accessibilityRole="search"
             returnKeyType="search"
-            clearButtonMode="while-editing"
+            clearButtonMode={Platform.OS === 'ios' ? 'while-editing' : 'never'}
           />
         </View>
 
@@ -899,23 +899,35 @@ export default function ToolsScreen(): ReactElement {
         </ScrollView>
 
         {/* Groups */}
-        {visibleGroups.map((group) => {
-          const filteredItems = group.items.filter(matchesQuery);
-          if (query && filteredItems.length === 0) return null;
-          const isOpen = !!query || openGroups.has(group.id);
+        {(() => {
+          const renderedGroups = visibleGroups
+            .map((group) => {
+              const filteredItems = group.items.filter(matchesQuery);
+              if (query && filteredItems.length === 0) return null;
+              const isOpen = !!query || openGroups.has(group.id);
+              return (
+                <CollapsibleGroup
+                  key={group.id}
+                  group={group}
+                  isOpen={isOpen}
+                  filteredItems={filteredItems}
+                  query={query}
+                  reduceMotion={reduceMotion}
+                  onToggle={() => toggleGroup(group.id)}
+                />
+              );
+            });
 
-          return (
-            <CollapsibleGroup
-              key={group.id}
-              group={group}
-              isOpen={isOpen}
-              filteredItems={filteredItems}
-              query={query}
-              reduceMotion={reduceMotion}
-              onToggle={() => toggleGroup(group.id)}
-            />
-          );
-        })}
+          const hasResults = renderedGroups.some((el) => el !== null);
+          if (query.length > 0 && !hasResults) {
+            return (
+              <Text style={s.emptyState}>
+                No tools match &ldquo;{query}&rdquo;
+              </Text>
+            );
+          }
+          return renderedGroups;
+        })()}
 
         {/* Bottom spacer */}
         <View style={{ height: spacing.xl }} />
@@ -999,12 +1011,12 @@ const s = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'flex-start',
     gap: 10,
-    minHeight: 118,
+    minHeight: 118, // icon(36) + gap(8) + title(2 lines ~34) + desc(2 lines ~34) + padding(6)
   },
   tileIconBg: {
     width: 36,
     height: 36,
-    borderRadius: 12,
+    borderRadius: radius.card,
     backgroundColor: colors.mintMist,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1015,7 +1027,7 @@ const s = StyleSheet.create({
   },
   tileName: {
     fontFamily: fonts.sansSemibold,
-    fontSize: 14,
+    fontSize: 14, // matches typography.body scale step for tile panel titles
     lineHeight: 14 * 1.25,
     color: colors.ink,
   },
@@ -1025,13 +1037,20 @@ const s = StyleSheet.create({
   },
   tileCode: {
     fontFamily: fonts.mono,
-    fontSize: 10,
+    fontSize: 11,
     color: colors.inkDisabled,
     alignSelf: 'flex-end',
   },
+  emptyState: {
+    textAlign: 'center',
+    color: colors.inkMuted,
+    marginTop: 32,
+    fontSize: 14,
+    fontFamily: fonts.sans,
+  },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(27, 46, 37, 0.45)',
+    backgroundColor: colors.overlayModal,
     justifyContent: 'flex-end',
   },
   modalSheet: {

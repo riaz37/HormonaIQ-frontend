@@ -92,7 +92,7 @@ export default function SafetyTab({ state, setState }: SafetyTabProps) {
         sub="Surfaces automatically before high-risk luteal days."
       />
       {items.map((it) => (
-        <View key={it.k} style={[cards.cardWarm, s.safetyItem]}>
+        <View key={it.k} style={[cards.cardWarm, s.safetyItemCard]}>
           <Text style={[typography.caption, { marginBottom: 4 }]}>{it.l}</Text>
           <Text style={[typography.body, { fontSize: 13, lineHeight: 22 }]}>
             {it.v}
@@ -105,8 +105,10 @@ export default function SafetyTab({ state, setState }: SafetyTabProps) {
             style={[
               buttons.soft,
               s.fullWidth,
-              { marginTop: 8, opacity: 0.45 },
+              s.disabledBtn,
             ]}
+            accessibilityState={{ disabled: true }}
+            pointerEvents="none"
           >
             <Text style={[buttons.softLabel, { textAlign: 'center' }]}>
               Update plan (read-only in luteal)
@@ -160,9 +162,13 @@ const s = StyleSheet.create({
     fontSize: 13,
     color: colors.eucalyptusDeep,
   },
-  safetyItem: {
+  safetyItemCard: {
     padding: 14,
     marginBottom: 8,
+  },
+  disabledBtn: {
+    marginTop: 8,
+    opacity: 0.45,
   },
   safetyLockCaption: {
     fontFamily: fonts.sans,

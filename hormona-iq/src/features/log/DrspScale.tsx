@@ -5,11 +5,10 @@
 import type { ReactElement } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
-  cards,
   components as cmp,
   typography,
 } from '../../constants/styles';
-import { colors, fonts, radius } from '../../constants/tokens';
+import { colors, fonts, radius, spacing } from '../../constants/tokens';
 import { SectionCard } from '../../components/ui/SectionCard';
 
 // ─────────────────────────────────────────────
@@ -56,6 +55,46 @@ export const FUNCTIONAL_ITEMS: DrspItem[] = [
 ];
 
 export const FAST_LOG_KEYS = ['irritability', 'concentration', 'overwhelmed'];
+
+// Section groupings for the full DRSP scale (not used in fast log mode)
+interface DrspSection {
+  title: string;
+  keys: string[];
+}
+
+export const DRSP_SECTIONS: DrspSection[] = [
+  {
+    title: 'Mood & Emotions',
+    keys: [
+      'depressed',
+      'hopeless',
+      'worthless_guilty',
+      'anxiety',
+      'mood_swings',
+      'rejection_sensitive',
+      'irritability',
+      'conflicts',
+      'decreased_interest',
+      'suicidal_ideation',
+    ],
+  },
+  {
+    title: 'Mental',
+    keys: ['concentration', 'fatigue', 'overwhelmed', 'out_of_control'],
+  },
+  {
+    title: 'Physical',
+    keys: [
+      'breast_tenderness',
+      'breast_swelling_bloating',
+      'headache',
+      'joint_muscle_pain',
+      'appetite',
+      'hypersomnia',
+      'insomnia',
+    ],
+  },
+];
 
 const ANCHORS: Record<number, string> = {
   1: 'Not at all',
@@ -192,22 +231,59 @@ export function DrspScale({
         </View>
       </SectionCard>
 
-      {drspToRender.map((it) => (
-        <ScaleRow
-          key={it.key}
-          label={it.label}
-          value={drsp[it.key]}
-          onSet={(n) => onSetDrsp(it.key, n)}
-        />
-      ))}
+      {fastLog ? (
+        // Fast log: flat list of the 3 key items, no section headers
+        drspToRender.map((it) => (
+          <ScaleRow
+            key={it.key}
+            label={it.label}
+            value={drsp[it.key]}
+            onSet={(n) => onSetDrsp(it.key, n)}
+          />
+        ))
+      ) : (
+        // Full mode: items grouped by section with headers and repeated legend hint
+        DRSP_SECTIONS.map((section) => {
+          const sectionItems = DRSP_ITEMS.filter((it) =>
+            section.keys.includes(it.key),
+          );
+          // SI item sits inside Mood & Emotions section (last slot)
+          const siInSection = section.keys.includes(DRSP_SI.key);
 
-      {/* DRSP item 12 — SI (always visible for safety) */}
-      <View style={s.siBox}>
-        <Text style={[typography.caption, { marginBottom: 8, fontSize: 11, color: colors.ink2 }]}>
-          Item 12 — important to track. There's no judgement here.
-        </Text>
-        <ScaleRow label={DRSP_SI.label} value={si} onSet={onSetSi} />
-      </View>
+          return (
+            <View key={section.title}>
+              <Text style={s.anchorHint}>1 = Not at all  ·  6 = Extreme</Text>
+              <Text style={s.sectionHeader}>{section.title}</Text>
+              {sectionItems.map((it) => (
+                <ScaleRow
+                  key={it.key}
+                  label={it.label}
+                  value={drsp[it.key]}
+                  onSet={(n) => onSetDrsp(it.key, n)}
+                />
+              ))}
+              {siInSection && (
+                <View style={s.siBox}>
+                  <Text style={s.siNote}>
+                    Item 12 — important to track. There's no judgement here.
+                  </Text>
+                  <ScaleRow label={DRSP_SI.label} value={si} onSet={onSetSi} />
+                </View>
+              )}
+            </View>
+          );
+        })
+      )}
+
+      {/* SI box for fast log — always visible for safety */}
+      {fastLog && (
+        <View style={s.siBox}>
+          <Text style={s.siNote}>
+            Item 12 — important to track. There's no judgement here.
+          </Text>
+          <ScaleRow label={DRSP_SI.label} value={si} onSet={onSetSi} />
+        </View>
+      )}
 
       {/* Functional impairment — full grid (non-fast log) */}
       {showFunctionalGrid && (
@@ -239,7 +315,7 @@ export function DrspScale({
             label="Overall functional impairment"
             value={fnImpair}
             onSet={onSetFnImpair}
-            max={5}
+            max={6}
           />
         </>
       )}
@@ -255,12 +331,12 @@ export function DrspScale({
               accessibilityLabel={showAdhdSection ? 'Skip ADHD section' : 'Show ADHD section'}
               accessibilityRole="button"
             >
-              <Text style={[s.ghostBtnLabel, { fontSize: 12 }]}>
+              <Text style={[s.ghostBtnLabel, s.adhdNote]}>
                 {showAdhdSection ? 'Skip this section' : 'Show'}
               </Text>
             </TouchableOpacity>
           </View>
-          <Text style={[typography.caption, { marginBottom: 12, fontSize: 12 }]}>
+          <Text style={[typography.caption, s.adhdNote, { marginBottom: 12 }]}>
             5 EF dimensions · 1–5 · skip without warning
           </Text>
           {showAdhdSection &&
@@ -351,11 +427,35 @@ const s = StyleSheet.create({
     fontWeight: '700',
   },
   siBox: {
-    marginTop: 6,
-    padding: 14,
+    marginTop: spacing.xs,
+    padding: spacing.md,
     backgroundColor: colors.creamWarm,
     borderRadius: radius.md,
-    marginBottom: 18,
+    marginBottom: spacing.lg,
+  },
+  siNote: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    color: colors.ink2,
+    marginBottom: spacing.sm,
+  },
+  sectionHeader: {
+    fontSize: 11,
+    fontFamily: fonts.sansMedium,
+    color: colors.eucalyptus,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  anchorHint: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.ink3,
+    marginTop: spacing.sm,
+  },
+  adhdNote: {
+    fontSize: 12,
   },
   adhdSection: {
     marginTop: 18,

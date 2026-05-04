@@ -37,10 +37,27 @@ export const colors = {
   // Neutral dark — use where a neutral (non-green) dark is needed on coloured surfaces
   charcoal: 'rgba(0,0,0,0.78)',
 
+  // Overlay tokens — semi-transparent surfaces for modals, badges, and captions
+  overlayDark: 'rgba(0,0,0,0.7)',
+  overlayLight: 'rgba(255,255,255,0.8)',
+  overlayModal: 'rgba(27, 46, 37, 0.45)',
+  inkMuted: 'rgba(0,0,0,0.55)',
+
   // Surface tokens (semantic, not brand)
   border: 'rgba(60, 95, 75, 0.14)',
   borderStrong: 'rgba(60, 95, 75, 0.28)',
+  borderSubtle: 'rgba(63, 111, 90, 0.12)',
   tabbarBorder: 'rgba(156, 184, 154, 0.42)',
+
+  // Panel background tints — phase-tinted group panels in the Tools screen
+  panelSage: '#EEF4EE',
+  panelBlush: '#FAF0EE',
+  panelButter: '#FBF6E9',
+
+  /** cardMint border — green tint at 10% opacity */
+  borderMint: 'rgba(63, 111, 90, 0.1)',
+  /** Cream (#FAFBF6) at 85% opacity — used for topbar backdrop */
+  creamAlpha: 'rgba(250, 251, 246, 0.85)',
 } as const;
 
 export const phase = {
@@ -53,6 +70,7 @@ export const phase = {
 
 export const radius = {
   sm: 10,
+  card: 12,
   md: 18,
   lg: 28,
   xl: 40,

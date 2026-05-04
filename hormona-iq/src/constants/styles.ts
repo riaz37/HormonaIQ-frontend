@@ -113,7 +113,7 @@ export const cards = StyleSheet.create({
     borderRadius: radius.md,
     padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(63, 111, 90, 0.1)',
+    borderColor: colors.borderMint,
   },
   cardPaper: {
     backgroundColor: colors.paper,
@@ -287,7 +287,7 @@ export const layout = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     paddingHorizontal: 20,
-    backgroundColor: 'rgba(250, 251, 246, 0.85)',
+    backgroundColor: colors.creamAlpha,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },

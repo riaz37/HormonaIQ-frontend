@@ -34,21 +34,21 @@ const CRISIS_TIERS: CrisisTier[] = [
     tier: 1,
     t: 'Grounding',
     sub: '60-second breath, 5-4-3-2-1 senses, cold water',
-    icon: '◯',
+    icon: '·',
     color: colors.mintMist,
   },
   {
     tier: 2,
     t: 'Reach out',
     sub: 'Text a chosen person from your safety plan',
-    icon: '☎',
+    icon: 'Call',
     color: colors.butter,
   },
   {
     tier: 3,
     t: 'Crisis line',
     sub: '988 Suicide & Crisis Lifeline · text or call',
-    icon: '♡',
+    icon: '•',
     color: colors.coralSoft,
   },
 ];
@@ -65,6 +65,12 @@ export default function CrisisTab() {
       });
     }
   }, []);
+
+  const tierAccessibilityLabel = (tier: number, title: string, sub: string): string => {
+    if (tier === 3) return 'Call 988 Suicide and Crisis Lifeline';
+    if (tier === 2) return `Reach out: ${sub}`;
+    return `Open grounding exercise: ${sub}`;
+  };
 
   return (
     <View>
@@ -85,7 +91,7 @@ export default function CrisisTab() {
           onPress={() => handleTierPress(t.tier)}
           activeOpacity={0.8}
           accessibilityRole="button"
-          accessibilityLabel={`Crisis tier ${t.tier}: ${t.t}. ${t.sub}`}
+          accessibilityLabel={tierAccessibilityLabel(t.tier, t.t, t.sub)}
         >
           <View style={s.crisisIcon}>
             <Text style={s.crisisIconText}>{t.icon}</Text>
@@ -122,7 +128,7 @@ const s = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: colors.overlayLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -132,17 +138,17 @@ const s = StyleSheet.create({
   crisisTierLabel: {
     fontFamily: fonts.sans,
     fontSize: 12,
-    color: 'rgba(0,0,0,0.55)',
+    color: colors.inkMuted,
     marginBottom: 2,
   },
   crisisTierTitle: {
     fontFamily: fonts.sansSemibold,
     fontSize: 15,
-    color: 'rgba(0,0,0,0.78)',
+    color: colors.charcoal,
   },
   crisisTierSub: {
     fontFamily: fonts.sans,
     fontSize: 12,
-    color: 'rgba(0,0,0,0.6)',
+    color: colors.inkMuted,
   },
 });

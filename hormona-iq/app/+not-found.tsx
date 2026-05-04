@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   linkText: {
     fontFamily: fonts.sansSemibold,
     fontSize: 15,
-    color: colors.cream,
+    color: colors.paper,
     backgroundColor: colors.eucalyptus,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm + spacing.xs,

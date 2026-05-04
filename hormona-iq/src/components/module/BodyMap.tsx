@@ -73,11 +73,11 @@ export function BodyMap({
         accessibilityLabel={a11yLabel}
         accessibilityState={{ selected: isActive }}
       >
-        {/* Hit-test halo — invisible, +12pt larger than visible zone */}
+        {/* Hit-test halo — invisible, +16pt larger than visible zone for better tap accuracy */}
         <Circle
           cx={z.x}
           cy={z.y}
-          r={z.r + 12}
+          r={z.r + 16}
           fill="rgba(0,0,0,0)"
         />
         <Circle
@@ -136,7 +136,11 @@ export function BodyMap({
 
 function LegendDot({ level, label }: { level: Severity0to3; label: string }): ReactElement {
   return (
-    <View style={styles.legendItem}>
+    <View
+      style={styles.legendItem}
+      accessibilityRole="image"
+      accessibilityLabel={`${label} severity indicator`}
+    >
       <View
         style={[
           styles.legendSwatch,

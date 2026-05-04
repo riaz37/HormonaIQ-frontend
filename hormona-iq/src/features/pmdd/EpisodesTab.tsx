@@ -136,7 +136,7 @@ export default function EpisodesTab({ state, setState }: EpisodesTabProps) {
         accessibilityState={{ disabled: !canSave }}
       >
         <Text style={buttons.primaryLabel}>
-          {savedFlash ? '✓ Saved' : 'Save · 3 sec'}
+          {savedFlash ? 'Saved' : 'Save · 3 sec'}
         </Text>
       </TouchableOpacity>
       <MSection title={recent.length ? 'RECENT EPISODES' : 'NO EPISODES YET'}>

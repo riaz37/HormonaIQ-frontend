@@ -930,44 +930,39 @@ function CommunityModule({ state, setState }: CommunityModuleProps) {
       </Text>
 
       <View style={[cards.cardWarm, sl.lutealWallCard]}>
-        <Text style={[typography.eyebrow, { marginBottom: 6 }]}>
-          LUTEAL WALL · OPT-IN
-        </Text>
-        {!wallOn ? (
-          <>
-            <Text style={[typography.body, { fontSize: 13, marginBottom: 10 }]}>
-              This is opt-in; default off.
-            </Text>
-            <TouchableOpacity
-              style={[buttons.soft, { alignSelf: 'flex-start', minHeight: 44 }]}
-              onPress={toggleWall}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel="Turn on Luteal Wall"
-            >
-              <Text style={buttons.softLabel}>Turn on Luteal Wall</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <>
-            <Text style={[typography.caption, { fontSize: 11, marginBottom: 10 }]}>
-              Anonymous · max 100 chars · 24h auto-purge
-            </Text>
-            {SAMPLE_MESSAGES.map((m, i) => (
-              <View key={i} style={[cards.card, sl.wallMessage]}>
-                <Text style={sl.wallMessageText}>"{m}"</Text>
-              </View>
-            ))}
-            <View style={[buttons.soft, sl.fullWidth, { marginTop: 8, opacity: 0.55 }]}>
-              <Text style={[buttons.softLabel, { textAlign: 'center' }]}>
-                Post a message
+        <View style={{ width: 4, backgroundColor: colors.coral, borderRadius: 2, alignSelf: 'stretch' }} />
+        <View style={{ flex: 1 }}>
+          <Text style={[typography.eyebrow, { marginBottom: 6 }]}>
+            LUTEAL WALL · OPT-IN
+          </Text>
+          {!wallOn ? (
+            <>
+              <Text style={[typography.body, { fontSize: 13, marginBottom: 10 }]}>
+                This is opt-in; default off.
               </Text>
-            </View>
-            <Text style={sl.wallComingSoon}>
-              Anonymous posting opens at v1 launch
-            </Text>
-          </>
-        )}
+              <TouchableOpacity
+                style={[buttons.soft, { alignSelf: 'flex-start', minHeight: 44 }]}
+                onPress={toggleWall}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Turn on Luteal Wall"
+              >
+                <Text style={buttons.softLabel}>Turn on Luteal Wall</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={[typography.caption, { fontSize: 11, marginBottom: 10 }]}>
+                Anonymous · max 100 chars · 24h auto-purge
+              </Text>
+              {SAMPLE_MESSAGES.map((m, i) => (
+                <View key={i} style={[cards.card, sl.wallMessage]}>
+                  <Text style={sl.wallMessageText}>"{m}"</Text>
+                </View>
+              ))}
+            </>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -1099,7 +1094,7 @@ export default function PmddLayout() {
           accessibilityRole="button"
           accessibilityLabel="Back to home"
         >
-          <Text style={sl.backBtnLabel}>‹ Back</Text>
+          <Text style={sl.backBtnLabel}>← Back</Text>
         </TouchableOpacity>
         <Text style={[typography.h3, { flex: 1, textAlign: 'center' }]}>
           PMDD
@@ -1143,37 +1138,34 @@ export default function PmddLayout() {
       >
         {/* Pattern summary banner */}
         {patternState === 'confirmed' && lutealMean != null && follMean != null && (
-          <View
-            style={[
-              cards.cardWarm,
-              sl.patternBanner,
-              { borderLeftColor: colors.severitySevere },
-            ]}
-          >
-            <Text style={sl.patternBannerTitle}>
-              Your luteal vs follicular swing
-            </Text>
-            <Text style={[typography.caption, { fontSize: 12, marginBottom: 6 }]}>
-              Luteal mean DRSP:{' '}
-              <Text style={typography.data}>{lutealMean.toFixed(1)}/6</Text>{' '}
-              · follicular mean:{' '}
-              <Text style={typography.data}>{follMean.toFixed(1)}/6</Text>
-              {swing != null && (
-                <>
-                  {' '}
-                  · a{' '}
-                  <Text style={typography.data}>{swing.toFixed(1)}×</Text>{' '}
-                  swing
-                </>
-              )}
-              .
-            </Text>
-            {topItems.length > 0 && (
-              <Text style={[typography.caption, { fontSize: 12 }]}>
-                Most consistent luteal symptoms:{' '}
-                {topItems.map((i) => itemLabel(i.k)).join(', ')}.
+          <View style={[cards.cardWarm, sl.patternBanner]}>
+            <View style={{ width: 4, backgroundColor: colors.severitySevere, borderRadius: 2, alignSelf: 'stretch' }} />
+            <View style={{ flex: 1 }}>
+              <Text style={sl.patternBannerTitle}>
+                Your luteal vs follicular swing
               </Text>
-            )}
+              <Text style={[typography.caption, { fontSize: 12, marginBottom: 6 }]}>
+                Luteal mean DRSP:{' '}
+                <Text style={typography.data}>{lutealMean.toFixed(1)}/6</Text>{' '}
+                · follicular mean:{' '}
+                <Text style={typography.data}>{follMean.toFixed(1)}/6</Text>
+                {swing != null && (
+                  <>
+                    {' '}
+                    · a{' '}
+                    <Text style={typography.data}>{swing.toFixed(1)}×</Text>{' '}
+                    swing
+                  </>
+                )}
+                .
+              </Text>
+              {topItems.length > 0 && (
+                <Text style={[typography.caption, { fontSize: 12 }]}>
+                  Most consistent luteal symptoms:{' '}
+                  {topItems.map((i) => itemLabel(i.k)).join(', ')}.
+                </Text>
+              )}
+            </View>
           </View>
         )}
 
@@ -1182,26 +1174,25 @@ export default function PmddLayout() {
           dynamicPatterns.map((p) => (
             <View
               key={p.t}
-              style={[
-                cards.cardWarm,
-                sl.patternCard,
-                { borderLeftColor: SEVERITY_COLORS[p.s] },
-              ]}
+              style={[cards.cardWarm, sl.patternCard]}
             >
-              <View style={sl.patternCardHeader}>
-                <Text style={[sl.patternCardTitle, { flex: 1, paddingRight: 8 }]}>
-                  {p.t}
-                </Text>
-                <Text
-                  style={[
-                    typography.data,
-                    { fontSize: 12, color: SEVERITY_COLORS[p.s] },
-                  ]}
-                >
-                  {p.c}%
-                </Text>
+              <View style={{ width: 4, backgroundColor: SEVERITY_COLORS[p.s], borderRadius: 2, alignSelf: 'stretch' }} />
+              <View style={{ flex: 1 }}>
+                <View style={sl.patternCardHeader}>
+                  <Text style={[sl.patternCardTitle, { flex: 1, paddingRight: 8 }]}>
+                    {p.t}
+                  </Text>
+                  <Text
+                    style={[
+                      typography.data,
+                      { fontSize: 12, color: SEVERITY_COLORS[p.s] },
+                    ]}
+                  >
+                    {p.c}%
+                  </Text>
+                </View>
+                <Text style={[typography.caption, { fontSize: 12 }]}>{p.d}</Text>
               </View>
-              <Text style={[typography.caption, { fontSize: 12 }]}>{p.d}</Text>
             </View>
           ))}
 
@@ -1219,6 +1210,9 @@ export default function PmddLayout() {
 // ─────────────────────────────────────────────────────────────────────────────
 // Styles
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Intentionally large — the luteal countdown is a hero display figure
+const COUNTDOWN_FONT_SIZE = 44;
 
 const sl = StyleSheet.create({
   safeArea: {
@@ -1330,7 +1324,7 @@ const sl = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(27, 46, 37, 0.45)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'flex-end',
   },
   modalSheet: {
@@ -1349,9 +1343,10 @@ const sl = StyleSheet.create({
     marginBottom: 8,
   },
   patternBanner: {
+    flexDirection: 'row',
+    gap: 10,
     padding: 14,
     marginBottom: 10,
-    borderLeftWidth: 3,
   },
   patternBannerTitle: {
     fontFamily: fonts.sansSemibold,
@@ -1360,9 +1355,10 @@ const sl = StyleSheet.create({
     color: colors.ink,
   },
   patternCard: {
+    flexDirection: 'row',
+    gap: 10,
     padding: 14,
     marginBottom: 10,
-    borderLeftWidth: 3,
   },
   patternCardHeader: {
     flexDirection: 'row',
@@ -1384,10 +1380,9 @@ const sl = StyleSheet.create({
     alignItems: 'center',
   },
   lutealCountdown: {
-    fontFamily: fonts.mono,
-    fontSize: 44,
+    fontFamily: fonts.monoMedium,
+    fontSize: COUNTDOWN_FONT_SIZE,
     color: colors.eucalyptus,
-    fontWeight: '500',
   },
 
   // SSRI
@@ -1509,7 +1504,7 @@ const sl = StyleSheet.create({
   },
   suppDoseInput: {
     width: 72,
-    height: 36,
+    height: 44,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.sm,
@@ -1597,10 +1592,9 @@ const sl = StyleSheet.create({
     alignItems: 'center',
   },
   communityNumber: {
-    fontFamily: fonts.mono,
+    fontFamily: fonts.monoMedium,
     fontSize: 36,
     color: colors.eucalyptusDeep,
-    fontWeight: '500',
   },
   communityStatRow: {
     padding: 12,
@@ -1610,16 +1604,15 @@ const sl = StyleSheet.create({
     alignItems: 'center',
   },
   communityStatValue: {
-    fontFamily: fonts.mono,
+    fontFamily: fonts.sansMedium,
     fontSize: 13,
-    fontWeight: '500',
     color: colors.eucalyptus,
   },
   lutealWallCard: {
     marginTop: 18,
     padding: 14,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.coral,
+    flexDirection: 'row',
+    gap: 10,
   },
   wallMessage: {
     padding: 10,
@@ -1630,12 +1623,5 @@ const sl = StyleSheet.create({
     fontSize: 13,
     fontStyle: 'italic',
     color: colors.ink2,
-  },
-  wallComingSoon: {
-    fontFamily: fonts.sans,
-    fontSize: 11,
-    marginTop: 6,
-    textAlign: 'center',
-    color: colors.ink3,
   },
 });

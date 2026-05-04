@@ -12,7 +12,8 @@ interface PillButtonProps {
 }
 
 const sizeConfig = {
-  sm: { height: 36, fontSize: 14, paddingHorizontal: 16 },
+  // sm is used in dense contexts; prefer md (44px) for primary actions
+  sm: { height: 40, fontSize: 14, paddingHorizontal: 16 },
   md: { height: 44, fontSize: 15, paddingHorizontal: 20 },
   lg: { height: 52, fontSize: 16, paddingHorizontal: 24 },
 } as const;

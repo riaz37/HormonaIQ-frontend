@@ -9,6 +9,8 @@ interface RowItemProps {
   showChevron?: boolean;
   leftIcon?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  accessibilityRole?: 'button' | 'link' | 'text';
+  accessibilityLabel?: string;
 }
 
 export function RowItem({
@@ -18,6 +20,8 @@ export function RowItem({
   showChevron = false,
   leftIcon,
   style,
+  accessibilityRole,
+  accessibilityLabel,
 }: RowItemProps) {
   const content = (
     <>
@@ -29,23 +33,21 @@ export function RowItem({
         <Text style={styles.value}>{value}</Text>
       )}
       {showChevron && (
-        <Text style={styles.chevron}>{'›'}</Text>
+        <Text style={styles.chevron}>{'→'}</Text>
       )}
     </>
   );
 
-  if (onPress !== undefined) {
-    return (
-      <Pressable style={[styles.row, style]} onPress={onPress}>
-        {content}
-      </Pressable>
-    );
-  }
-
   return (
-    <View style={[styles.row, style]}>
+    <Pressable
+      style={[styles.row, style]}
+      onPress={onPress}
+      disabled={onPress === undefined}
+      accessibilityRole={accessibilityRole}
+      accessibilityLabel={accessibilityLabel}
+    >
       {content}
-    </View>
+    </Pressable>
   );
 }
 
@@ -55,6 +57,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
+    minHeight: 44,
   },
   iconWrapper: {
     marginRight: spacing.sm,
