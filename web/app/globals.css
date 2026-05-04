@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand Greens */
+  --color-eucalyptus: #3F6F5A;
+  --color-eucalyptus-deep: #2C5443;
+  --color-eucalyptus-soft: #5C8A75;
+  --color-sage: #9CB89A;
+  --color-sage-light: #C7D9C5;
+  --color-mint-mist: #DCEBDD;
+  --color-mint-pale: #ECF4EC;
+
+  /* Neutrals — warm, not gray */
+  --color-ink: #1B2E25;
+  --color-ink-2: #4A5C53;
+  --color-ink-3: #7A8B82;
+  --color-ink-disabled: #B5C0BA;
+  --color-paper: #FFFFFF;
+  --color-cream: #FAFBF6;
+  --color-cream-warm: #F4F0E5;
+
+  /* Accents */
+  --color-butter: #F5E4B8;
+  --color-butter-deep: #E8C97A;
+  --color-coral: #E89F86;
+  --color-coral-soft: #F5C8B5;
+  --color-rose: #D88A95;
+  --color-danger: #B95446;
+
+  /* Phase — carry meaning, never decoration */
+  --color-phase-follicular: #C7D9C5;
+  --color-phase-ovulatory: #F5E4B8;
+  --color-phase-luteal: #E89F86;
+  --color-phase-luteal-deep: #C97962;
+  --color-phase-menstrual: #B97A8A;
+
+  /* Radius */
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
+  --radius-xl: 40px;
+  --radius-pill: 9999px;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-instrument-serif);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #FAFBF6;
+  color: #1B2E25;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.phase-ring {
+  background: conic-gradient(
+    #B97A8A 0% 18%,
+    #C7D9C5 18% 47%,
+    #F5E4B8 47% 58%,
+    #E89F86 58% 100%
+  );
+  border-radius: 50%;
+}
