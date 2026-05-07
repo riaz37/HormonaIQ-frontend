@@ -15,7 +15,7 @@ import {
   type TrackerLogEntry,
 } from '../../components/module';
 import { cards } from '../../constants/styles';
-import { colors, fonts, radius, spacing } from '../../constants/tokens';
+import { colors, fonts, phase, radius, spacing } from '../../constants/tokens';
 
 import { ModuleScaffold } from './ModuleScaffold';
 
@@ -173,11 +173,11 @@ export function AdhdMoodEnergyScreen({ onBack }: { onBack: () => void }): ReactE
 // ─────────────────────────────────────────────
 
 const PHASE_OPTIONS: ReadonlyArray<{ id: string; label: string; color: string }> = [
-  { id: 'menstrual', label: 'Menstrual', color: '#B97A8A' },
-  { id: 'follicular', label: 'Follicular', color: '#C7D9C5' },
-  { id: 'ovulatory', label: 'Ovulatory', color: '#F5E4B8' },
-  { id: 'early_luteal', label: 'Early luteal', color: '#E89F86' },
-  { id: 'late_luteal', label: 'Late luteal', color: '#C97962' },
+  { id: 'menstrual', label: 'Menstrual', color: phase.menstrual },
+  { id: 'follicular', label: 'Follicular', color: phase.follicular },
+  { id: 'ovulatory', label: 'Ovulatory', color: phase.ovulatory },
+  { id: 'early_luteal', label: 'Early luteal', color: phase.luteal },
+  { id: 'late_luteal', label: 'Late luteal', color: phase.lutealDeep },
 ];
 
 const BRAIN_DOMAINS: readonly string[] = [
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   sparkCard: {
-    padding: 14,
+    padding: spacing.md,
   },
 
   // Phase grid
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: colors.border,
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   phaseTileDot: {
     width: 10,
     height: 10,
-    borderRadius: 5,
+    borderRadius: radius.sm,
   },
   phaseTileLabel: {
     fontFamily: fonts.sansMedium,
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   brainCard: {
-    padding: 14,
+    padding: spacing.md,
   },
   brainLabel: {
     fontFamily: fonts.sansSemibold,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
 
   // Unlock card
   unlockCard: {
-    padding: 18,
+    padding: spacing.md,
   },
   unlockEyebrow: {
     fontFamily: fonts.sansMedium,
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   unlockProgress: {
     fontFamily: fonts.mono,
-    fontSize: 28,
+    fontSize: 26,
     color: colors.ink,
     marginBottom: spacing.sm,
   },

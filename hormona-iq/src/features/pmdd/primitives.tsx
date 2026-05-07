@@ -274,13 +274,13 @@ export const mu = StyleSheet.create({
     fontSize: 14,
   },
   sectionWrap: {
-    marginBottom: 18,
+    marginBottom: 16,
   },
   sectionTitle: {
     marginBottom: 8,
   },
   statCard: {
-    padding: 14,
+    padding: 16,
     flex: 1,
   },
   statValue: {

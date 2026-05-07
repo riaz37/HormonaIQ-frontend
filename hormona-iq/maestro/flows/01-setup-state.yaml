@@ -1,0 +1,45 @@
+appId: com.hormonaiq.app
+---
+# Setup helper — completes onboarding without screenshots.
+# Reused by other flows via `runFlow` to land on the Home tab
+# without repeating onboarding tap logic everywhere.
+
+- launchApp:
+    clearState: true
+
+- waitForAnimationsToEnd
+
+# Step 1: YOB
+- tapOn:
+    id: "Continue"
+- waitForAnimationsToEnd
+
+# Step 2: Ora
+- tapOn:
+    id: "Continue to conditions"
+- waitForAnimationsToEnd
+
+# Step 3: Conditions (PMDD default)
+- tapOn:
+    id: "Continue"
+- waitForAnimationsToEnd
+
+# Step 3.7: Ed question
+- tapOn:
+    id: "Continue"
+- waitForAnimationsToEnd
+
+# Step 3.8: Tracking history
+- tapOn:
+    id: "Continue"
+- waitForAnimationsToEnd
+
+# Step 4: Cycle basics
+- tapOn:
+    id: "Continue to notifications"
+- waitForAnimationsToEnd
+
+# Step 5: Notifications → finish
+- tapOn:
+    id: "Begin using HormonaIQ"
+- waitForAnimationsToEnd

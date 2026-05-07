@@ -5,7 +5,6 @@
 
 import React, { useCallback, useState } from 'react';
 import {
-  Alert,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -41,7 +40,7 @@ const DEFAULT_SAFETY_ITEMS: SafetyPlanItem[] = [
   {
     k: 'pro',
     l: 'Professionals',
-    v: 'Therapist Jen — Tue/Thu · 988 Lifeline',
+    v: 'Therapist Jen — Tue/Thu · 988 crisis support',
   },
   {
     k: 'safe',
@@ -69,24 +68,13 @@ export default function SafetyTab({ state, setState }: SafetyTabProps) {
   const lutealLocked = phase === 'L' && !state.safetyPlanEditOverride;
 
   const requestOverride = useCallback(() => {
-    Alert.alert(
-      'Edit safety plan?',
-      'Your safety plan was built when you were well. Are you sure you want to edit it now?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Edit anyway',
-          onPress: () =>
-            setState((prev) => ({ ...prev, safetyPlanEditOverride: true })),
-        },
-      ],
-    );
+    setState((prev) => ({ ...prev, safetyPlanEditOverride: true }));
   }, [setState]);
 
   return (
     <View>
       <MHeader
-        eyebrow="F35 · SAFETY PLAN"
+        eyebrow="Your safety plan"
         title="Built when you were "
         titleAccent="well."
         sub="Surfaces automatically before high-risk luteal days."
@@ -119,13 +107,14 @@ export default function SafetyTab({ state, setState }: SafetyTabProps) {
             onPress={requestOverride}
             activeOpacity={0.75}
             accessibilityRole="button"
-            accessibilityLabel="Request to edit safety plan anyway"
+            accessibilityLabel="Unlock safety plan to update it now"
           >
-            <Text style={s.ghostBtnLabel}>I want to edit anyway</Text>
+            <Text style={s.ghostBtnLabel}>I need to update this now</Text>
           </TouchableOpacity>
           <Text style={s.safetyLockCaption}>
-            Editing is read-only during your luteal phase to protect a plan you
-            built when well.
+            Your safety plan was created when you were feeling well. We show it
+            in read-only mode here so you always see the version you most
+            trusted.
           </Text>
         </>
       ) : (
@@ -152,7 +141,7 @@ const s = StyleSheet.create({
   },
   ghostBtn: {
     minHeight: 44,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
@@ -163,7 +152,7 @@ const s = StyleSheet.create({
     color: colors.eucalyptusDeep,
   },
   safetyItemCard: {
-    padding: 14,
+    padding: 16,
     marginBottom: 8,
   },
   disabledBtn: {

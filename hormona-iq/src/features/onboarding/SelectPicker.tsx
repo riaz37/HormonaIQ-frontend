@@ -80,7 +80,7 @@ const selectStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     minHeight: 44,

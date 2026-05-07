@@ -144,7 +144,7 @@ function PrimaryConditionPicker({
       <Text style={[typography.display, { marginBottom: 12 }]}>
         We'll set one up first. The rest can wait.
       </Text>
-      <Text style={[typography.body, { color: colors.ink2, marginBottom: 22 }]}>
+      <Text style={[typography.body, { color: colors.ink2, marginBottom: 24 }]}>
         Setting up everything at once is too much. Pick the one that
         matters most right now — the others will get their own setup
         later, when you're ready.
@@ -199,7 +199,7 @@ function EdScreen({
       <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
         A QUICK ASK BEFORE WE GO FURTHER
       </Text>
-      <Text style={[typography.display, { marginBottom: 14 }]}>
+      <Text style={[typography.display, { marginBottom: 16 }]}>
         Have you had a difficult relationship with food or body image?
       </Text>
       <Text style={[typography.caption, { marginBottom: 20, fontSize: 13, color: colors.ink2 }]}>
@@ -231,7 +231,7 @@ function EdScreen({
       <TouchableOpacity
         style={[
           buttons.primary,
-          { marginTop: 22 },
+          { marginTop: 24 },
           !edAnswer && buttons.primaryDisabled,
         ]}
         onPress={() => onContinue('3.8')}
@@ -256,7 +256,7 @@ function TrackingHistoryScreen({
       <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
         ONE MORE
       </Text>
-      <Text style={[typography.display, { marginBottom: 18 }]}>
+      <Text style={[typography.display, { marginBottom: 16 }]}>
         How long have you been tracking?
       </Text>
 
@@ -284,7 +284,7 @@ function TrackingHistoryScreen({
       <TouchableOpacity
         style={[
           buttons.primary,
-          { marginTop: 22 },
+          { marginTop: 24 },
           !trackingHistory && buttons.primaryDisabled,
         ]}
         onPress={() => onContinue(4)}

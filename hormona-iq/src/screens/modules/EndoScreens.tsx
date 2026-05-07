@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   sparkCard: {
-    padding: 14,
+    padding: 16,
   },
 
   // Phase strip
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     marginBottom: spacing.sm,
   },
   phaseLine: {
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   painCard: {
-    padding: 14,
+    padding: 16,
   },
   painLabel: {
     fontFamily: fonts.sansSemibold,
@@ -526,13 +526,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   qualityChip: {
-    paddingVertical: 9,
-    paddingHorizontal: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.paper,
-    minHeight: 36,
+    minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -553,11 +553,11 @@ const styles = StyleSheet.create({
     color: colors.paper,
   },
   interferenceCard: {
-    padding: 14,
+    padding: 16,
     marginBottom: 6,
   },
   noteCard: {
-    padding: 14,
+    padding: 16,
     marginTop: spacing.sm,
   },
   noteCaption: {

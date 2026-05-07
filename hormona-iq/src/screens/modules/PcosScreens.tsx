@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
   },
   labRowMain: {
     flex: 1,
@@ -653,8 +653,8 @@ const styles = StyleSheet.create({
   },
   numberInput: {
     height: 48,
-    paddingHorizontal: 14,
-    fontSize: 16,
+    paddingHorizontal: 16,
+    fontSize: 15,
     fontFamily: fonts.mono,
     color: colors.ink,
     borderWidth: 1,
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
   disclaimerCard: {
-    padding: 14,
+    padding: 16,
     marginTop: spacing.md,
   },
   disclaimerText: {
@@ -702,7 +702,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   sparkCard: {
-    padding: 14,
+    padding: 16,
   },
 
   // Androgen
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
   },
   acneBtnLabel: {
     fontFamily: fonts.mono,
-    fontSize: 16,
+    fontSize: 15,
     color: colors.ink,
   },
   acneBtnLabelActive: {
@@ -788,11 +788,11 @@ const styles = StyleSheet.create({
   },
   fgTotalValue: {
     fontFamily: fonts.monoMedium,
-    fontSize: 16,
+    fontSize: 15,
     color: colors.ink,
   },
   trendCard: {
-    padding: 14,
+    padding: 16,
     marginTop: spacing.sm,
   },
   trendEyebrow: {
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
   // HOMA-IR
   homaResultCard: {
     alignItems: 'center',
-    paddingVertical: 28,
+    paddingVertical: 24,
     marginVertical: spacing.sm,
     backgroundColor: colors.mintPale,
   },

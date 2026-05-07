@@ -31,8 +31,8 @@ export function GateCard({
         {
           borderLeftWidth: 3,
           borderLeftColor: '#E8C97A', // butterDeep token value
-          padding: 22,
-          marginBottom: 18,
+          padding: 24,
+          marginBottom: 16,
         },
       ]}
     >

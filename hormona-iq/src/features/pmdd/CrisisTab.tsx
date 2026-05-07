@@ -31,6 +31,13 @@ interface CrisisTier {
 
 const CRISIS_TIERS: CrisisTier[] = [
   {
+    tier: 3,
+    t: 'Call or text 988',
+    sub: '988 · Free crisis support · call or text anytime',
+    icon: '•',
+    color: colors.coralSoft,
+  },
+  {
     tier: 1,
     t: 'Grounding',
     sub: '60-second breath, 5-4-3-2-1 senses, cold water',
@@ -44,13 +51,6 @@ const CRISIS_TIERS: CrisisTier[] = [
     icon: 'Call',
     color: colors.butter,
   },
-  {
-    tier: 3,
-    t: 'Crisis line',
-    sub: '988 Suicide & Crisis Lifeline · text or call',
-    icon: '•',
-    color: colors.coralSoft,
-  },
 ];
 
 // ─────────────────────────────────────────────
@@ -61,13 +61,13 @@ export default function CrisisTab() {
   const handleTierPress = useCallback((tier: number) => {
     if (tier === 3) {
       Linking.openURL('tel:988').catch(() => {
-        Alert.alert('Crisis Support', '988 Suicide & Crisis Lifeline\nCall or text: 988');
+        Alert.alert('Crisis Support', '988 · Free crisis support · call or text anytime');
       });
     }
   }, []);
 
   const tierAccessibilityLabel = (tier: number, title: string, sub: string): string => {
-    if (tier === 3) return 'Call 988 Suicide and Crisis Lifeline';
+    if (tier === 3) return 'Call or text 988 for free crisis support, anytime';
     if (tier === 2) return `Reach out: ${sub}`;
     return `Open grounding exercise: ${sub}`;
   };
@@ -75,7 +75,7 @@ export default function CrisisTab() {
   return (
     <View>
       <MHeader
-        eyebrow="F19 · CRISIS SAFETY"
+        eyebrow="In a hard moment"
         title="You are "
         titleAccent="not alone"
         sub="Three tiers, no alarms. You decide what helps."
@@ -103,7 +103,7 @@ export default function CrisisTab() {
           </View>
         </TouchableOpacity>
       ))}
-      <Text style={[typography.caption, { marginTop: 14, lineHeight: 20 }]}>
+      <Text style={[typography.caption, { marginTop: 16, lineHeight: 20 }]}>
         This appears automatically during your historical high-severity luteal
         window. You are also in control: tap "I'm not okay" anytime from Home.
       </Text>
@@ -127,7 +127,7 @@ const s = StyleSheet.create({
   crisisIcon: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 18,
     backgroundColor: colors.overlayLight,
     alignItems: 'center',
     justifyContent: 'center',

@@ -161,7 +161,7 @@ const stepperStyles = StyleSheet.create({
   btn: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 18,
     borderWidth: 1.5,
     borderColor: colors.eucalyptus,
     alignItems: 'center',
@@ -379,7 +379,7 @@ const dateStyles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.sm,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     backgroundColor: colors.paper,
   },
   triggerText: {
@@ -450,7 +450,7 @@ const dateStyles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 40,
+    minHeight: 44,
   },
   wheelItemSelected: {
     backgroundColor: colors.mintPale,
@@ -658,7 +658,7 @@ const ringStyles = StyleSheet.create({
   },
   phaseLabel: {
     fontFamily: fonts.sansMedium,
-    fontSize: 10,
+    fontSize: 11,
     letterSpacing: 1.6,
     color: colors.ink2,
     textTransform: 'uppercase',
@@ -726,7 +726,7 @@ export function StepCycleBasics({
 
   return (
     <View style={s.maxColumn}>
-      <Text style={[typography.display, { marginBottom: 22 }]}>
+      <Text style={[typography.display, { marginBottom: 24 }]}>
         Cycle basics
       </Text>
 
@@ -741,7 +741,7 @@ export function StepCycleBasics({
       />
 
       {/* Cycle length stepper */}
-      <Text style={[typography.eyebrow, { marginTop: 22, marginBottom: 12 }]}>
+      <Text style={[typography.eyebrow, { marginTop: 24, marginBottom: 12 }]}>
         Typical cycle length
       </Text>
       <Stepper
@@ -753,7 +753,7 @@ export function StepCycleBasics({
       />
 
       {/* Irregular toggle */}
-      <View style={[s.checkCard, { marginTop: 22 }]}>
+      <View style={[s.checkCard, { marginTop: 24 }]}>
         <CheckboxRow
           checked={irregular}
           onToggle={onIrregularToggle}
@@ -764,7 +764,7 @@ export function StepCycleBasics({
 
       {/* HBC flag */}
       {showHbc && (
-        <View style={[s.checkCard, { marginTop: 14 }]}>
+        <View style={[s.checkCard, { marginTop: 16 }]}>
           <CheckboxRow
             checked={hbcActive}
             onToggle={onHbcActiveToggle}
@@ -791,7 +791,7 @@ export function StepCycleBasics({
 
       {/* Perimenopausal status */}
       {showPeri && (
-        <View style={[s.checkCard, { marginTop: 14 }]}>
+        <View style={[s.checkCard, { marginTop: 16 }]}>
           <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
             WHERE ARE YOU IN YOUR TRANSITION?
           </Text>
@@ -812,7 +812,7 @@ export function StepCycleBasics({
 
       {/* "that makes sense" hero */}
       <View style={s.thatMakesWrap}>
-        <Text style={[typography.bodyL, { marginBottom: 18, textAlign: 'center' }]}>
+        <Text style={[typography.bodyL, { marginBottom: 16, textAlign: 'center' }]}>
           You're on Day{' '}
           <Text style={s.monoDay}>{cycleDay}</Text>
           {' '}— likely your {currentPhaseLabel}.
@@ -834,7 +834,7 @@ export function StepCycleBasics({
               Many people start tracking in their luteal phase. We'll
               learn your specific pattern over the next 30 days.
             </Text>
-            <Text style={[typography.caption, { marginTop: 14, fontSize: 13, textAlign: 'center' }]}>
+            <Text style={[typography.caption, { marginTop: 16, fontSize: 13, textAlign: 'center' }]}>
               It takes two full cycles to establish your pattern. This
               is not a limitation of the app — it is a clinical
               requirement.
@@ -844,7 +844,7 @@ export function StepCycleBasics({
       </View>
 
       <TouchableOpacity
-        style={[buttons.primary, { marginTop: 28 }]}
+        style={[buttons.primary, { marginTop: 24 }]}
         onPress={onContinue}
         accessibilityRole="button"
         accessibilityLabel="Continue to notifications"
@@ -869,7 +869,7 @@ const s = StyleSheet.create({
   checkCard: {
     backgroundColor: 'rgba(255,255,255,0.6)',
     borderRadius: radius.md,
-    padding: 14,
+    padding: 16,
   },
   thatMakesWrap: {
     marginTop: 32,
@@ -888,6 +888,6 @@ const s = StyleSheet.create({
     letterSpacing: -0.44,
     color: colors.eucalyptusDeep,
     textAlign: 'center',
-    marginTop: 28,
+    marginTop: 24,
   },
 });

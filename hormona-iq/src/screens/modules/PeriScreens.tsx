@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   sparkCard: {
-    padding: 14,
+    padding: 16,
   },
 
   // Radar
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   axisCard: {
-    padding: 14,
+    padding: 16,
   },
   axisLabel: {
     fontFamily: fonts.sansSemibold,

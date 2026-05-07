@@ -83,7 +83,7 @@ function Group({ title, children, cardStyle, stripStyle }: GroupProps): ReactEle
   return (
     <View style={s.group}>
       <Text style={[typography.eyebrow, s.groupTitle]}>{title}</Text>
-      <View style={[s.groupCard, cardStyle, stripStyle]}>{children}</View>
+      <View style={[s.groupCard, cardStyle, stripStyle, s.groupCardOverride]}>{children}</View>
     </View>
   );
 }
@@ -924,9 +924,11 @@ const s = StyleSheet.create({
     marginBottom: 10,
   },
   groupCard: {
+    overflow: 'hidden',
+  },
+  groupCardOverride: {
     paddingHorizontal: 18,
     paddingVertical: 0,
-    overflow: 'hidden',
   },
 
   // ── Setting rows ───────────────────────────────────────────────────────
@@ -934,7 +936,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 13,
+    paddingVertical: 12,
     minHeight: 44,
     gap: spacing.sm,
   },

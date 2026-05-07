@@ -128,7 +128,7 @@ export function CpassTable({
           </View>
         ))}
         <Text
-          style={[typography.caption, { fontSize: 10, marginTop: 8, lineHeight: 16 }]}
+          style={[typography.caption, { fontSize: 11, marginTop: 8, lineHeight: 16 }]}
         >
           C-PASS · Carolina Premenstrual Assessment Scoring System (Rubinow
           et al. 2017, PMC5205545)
@@ -200,13 +200,13 @@ export function CpassTable({
             </View>
           );
         })}
-        <Text style={[typography.caption, { fontSize: 10, marginTop: 8 }]}>
+        <Text style={[typography.caption, { fontSize: 11, marginTop: 8 }]}>
           * core mood items (anxiety, mood swings, irritability, overwhelmed)
         </Text>
       </SectionCard>
 
       {/* Days logged caption */}
-      <Text style={[typography.caption, { marginBottom: 28 }]}>
+      <Text style={[typography.caption, { marginBottom: 24 }]}>
         {totalDaysLoggedCurrentCycle} of {cycleLen} days logged in current
         cycle.
       </Text>

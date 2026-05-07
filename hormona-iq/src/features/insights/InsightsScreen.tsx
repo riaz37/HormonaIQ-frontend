@@ -12,9 +12,10 @@
 //   - Chart rendered via react-native-svg primitives
 //   - SafeAreaView from react-native-safe-area-context
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import {
+  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -24,6 +25,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -311,7 +313,21 @@ export default function InsightsScreen(): ReactElement {
     setAcknowledged(true);
     setShowInterstitial(false);
     setState((prev) => ({ ...prev, drspAcknowledged: true }));
+    AsyncStorage.setItem('drsp_disclaimer_acked', 'true').catch(() => {});
   };
+
+  // Hydrate disclaimer acknowledgement from persistent storage so it isn't
+  // re-shown on every mount once the user has acknowledged it (P3-13).
+  useEffect(() => {
+    AsyncStorage.getItem('drsp_disclaimer_acked')
+      .then((val) => {
+        if (val === 'true') {
+          setAcknowledged(true);
+          setState((prev) => ({ ...prev, drspAcknowledged: true }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // ── Pattern conclusion language ────────────────────────────────────────
   const overallCpass = cycleAnalysis.cycles.slice(0, 2);
@@ -380,7 +396,7 @@ export default function InsightsScreen(): ReactElement {
             YOUR DRSP LOG SUMMARY
           </Text>
         </View>
-        <Text style={[typography.display, { marginBottom: 14 }]}>
+        <Text style={[typography.display, { marginBottom: 16 }]}>
           A pattern{' '}
           <Text style={[typography.italicDisplay, { color: colors.eucalyptus }]}>
             worth showing.
@@ -401,7 +417,7 @@ export default function InsightsScreen(): ReactElement {
 
         {/* T-03 — disclaimer interstitial gate */}
         {gateMet && !acknowledged && (
-          <View style={[cards.cardWarm, { marginBottom: 18 }]}>
+          <View style={[cards.cardWarm, { marginBottom: 16 }]}>
             <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
               BEFORE YOU SEE YOUR REPORT
             </Text>
@@ -426,7 +442,7 @@ export default function InsightsScreen(): ReactElement {
           <View
             style={[
               cards.cardWarm,
-              { padding: 22, marginBottom: 18, alignItems: 'center' },
+              { padding: 24, marginBottom: 16, alignItems: 'center' },
             ]}
           >
             <Text
@@ -499,7 +515,7 @@ export default function InsightsScreen(): ReactElement {
             />
 
             {/* T-03 — Explicit SI export opt-in */}
-            <View style={[cards.cardWarm, { padding: 14, marginBottom: 16 }]}>
+            <View style={[cards.cardWarm, { padding: 16, marginBottom: 16 }]}>
               <Pressable
                 style={s.siRow}
                 onPress={toggleExportSI}
@@ -543,7 +559,7 @@ export default function InsightsScreen(): ReactElement {
             {/* T-91 — passive mode hides Send / Email / Download CTAs */}
             {!passive && (
               <View
-                style={[cards.cardMint, { padding: 22, marginBottom: 24 }]}
+                style={[cards.cardMint, { padding: 24, marginBottom: 24 }]}
               >
                 <Text style={[typography.h2, { marginBottom: 8 }]}>
                   Bring this to your appointment
@@ -570,20 +586,32 @@ export default function InsightsScreen(): ReactElement {
                 />
                 <View style={[s.ctaRow, { marginTop: 12 }]}>
                   <Pressable
-                    style={[buttons.primary, { flex: 1 }]}
-                    onPress={() => setShowReport(true)}
+                    style={[buttons.primary, { flex: 1, opacity: 0.5 }]}
+                    onPress={() =>
+                      Alert.alert(
+                        'Coming soon',
+                        'Doctor report sending will be available in a future update.',
+                      )
+                    }
                     accessibilityRole="button"
-                    accessibilityLabel="Send report to doctor"
+                    accessibilityLabel="Send report to doctor (coming soon)"
                   >
-                    <Text style={buttons.primaryLabel}>Send</Text>
+                    <Text style={buttons.primaryLabel}>Send (coming soon)</Text>
                   </Pressable>
                   <Pressable
-                    style={[buttons.outline, { flex: 1 }]}
-                    onPress={() => setShowReport(true)}
+                    style={[buttons.outline, { flex: 1, opacity: 0.5 }]}
+                    onPress={() =>
+                      Alert.alert(
+                        'Coming soon',
+                        'PDF download will be available in a future update.',
+                      )
+                    }
                     accessibilityRole="button"
-                    accessibilityLabel="Download PDF report"
+                    accessibilityLabel="Download PDF report (coming soon)"
                   >
-                    <Text style={buttons.outlineLabel}>Download PDF</Text>
+                    <Text style={buttons.outlineLabel}>
+                      Download PDF (coming soon)
+                    </Text>
                   </Pressable>
                 </View>
               </View>
@@ -612,7 +640,7 @@ export default function InsightsScreen(): ReactElement {
               <Text style={[typography.eyebrow, { marginBottom: 10 }]}>
                 Report preview
               </Text>
-              <View style={[cards.cardClinical, { padding: 18 }]}>
+              <View style={[cards.cardClinical, { padding: 16 }]}>
                 {/* Preview header */}
                 <View style={s.previewHeader}>
                   <Text style={s.previewHeaderLabel}>
@@ -637,7 +665,7 @@ export default function InsightsScreen(): ReactElement {
                 <Text
                   style={[
                     typography.body,
-                    { fontSize: 12, marginTop: 14, lineHeight: 20 },
+                    { fontSize: 12, marginTop: 16, lineHeight: 20 },
                   ]}
                 >
                   Across 2 cycles your prospective record is{' '}
@@ -687,13 +715,13 @@ export default function InsightsScreen(): ReactElement {
               >
                 IMPORTANT
               </Text>
-              <Text style={[typography.displaySm, { marginBottom: 14 }]}>
+              <Text style={[typography.displaySm, { marginBottom: 16 }]}>
                 Before you see your DRSP Log Summary
               </Text>
               <Text
                 style={[
                   typography.body,
-                  { fontSize: 14, marginBottom: 14, lineHeight: 22 },
+                  { fontSize: 15, marginBottom: 16, lineHeight: 22 },
                 ]}
               >
                 The DRSP (Daily Record of Severity of Problems) is a validated
@@ -703,7 +731,7 @@ export default function InsightsScreen(): ReactElement {
               <Text
                 style={[
                   typography.body,
-                  { fontSize: 14, marginBottom: 14, lineHeight: 22 },
+                  { fontSize: 15, marginBottom: 16, lineHeight: 22 },
                 ]}
               >
                 Your completed DRSP reflects what you've logged. It does not
@@ -713,7 +741,7 @@ export default function InsightsScreen(): ReactElement {
               <Text
                 style={[
                   typography.body,
-                  { fontSize: 14, marginBottom: 22, lineHeight: 22 },
+                  { fontSize: 15, marginBottom: 24, lineHeight: 22 },
                 ]}
               >
                 You are encouraged to share this report with your provider.
@@ -751,7 +779,7 @@ export default function InsightsScreen(): ReactElement {
             <Text style={[typography.displaySm, { marginBottom: 10 }]}>
               Your report is ready.
             </Text>
-            <Text style={[typography.body, { marginBottom: 22 }]}>
+            <Text style={[typography.body, { marginBottom: 24 }]}>
               {docEmail ? `Sent to ${docEmail}.` : 'PDF prepared.'} Saved in
               My Reports.
             </Text>
@@ -792,7 +820,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     fontFamily: fonts.sans,
     fontSize: 14,
     color: colors.ink,
@@ -804,7 +832,7 @@ const s = StyleSheet.create({
   },
   quietView: {
     marginBottom: 24,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     alignItems: 'center',
   },
@@ -847,7 +875,7 @@ const s = StyleSheet.create({
     fontStyle: 'italic',
     fontSize: 12,
     color: colors.ink2,
-    marginBottom: 14,
+    marginBottom: 16,
     lineHeight: 18,
   },
   previewDisclaimer: {
@@ -855,7 +883,7 @@ const s = StyleSheet.create({
     fontStyle: 'italic',
     fontSize: 11,
     color: colors.ink2,
-    marginTop: 14,
+    marginTop: 16,
     lineHeight: 16,
   },
   navLink: {
@@ -887,7 +915,7 @@ const s = StyleSheet.create({
   modalCard: {
     backgroundColor: colors.paper,
     borderRadius: radius.lg,
-    padding: 28,
+    padding: 24,
     marginHorizontal: 20,
     marginBottom: 80,
     alignItems: 'center',

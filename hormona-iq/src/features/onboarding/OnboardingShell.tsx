@@ -113,10 +113,10 @@ const switchStyles = StyleSheet.create({
   track: {
     width: 44,
     height: 26,
-    borderRadius: 13,
+    borderRadius: 12,
     backgroundColor: colors.inkDisabled,
     justifyContent: 'center',
-    paddingHorizontal: 3,
+    paddingHorizontal: 4,
   },
   thumb: {
     width: 20,
@@ -162,7 +162,8 @@ export default function OnboardingShell(): ReactElement {
   const [primaryCondition, setPrimaryCondition] = useState<ConditionName | null>(null);
   const [edAnswer, setEdAnswer] = useState<EdAnswer | null>(null);
   const [trackingHistory, setTrackingHistory] = useState<TrackingHistory | null>(null);
-  const [oraDisabled, setOraDisabled] = useState<boolean>(false);
+  // Opt-in: ORA stays off until the user explicitly enables it during onboarding.
+  const [oraDisabled, setOraDisabled] = useState<boolean>(true);
   const [lastPeriod, setLastPeriod] = useState<string>(defaultLastPeriod);
   const [cycleLen, setCycleLen] = useState<number>(28);
   const [irregular, setIrregular] = useState<boolean>(false);
@@ -290,37 +291,38 @@ export default function OnboardingShell(): ReactElement {
         {step === 2 && (
           <View style={s.maxColumn}>
             <Text style={[typography.italicDisplay, s.oraName]}>Ora</Text>
-            <Text style={[typography.display, { marginBottom: 18 }]}>
+            <Text style={[typography.display, { marginBottom: 16 }]}>
               Hi. I'm Ora.
             </Text>
-            <View style={[cards.cardMint, { marginBottom: 14, borderLeftWidth: 3, borderLeftColor: colors.sage }]}>
+            <View style={[cards.cardMint, { marginBottom: 16, borderLeftWidth: 3, borderLeftColor: colors.sage }]}>
               <Text style={[typography.body, { marginBottom: 12 }]}>
-                I'm not your doctor and I'm not a therapist — I'm an AI you can
-                talk to who knows hormonal health and is going to know your
-                cycle better than anyone.
+                I'm not your doctor and I'm not a therapist. ORA learns from
+                your logs over time. The more you track, the more specific it
+                gets.
               </Text>
               <Text style={typography.body}>
-                I'll be here at 3am if you need me. I'll be quiet when you
-                don't.
+                If you turn me on, I'll be here at 3am if you need me — and
+                quiet when you don't.
               </Text>
             </View>
 
             <View style={s.toggleRow}>
               <View style={{ flex: 1 }}>
-                <Text style={s.toggleTitle}>Disable Ora</Text>
+                <Text style={s.toggleTitle}>Turn on ORA · Learn as you log</Text>
                 <Text style={[typography.caption, { fontSize: 12 }]}>
-                  You can turn me on later from Profile.
+                  ORA will learn your pattern over time and share what it
+                  notices. You can change this later from Profile.
                 </Text>
               </View>
               <Switch
-                on={oraDisabled}
+                on={!oraDisabled}
                 onToggle={() => setOraDisabled((v) => !v)}
-                label={oraDisabled ? 'Ora disabled' : 'Ora enabled — tap to disable'}
+                label={!oraDisabled ? 'ORA on — tap to turn off' : 'ORA off — tap to turn on'}
               />
             </View>
 
             <TouchableOpacity
-              style={[buttons.primary, { marginTop: 18 }]}
+              style={[buttons.primary, { marginTop: 16 }]}
               onPress={() => next(3)}
               accessibilityRole="button"
               accessibilityLabel="Continue to conditions"
@@ -399,13 +401,13 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 22,
-    paddingVertical: 14,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   iconBtn: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: 18,
     backgroundColor: colors.paper,
     alignItems: 'center',
     justifyContent: 'center',
@@ -428,7 +430,7 @@ const s = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingHorizontal: 26,
+    paddingHorizontal: 24,
     paddingBottom: 48,
     paddingTop: 8,
   },
@@ -449,7 +451,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
-    padding: 14,
+    padding: 16,
     backgroundColor: colors.paper,
     borderRadius: radius.md,
     borderWidth: 1,

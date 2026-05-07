@@ -12,10 +12,10 @@ interface PillButtonProps {
 }
 
 const sizeConfig = {
-  // sm is used in dense contexts; prefer md (44px) for primary actions
-  sm: { height: 40, fontSize: 14, paddingHorizontal: 16 },
+  // sm meets Apple HIG 44pt minimum touch target
+  sm: { height: 44, fontSize: 14, paddingHorizontal: 16 },
   md: { height: 44, fontSize: 15, paddingHorizontal: 20 },
-  lg: { height: 52, fontSize: 16, paddingHorizontal: 24 },
+  lg: { height: 52, fontSize: 15, paddingHorizontal: 24 },
 } as const;
 
 export function PillButton({
@@ -48,6 +48,7 @@ export function PillButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
+      accessibilityLabel={label}
       style={[
         styles.base,
         containerStyle,

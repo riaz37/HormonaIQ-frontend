@@ -4,11 +4,33 @@
 
 import { Tabs } from 'expo-router';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path } from 'react-native-svg';
 import type { ReactElement, ReactNode } from 'react';
 
 import { colors, fonts, radius, shadows } from '../../src/constants/tokens';
+
+// ─────────────────────────────────────────────
+// Scroll-to-top registry
+// Screens may call `registerScrollRef(tabName, ref)` on mount so that
+// re-tapping an already-focused tab scrolls them back to the top.
+// ─────────────────────────────────────────────
+
+interface ScrollableRef {
+  scrollToOffset?: (args: { offset: number; animated?: boolean }) => void;
+  scrollTo?: (args: { y: number; animated?: boolean }) => void;
+}
+
+const scrollRefs = new Map<string, ScrollableRef>();
+
+export function registerScrollRef(tabName: string, ref: ScrollableRef | null): void {
+  if (ref) {
+    scrollRefs.set(tabName, ref);
+  } else {
+    scrollRefs.delete(tabName);
+  }
+}
 
 interface TabIconProps {
   focused: boolean;
@@ -103,6 +125,7 @@ const TABS: readonly TabConfig[] = [
 ] as const;
 
 export default function AppTabsLayout(): ReactElement {
+  const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
@@ -110,7 +133,7 @@ export default function AppTabsLayout(): ReactElement {
         tabBarShowLabel: false,
       }}
       tabBar={({ state, navigation }) => (
-        <View style={styles.tabbarOuter} pointerEvents="box-none">
+        <View style={[styles.tabbarOuter, { paddingBottom: Math.max(12, insets.bottom) }]} pointerEvents="box-none">
           <LinearGradient
             colors={[colors.paper, colors.creamWarm]}
             start={{ x: 0, y: 0 }}
@@ -128,7 +151,18 @@ export default function AppTabsLayout(): ReactElement {
                   target: route.key,
                   canPreventDefault: true,
                 });
-                if (!focused && !event.defaultPrevented) {
+                if (focused) {
+                  if (!event.defaultPrevented) {
+                    const ref = scrollRefs.get(route.name);
+                    if (ref?.scrollToOffset) {
+                      ref.scrollToOffset({ offset: 0, animated: true });
+                    } else if (ref?.scrollTo) {
+                      ref.scrollTo({ y: 0, animated: true });
+                    }
+                  }
+                  return;
+                }
+                if (!event.defaultPrevented) {
                   navigation.navigate(route.name);
                 }
               };
@@ -165,7 +199,6 @@ export default function AppTabsLayout(): ReactElement {
 const styles = StyleSheet.create({
   tabbarOuter: {
     paddingHorizontal: 12,
-    paddingBottom: 12,
     backgroundColor: 'transparent',
   },
   tabbar: {

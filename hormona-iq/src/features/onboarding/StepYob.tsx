@@ -177,12 +177,12 @@ const selectStyles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.sm,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     backgroundColor: colors.paper,
   },
   triggerText: {
     fontFamily: fonts.sansMedium,
-    fontSize: 16,
+    fontSize: 15,
     color: colors.ink,
   },
   triggerPlaceholder: {
@@ -228,7 +228,7 @@ const selectStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 13,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -344,10 +344,10 @@ function BlockScreen(): ReactElement {
       <Text style={[typography.eyebrow, { marginBottom: 12 }]}>
         AGE REQUIREMENT
       </Text>
-      <Text style={[typography.display, s.displayCenter, { marginBottom: 18 }]}>
+      <Text style={[typography.display, s.displayCenter, { marginBottom: 16 }]}>
         You'll need to be a bit older.
       </Text>
-      <Text style={[typography.bodyL, s.bodyCenter, { marginBottom: 18 }]}>
+      <Text style={[typography.bodyL, s.bodyCenter, { marginBottom: 16 }]}>
         HormonaIQ requires users to be 13 or older. We're sorry — please
         come back when you're older.
       </Text>
@@ -369,10 +369,10 @@ function GuardianScreen({
       <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
         PARENT / GUARDIAN CONSENT
       </Text>
-      <Text style={[typography.display, { marginBottom: 14 }]}>
+      <Text style={[typography.display, { marginBottom: 16 }]}>
         One quick step before we go further.
       </Text>
-      <Text style={[typography.body, { color: colors.ink2, marginBottom: 22 }]}>
+      <Text style={[typography.body, { color: colors.ink2, marginBottom: 24 }]}>
         Because you're under 16, we need a parent or guardian's consent
         to keep your data. Send them a quick email and they'll be able to
         confirm.
@@ -394,7 +394,7 @@ function GuardianScreen({
       <TouchableOpacity
         style={[
           buttons.primary,
-          { marginTop: 22 },
+          { marginTop: 24 },
           !guardianEmail && buttons.primaryDisabled,
         ]}
         onPress={onGuardianContinue}
@@ -414,7 +414,7 @@ function GuardianScreen({
       >
         <Text style={s.ghostBtnLabel}>I'll handle this later</Text>
       </TouchableOpacity>
-      <Text style={[typography.caption, { fontSize: 11, marginTop: 18 }]}>
+      <Text style={[typography.caption, { fontSize: 11, marginTop: 16 }]}>
         Until consent is confirmed, your data lives only on this device.
       </Text>
     </View>
@@ -503,7 +503,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 14,
+    marginTop: 16,
   },
   ghostBtnLabel: {
     fontFamily: fonts.sansMedium,
@@ -519,7 +519,7 @@ const s = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.sm,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     fontFamily: fonts.sans,
     fontSize: 15,
     color: colors.ink,

@@ -1,0 +1,28 @@
+appId: com.hormonaiq.app
+---
+# Module screens — Tools, Ora, PMDD, Perimenopause.
+
+- runFlow: 01-setup-state.yaml
+
+# ── Tools screen ──────────────────────────────────────────────────
+# Navigate via Profile or direct tab if available
+- tapOn:
+    id: "Profile"
+- waitForAnimationsToEnd
+- takeScreenshot: screenshots/30-profile
+
+# Scroll to find Tools or navigate via tab
+- scrollDown
+- takeScreenshot: screenshots/31-profile-scrolled
+
+# ── Ora screen ────────────────────────────────────────────────────
+- tapOn:
+    id: "Home"
+- waitForAnimationsToEnd
+
+# Try to open Ora if accessible from Home
+- tapOn:
+    id: "Ora"
+    optional: true
+- waitForAnimationsToEnd
+- takeScreenshot: screenshots/32-ora-screen

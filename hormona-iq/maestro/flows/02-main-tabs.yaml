@@ -1,0 +1,43 @@
+appId: com.hormonaiq.app
+---
+# Main tab screenshots — Home, Log, Cycle, Insights, Profile.
+# Runs setup first to land on Home, then visits each tab.
+
+- runFlow: 01-setup-state.yaml
+
+# ── Home tab ──────────────────────────────────────────────────────
+- assertVisible:
+    id: "Home"
+- takeScreenshot: screenshots/10-tab-home
+- scrollDown
+- takeScreenshot: screenshots/10-tab-home-scrolled
+
+# ── Log tab ───────────────────────────────────────────────────────
+- tapOn:
+    id: "Log"
+- waitForAnimationsToEnd
+- takeScreenshot: screenshots/11-tab-log
+- scrollDown
+- takeScreenshot: screenshots/11-tab-log-scrolled
+
+# ── Cycle tab ─────────────────────────────────────────────────────
+- tapOn:
+    id: "Cycle"
+- waitForAnimationsToEnd
+- takeScreenshot: screenshots/12-tab-cycle
+- scrollDown
+- takeScreenshot: screenshots/12-tab-cycle-scrolled
+
+# ── Insights tab ──────────────────────────────────────────────────
+- tapOn:
+    id: "Insights"
+- waitForAnimationsToEnd
+- takeScreenshot: screenshots/13-tab-insights
+
+# ── Profile tab ───────────────────────────────────────────────────
+- tapOn:
+    id: "Profile"
+- waitForAnimationsToEnd
+- takeScreenshot: screenshots/14-tab-profile
+- scrollDown
+- takeScreenshot: screenshots/14-tab-profile-scrolled

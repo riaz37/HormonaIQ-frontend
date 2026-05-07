@@ -42,10 +42,10 @@ export function StepNotifications({
       <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
         NOTIFICATIONS
       </Text>
-      <Text style={[typography.display, { marginBottom: 14 }]}>
+      <Text style={[typography.display, { marginBottom: 16 }]}>
         Stay ahead of your cycle
       </Text>
-      <Text style={[typography.body, { color: colors.ink2, marginBottom: 22 }]}>
+      <Text style={[typography.body, { color: colors.ink2, marginBottom: 24 }]}>
         I'll send a quiet heads-up before your harder days. You can turn
         this off anytime.
       </Text>
@@ -128,7 +128,7 @@ const s = StyleSheet.create({
     width: '100%',
   },
   notifExample: {
-    padding: 14,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
@@ -141,7 +141,7 @@ const s = StyleSheet.create({
     flexShrink: 0,
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 18,
     backgroundColor: colors.mintPale,
     alignItems: 'center',
     justifyContent: 'center',
@@ -160,7 +160,7 @@ const s = StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
   },
   notifBtnSelected: {
     backgroundColor: colors.mintPale,

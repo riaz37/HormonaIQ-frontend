@@ -157,7 +157,7 @@ void typography;
 
 const styles = StyleSheet.create({
   wrap: {
-    padding: 14,
+    padding: 16,
   },
   legend: {
     flexDirection: 'row',

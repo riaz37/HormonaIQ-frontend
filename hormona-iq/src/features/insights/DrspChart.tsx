@@ -15,7 +15,7 @@ import Svg, {
 } from 'react-native-svg';
 
 import { cards, typography } from '../../constants/styles';
-import { colors, fonts, radius, spacing } from '../../constants/tokens';
+import { colors, fonts, phase, radius, spacing } from '../../constants/tokens';
 import { SectionCard } from '../../components/ui/SectionCard';
 import type { ChartDataPoint } from './types';
 
@@ -35,7 +35,7 @@ const PHASE_LEGEND_ITEMS: Array<{ k: string; n: string; color: string }> = [
   { k: 'F', n: 'Follicular', color: colors.sageLight },
   { k: 'O', n: 'Ovulatory', color: colors.butter },
   { k: 'Lm', n: 'Early luteal', color: colors.coral },
-  { k: 'Ls', n: 'Late luteal', color: '#C97962' },
+  { k: 'Ls', n: 'Late luteal', color: phase.lutealDeep },
   { k: 'M', n: 'Menstrual', color: colors.rose },
 ];
 
@@ -329,7 +329,7 @@ export function DrspChart({
           <View style={{ marginBottom: 8 }}>
             <DRSPChartSvg data={data} cycleLen={cycleLen} height={height} />
           </View>
-          <View style={{ marginBottom: 14, alignItems: 'center' }}>
+          <View style={{ marginBottom: spacing.md, alignItems: 'center' }}>
             <PhaseLegend />
           </View>
         </>
@@ -337,7 +337,7 @@ export function DrspChart({
 
       {/* Mood tab */}
       {tab === 'mood' && (
-        <View style={[cards.cardWarm, { padding: 14, marginBottom: 12 }]}>
+        <View style={[cards.cardWarm, { padding: spacing.md, marginBottom: 12 }]}>
           <Text style={[typography.caption, { marginBottom: 10 }]}>
             Mood distribution by cycle phase
           </Text>
@@ -408,12 +408,12 @@ const s = StyleSheet.create({
     padding: 4,
     backgroundColor: colors.mintPale,
     borderRadius: radius.pill,
-    marginBottom: 14,
+    marginBottom: spacing.md,
     alignSelf: 'flex-start',
   },
   tabPillBtn: {
     paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingHorizontal: spacing.md,
     minHeight: 44,
     borderRadius: radius.pill,
     justifyContent: 'center',
@@ -437,7 +437,7 @@ const s = StyleSheet.create({
   },
   statTile: {
     flex: 1,
-    padding: 14,
+    padding: spacing.md,
     alignItems: 'flex-start',
   },
   legendRow: {

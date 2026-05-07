@@ -416,15 +416,70 @@ const PREP_CARDS: PrepCard[] = [
 ];
 
 // ─────────────────────────────────────────────
-// Prompt chips
+// Phase helpers — phase-aware ORA content (P3-04, P3-12)
 // ─────────────────────────────────────────────
 
-const PROMPT_CHIPS = [
-  'What does this pattern mean?',
-  'Is my ADHD med working differently by phase?',
-  'Draft what to say to my doctor',
-  'If they say "it\'s just PMS"',
-] as const;
+function getPhaseCode(cycleDay: number, cycleLen: number): string {
+  const c = cycleLen || 28;
+  if (cycleDay <= 5 || cycleDay > c - 5) return 'M';
+  const fEnd = Math.round(c * 0.45);
+  const oEnd = Math.round(c * 0.55);
+  const lmEnd = Math.round(c * 0.78);
+  if (cycleDay <= fEnd) return 'F';
+  if (cycleDay <= oEnd) return 'O';
+  if (cycleDay <= lmEnd) return 'Lm';
+  return 'Ls';
+}
+
+const ORA_CONFIRMED_BY_PHASE: Record<string, string> = {
+  F: "Across your last cycles, your clearest thinking tends to land in your follicular phase — roughly where you are now. This is the window worth protecting for things that need focus.",
+  O: "Ovulatory phase. Your data shows this is typically one of your higher-function windows. Some people feel the shift clearly; others don't. Both are normal.",
+  Lm: "Early luteal. Your pattern shows this is where the first subtle shifts start for you — mood and energy often begin pulling in different directions here.",
+  Ls: "This is the window your data keeps flagging. Late luteal is where your symptom scores consistently rise. You're not imagining it — it's in three cycles of your own data.",
+  M: "Menstrual phase. Your DRSP scores tend to ease around now. The hard stretch is lifting. Rest is still productive.",
+  '?': "Your cycle doesn't follow a standard clock, and your data reflects that. I'm tracking your personal pattern rather than a textbook one.",
+};
+
+function getPromptChips(phaseCode: string): string[] {
+  switch (phaseCode) {
+    case 'Ls':
+    case 'Lm':
+      return [
+        'What can I do right now to get through today?',
+        'Why do I feel this way in luteal?',
+        "How do I explain this to someone who doesn't get it?",
+        'Is this worse than last cycle?',
+      ];
+    case 'M':
+      return [
+        'Is it supposed to feel this heavy?',
+        'When will I start feeling better?',
+        'What actually helps during my period?',
+        'How does rest affect my next cycle?',
+      ];
+    case 'F':
+      return [
+        'What should I use this energy window for?',
+        'How long does follicular phase typically last?',
+        'What does my pattern show for next luteal?',
+        'How do I make the most of this phase?',
+      ];
+    case 'O':
+      return [
+        "What's actually happening hormonally right now?",
+        'How does ovulation affect my mood?',
+        'What does my data say about this phase?',
+        'When does luteal start for me?',
+      ];
+    default:
+      return [
+        'What does this pattern mean?',
+        'What should I focus on today?',
+        'How do I talk to my doctor about this?',
+        'What helps most in my hard phases?',
+      ];
+  }
+}
 
 // ─────────────────────────────────────────────
 // Food logging helpers
@@ -473,6 +528,8 @@ export default function OraScreen(): ReactElement {
 
   // T-91 — passive mode
   const { cycleDay, cycleLen } = state;
+  const currentPhaseCode = getPhaseCode(cycleDay, cycleLen);
+  const promptChips = getPromptChips(currentPhaseCode);
   const lutealPeakStart = Math.round(cycleLen * 0.78);
   const inLutealPeak =
     cycleDay >= lutealPeakStart - 2 && cycleDay <= cycleLen - 5;
@@ -622,10 +679,7 @@ export default function OraScreen(): ReactElement {
           </Pressable>
         </View>
         <Text style={[typography.body, { marginTop: 6 }]}>
-          I've been watching your DRSP for three cycles now. Your luteal weeks
-          come in at 4.8/6 on average; your follicular weeks at 1.5. That's a
-          3.2× swing — consistent with the prospective pattern DSM-5 evaluation
-          calls for. Bring it to your clinician.
+          {ORA_CONFIRMED_BY_PHASE[currentPhaseCode] ?? ORA_CONFIRMED_BY_PHASE['?']}
         </Text>
         {/* T-41 — observation, not diagnosis */}
         <Text style={s.disclaimerCaption}>
@@ -866,7 +920,7 @@ export default function OraScreen(): ReactElement {
                 style={{ marginTop: 8 }}
                 contentContainerStyle={s.chipsContainer}
               >
-                {PROMPT_CHIPS.map((p) => (
+                {promptChips.map((p) => (
                   <Pressable
                     key={p}
                     onPress={() => {
@@ -911,14 +965,14 @@ export default function OraScreen(): ReactElement {
                   APPOINTMENT PREP
                 </Text>
                 <Text style={[typography.displaySm, { marginBottom: 18 }]}>
-                  For your visit on{' '}
+                  Before{' '}
                   <Text
                     style={[
                       typography.italicDisplay,
                       { color: colors.eucalyptus },
                     ]}
                   >
-                    May 8
+                    your next appointment
                   </Text>
                 </Text>
 

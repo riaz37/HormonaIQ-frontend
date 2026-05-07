@@ -39,10 +39,10 @@ export function VibeCheck({ feeling, onFeelingChange }: VibeCheckProps): ReactEl
   return (
     <>
       <Text style={[typography.h2, { marginBottom: 6 }]}>How are you, really?</Text>
-      <Text style={[typography.caption, { marginBottom: 14 }]}>
+      <Text style={[typography.caption, { marginBottom: 16 }]}>
         A vibe check. Just for you — not part of your clinical record.
       </Text>
-      <View style={{ marginBottom: 28, gap: 8 }}>
+      <View style={{ marginBottom: 24, gap: 8 }}>
         {FEELINGS.map((f) => {
           const isActive = feeling === f.label;
           return (
@@ -96,7 +96,7 @@ const s = StyleSheet.create({
   feelTone: {
     width: 26,
     height: 26,
-    borderRadius: 13,
+    borderRadius: 12,
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.6)',
     flexShrink: 0,

@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.display,
-    fontSize: 28,
+    fontSize: 26,
     color: colors.ink,
   },
   titleSpacing: {

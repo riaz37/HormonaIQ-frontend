@@ -2,10 +2,19 @@
 // Renders the anchor legend, symptom scale rows, SI item, and functional impairment.
 // Receives all state and callbacks via props; no direct store access.
 
+import { useState } from 'react';
 import type { ReactElement } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
-  components as cmp,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
+import {
   typography,
 } from '../../constants/styles';
 import { colors, fonts, radius, spacing } from '../../constants/tokens';
@@ -105,8 +114,47 @@ const ANCHORS: Record<number, string> = {
   6: 'Extreme',
 };
 
+// Graduated color palette: cool mint → warm coral along the severity scale
+const BTN_ACTIVE_BG: Record<number, string> = {
+  1: colors.mintPale,
+  2: colors.mintMist,
+  3: colors.sageLight,
+  4: colors.butter,
+  5: colors.coralSoft,
+  6: colors.coral,
+};
+
+// Text color: dark for light backgrounds, paper for heavy coral
+const BTN_ACTIVE_TEXT: Record<number, string> = {
+  1: colors.ink,
+  2: colors.ink,
+  3: colors.ink,
+  4: colors.ink,
+  5: colors.ink,
+  6: colors.paper,
+};
+
+// SI uses a calm neutral ramp — never alarm/coral
+const SI_ACTIVE_BG: Record<number, string> = {
+  1: '#F0F0F0',
+  2: '#E0E0E0',
+  3: '#CACACA',
+  4: '#ABABAB',
+  5: '#8A8A8A',
+  6: '#555555',
+};
+
+const SI_ACTIVE_TEXT: Record<number, string> = {
+  1: '#555',
+  2: '#444',
+  3: '#333',
+  4: '#222',
+  5: '#FFF',
+  6: '#FFF',
+};
+
 // ─────────────────────────────────────────────
-// ScaleRow (local sub-component)
+// ScaleRow
 // ─────────────────────────────────────────────
 
 interface ScaleRowProps {
@@ -114,31 +162,135 @@ interface ScaleRowProps {
   value: number | null | undefined;
   onSet: (n: number) => void;
   max?: number;
+  yesterdayValue?: number;
+  isSI?: boolean; // SI item never auto-collapses
 }
 
-function ScaleRow({ label, value, onSet, max = 6 }: ScaleRowProps): ReactElement {
+export function ScaleRow({
+  label,
+  value,
+  onSet,
+  max = 6,
+  yesterdayValue,
+  isSI = false,
+}: ScaleRowProps): ReactElement {
+  const [collapsed, setCollapsed] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  const activeBgMap = isSI ? SI_ACTIVE_BG : BTN_ACTIVE_BG;
+  const activeTextMap = isSI ? SI_ACTIVE_TEXT : BTN_ACTIVE_TEXT;
+
+  const handlePress = (n: number): void => {
+    onSet(n);
+    if (!reduceMotion) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    if (!isSI) {
+      // Short delay so the user sees their selection before collapsing
+      const delay = reduceMotion ? 0 : 280;
+      setTimeout(() => setCollapsed(true), delay);
+    }
+  };
+
+  // Collapsed summary row — tap to re-expand
+  if (collapsed && value != null) {
+    return (
+      <Pressable
+        style={s.collapsedRow}
+        onPress={() => setCollapsed(false)}
+        accessibilityRole="button"
+        accessibilityLabel={`${label} — rated ${value}, ${ANCHORS[value]}. Tap to change.`}
+      >
+        <Text style={s.collapsedLabel} numberOfLines={1}>{label}</Text>
+        <View style={[s.collapsedBadge, { backgroundColor: activeBgMap[value] }]}>
+          <Text style={[s.collapsedBadgeNum, { color: activeTextMap[value] }]}>{value}</Text>
+          <Text style={[s.collapsedBadgeAnchor, { color: activeTextMap[value] }]}>
+            {ANCHORS[value]}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  }
+
   return (
     <View style={s.scaleRowWrap}>
       <Text style={[typography.body, s.scaleRowLabel]}>{label}</Text>
+
+      {/* Yesterday ghost indicators — sits above the button row */}
+      {yesterdayValue != null && (
+        <View style={s.yesterdayStrip}>
+          {Array.from({ length: max }, (_, i) => i + 1).map((n) => (
+            <View key={n} style={s.yesterdayCell}>
+              {yesterdayValue === n && (
+                <>
+                  <View style={s.yesterdayDot} />
+                  <Text style={s.yesterdayText}>was {n}</Text>
+                </>
+              )}
+            </View>
+          ))}
+        </View>
+      )}
+
       <View style={s.scaleRow}>
         {Array.from({ length: max }, (_, i) => i + 1).map((n) => {
           const isActive = value === n;
           return (
             <TouchableOpacity
               key={n}
-              style={[cmp.scaleBtn, isActive && cmp.scaleBtnActive, s.scaleBtnFlex]}
-              onPress={() => onSet(n)}
+              activeOpacity={0.72}
+              style={[
+                s.scaleBtn,
+                s.scaleBtnFlex,
+                isActive
+                  ? { backgroundColor: activeBgMap[n], borderColor: 'transparent' }
+                  : s.scaleBtnInactive,
+              ]}
+              onPress={() => handlePress(n)}
               accessibilityLabel={`${label} — ${ANCHORS[n] ?? String(n)}`}
               accessibilityRole="button"
               accessibilityState={{ selected: isActive }}
             >
-              <Text style={[cmp.scaleBtnLabel, isActive && cmp.scaleBtnLabelActive]}>
+              <Text
+                style={[
+                  s.scaleBtnNum,
+                  isActive
+                    ? { color: activeTextMap[n], fontFamily: fonts.sansBold }
+                    : s.scaleBtnNumInactive,
+                ]}
+              >
                 {n}
               </Text>
+              {isActive && (
+                <Text
+                  style={[s.scaleBtnAnchor, { color: activeTextMap[n] }]}
+                  numberOfLines={1}
+                >
+                  {ANCHORS[n]}
+                </Text>
+              )}
             </TouchableOpacity>
           );
         })}
       </View>
+
+      {isSI && value != null && value >= 5 && (
+        <View style={s.siInlinePrompt}>
+          <Text style={s.siInlinePromptText}>
+            If you're struggling right now, support is one tap away.
+          </Text>
+          <Pressable
+            onPress={() => {
+              void Linking.openURL('tel:988');
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Open support — call or text 988"
+            style={s.siInlinePromptBtn}
+          >
+            <Text style={s.siInlinePromptBtnLabel}>Open support →</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
@@ -156,6 +308,8 @@ export interface DrspScaleProps {
   adhdRating: number | null;
   isAdhdUser: boolean;
   showAdhdSection: boolean;
+  yesterdayDrsp?: Record<string, number>;
+  onCarryForward?: () => void;
   onSetDrsp: (key: string, value: number) => void;
   onSetSi: (value: number) => void;
   onSetFnImpair: (value: number) => void;
@@ -194,6 +348,8 @@ export function DrspScale({
   adhdRating,
   isAdhdUser,
   showAdhdSection,
+  yesterdayDrsp,
+  onCarryForward,
   onSetDrsp,
   onSetSi,
   onSetFnImpair,
@@ -207,6 +363,9 @@ export function DrspScale({
 
   const showFunctionalGrid = !fastLog;
   const showFnImpairRow = fastLog;
+
+  const hasYesterday =
+    yesterdayDrsp != null && Object.keys(yesterdayDrsp).length > 0;
 
   return (
     <>
@@ -231,23 +390,34 @@ export function DrspScale({
         </View>
       </SectionCard>
 
+      {/* Same as yesterday carry-forward */}
+      {hasYesterday && onCarryForward != null && (
+        <TouchableOpacity
+          style={s.carryForwardBtn}
+          onPress={onCarryForward}
+          accessibilityRole="button"
+          accessibilityLabel="Copy yesterday's ratings as a starting point"
+        >
+          <Text style={s.carryForwardLabel}>Same as yesterday</Text>
+          <Text style={s.carryForwardSub}>Adjust anything that changed</Text>
+        </TouchableOpacity>
+      )}
+
       {fastLog ? (
-        // Fast log: flat list of the 3 key items, no section headers
         drspToRender.map((it) => (
           <ScaleRow
             key={it.key}
             label={it.label}
             value={drsp[it.key]}
             onSet={(n) => onSetDrsp(it.key, n)}
+            yesterdayValue={yesterdayDrsp?.[it.key]}
           />
         ))
       ) : (
-        // Full mode: items grouped by section with headers and repeated legend hint
         DRSP_SECTIONS.map((section) => {
           const sectionItems = DRSP_ITEMS.filter((it) =>
             section.keys.includes(it.key),
           );
-          // SI item sits inside Mood & Emotions section (last slot)
           const siInSection = section.keys.includes(DRSP_SI.key);
 
           return (
@@ -260,6 +430,7 @@ export function DrspScale({
                   label={it.label}
                   value={drsp[it.key]}
                   onSet={(n) => onSetDrsp(it.key, n)}
+                  yesterdayValue={yesterdayDrsp?.[it.key]}
                 />
               ))}
               {siInSection && (
@@ -267,7 +438,13 @@ export function DrspScale({
                   <Text style={s.siNote}>
                     Item 12 — important to track. There's no judgement here.
                   </Text>
-                  <ScaleRow label={DRSP_SI.label} value={si} onSet={onSetSi} />
+                  <ScaleRow
+                    label={DRSP_SI.label}
+                    value={si}
+                    onSet={onSetSi}
+                    yesterdayValue={yesterdayDrsp?.[DRSP_SI.key]}
+                    isSI
+                  />
                 </View>
               )}
             </View>
@@ -281,7 +458,13 @@ export function DrspScale({
           <Text style={s.siNote}>
             Item 12 — important to track. There's no judgement here.
           </Text>
-          <ScaleRow label={DRSP_SI.label} value={si} onSet={onSetSi} />
+          <ScaleRow
+            label={DRSP_SI.label}
+            value={si}
+            onSet={onSetSi}
+            yesterdayValue={yesterdayDrsp?.[DRSP_SI.key]}
+            isSI
+          />
         </View>
       )}
 
@@ -300,6 +483,7 @@ export function DrspScale({
               label={it.label}
               value={drsp[it.key]}
               onSet={(n) => onSetDrsp(it.key, n)}
+              yesterdayValue={yesterdayDrsp?.[it.key]}
             />
           ))}
         </>
@@ -367,13 +551,27 @@ export function DrspScale({
               return (
                 <TouchableOpacity
                   key={n}
-                  style={[cmp.scaleBtn, isActive && cmp.scaleBtnActive, s.scaleBtnFlex]}
+                  activeOpacity={0.72}
+                  style={[
+                    s.scaleBtn,
+                    s.scaleBtnFlex,
+                    isActive
+                      ? { backgroundColor: BTN_ACTIVE_BG[n] ?? colors.sageLight, borderColor: 'transparent' }
+                      : s.scaleBtnInactive,
+                  ]}
                   onPress={() => onSetAdhdRating(n)}
                   accessibilityLabel={`ADHD meds effectiveness: ${n} of 5`}
                   accessibilityRole="button"
                   accessibilityState={{ selected: isActive }}
                 >
-                  <Text style={[cmp.scaleBtnLabel, isActive && cmp.scaleBtnLabelActive]}>
+                  <Text
+                    style={[
+                      s.scaleBtnNum,
+                      isActive
+                        ? { color: BTN_ACTIVE_TEXT[n] ?? colors.ink, fontFamily: fonts.sansBold }
+                        : s.scaleBtnNumInactive,
+                    ]}
+                  >
                     {n}
                   </Text>
                 </TouchableOpacity>
@@ -391,24 +589,142 @@ export function DrspScale({
 // ─────────────────────────────────────────────
 
 const s = StyleSheet.create({
+  // ── Scale row ─────────────────────────────────────────────────────────
   scaleRowWrap: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   scaleRowLabel: {
-    marginBottom: 6,
+    marginBottom: 4,
     fontSize: 14,
     fontFamily: fonts.sansMedium,
   },
   scaleRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 5,
   },
   scaleBtnFlex: {
     flex: 1,
   },
+  scaleBtn: {
+    height: 52,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+    gap: 1,
+  },
+  scaleBtnInactive: {
+    backgroundColor: colors.paper,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  scaleBtnNum: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 15,
+    lineHeight: 18,
+  },
+  scaleBtnNumInactive: {
+    color: colors.ink2,
+    fontFamily: fonts.sansMedium,
+  },
+  scaleBtnAnchor: {
+    fontFamily: fonts.sans,
+    fontSize: 7,
+    lineHeight: 9,
+    textAlign: 'center',
+  },
+
+  // ── Collapsed row ─────────────────────────────────────────────────────
+  collapsedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: colors.paper,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: 10,
+  },
+  collapsedLabel: {
+    flex: 1,
+    fontFamily: fonts.sansMedium,
+    fontSize: 13,
+    color: colors.ink2,
+  },
+  collapsedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: radius.pill,
+  },
+  collapsedBadgeNum: {
+    fontFamily: fonts.sansBold,
+    fontSize: 14,
+  },
+  collapsedBadgeAnchor: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+  },
+
+  // ── Yesterday ghost ───────────────────────────────────────────────────
+  yesterdayStrip: {
+    flexDirection: 'row',
+    gap: 5,
+    marginBottom: 3,
+  },
+  yesterdayCell: {
+    flex: 1,
+    alignItems: 'center',
+    minHeight: 14,
+  },
+  yesterdayDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.ink3,
+    marginBottom: 1,
+  },
+  yesterdayText: {
+    fontFamily: fonts.mono,
+    fontSize: 7,
+    color: colors.ink3,
+    letterSpacing: 0,
+  },
+
+  // ── Carry-forward ─────────────────────────────────────────────────────
+  carryForwardBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    backgroundColor: colors.mintPale,
+    borderWidth: 1,
+    borderColor: colors.borderMint,
+    borderRadius: radius.md,
+    marginBottom: 18,
+    gap: 8,
+  },
+  carryForwardLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 13,
+    color: colors.eucalyptusDeep,
+  },
+  carryForwardSub: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    color: colors.ink3,
+  },
+
+  // ── Legend / headers ──────────────────────────────────────────────────
   anchorLegend: {
     padding: 10,
-    marginBottom: 18,
+    marginBottom: 16,
   },
   anchorRow: {
     flexDirection: 'row',
@@ -426,19 +742,6 @@ const s = StyleSheet.create({
     fontFamily: fonts.monoMedium,
     fontWeight: '700',
   },
-  siBox: {
-    marginTop: spacing.xs,
-    padding: spacing.md,
-    backgroundColor: colors.creamWarm,
-    borderRadius: radius.md,
-    marginBottom: spacing.lg,
-  },
-  siNote: {
-    fontFamily: fonts.sans,
-    fontSize: 11,
-    color: colors.ink2,
-    marginBottom: spacing.sm,
-  },
   sectionHeader: {
     fontSize: 11,
     fontFamily: fonts.sansMedium,
@@ -454,12 +757,56 @@ const s = StyleSheet.create({
     color: colors.ink3,
     marginTop: spacing.sm,
   },
+
+  // ── SI box ────────────────────────────────────────────────────────────
+  siBox: {
+    marginTop: spacing.xs,
+    padding: spacing.md,
+    backgroundColor: colors.creamWarm,
+    borderRadius: radius.md,
+    marginBottom: spacing.lg,
+  },
+  siNote: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    color: colors.ink2,
+    marginBottom: spacing.sm,
+  },
+
+  // ── SI inline crisis prompt ───────────────────────────────────────────
+  siInlinePrompt: {
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: colors.paper,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: 8,
+  },
+  siInlinePromptText: {
+    fontFamily: fonts.sans,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.ink,
+  },
+  siInlinePromptBtn: {
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+  },
+  siInlinePromptBtnLabel: {
+    fontFamily: fonts.sansSemibold,
+    fontSize: 13,
+    color: colors.eucalyptusDeep,
+    textDecorationLine: 'underline',
+  },
+
+  // ── ADHD section ──────────────────────────────────────────────────────
   adhdNote: {
     fontSize: 12,
   },
   adhdSection: {
-    marginTop: 18,
-    marginBottom: 28,
+    marginTop: 16,
+    marginBottom: 24,
     padding: 16,
     backgroundColor: colors.mintPale,
     borderRadius: radius.md,
@@ -472,7 +819,7 @@ const s = StyleSheet.create({
   },
   ghostBtn: {
     height: 44,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',

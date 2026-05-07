@@ -79,7 +79,7 @@ export default function DrspLogTab({ state }: DrspLogTabProps) {
         titleAccent="2 cycles deep."
         sub="Generated from your prospective DRSP record. Not a diagnosis."
       />
-      <View style={[s.clinicalCard, { marginBottom: 14 }]}>
+      <View style={[s.clinicalCard, { marginBottom: 16 }]}>
         <Text style={s.clinicalHeading}>
           DRSP LOG PREVIEW · {loggedCount} DAYS LOGGED
         </Text>
@@ -134,7 +134,7 @@ const s = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 18,
+    padding: 16,
   },
   clinicalHeading: {
     fontFamily: fonts.sansSemibold,
@@ -156,7 +156,7 @@ const s = StyleSheet.create({
   exportNote: {
     fontFamily: fonts.sans,
     fontStyle: 'italic',
-    fontSize: 10,
+    fontSize: 11,
     marginTop: 8,
     color: colors.ink3,
   },

@@ -1,0 +1,61 @@
+appId: com.hormonaiq.app
+---
+# Onboarding flow — screenshots every step for design review.
+# Minimum path: YOB (default 1995) → Ora intro → Conditions (PMDD) →
+#   Ed screen → Tracking history → Cycle basics → Notifications → Home.
+
+- launchApp:
+    clearState: true
+
+# ── Step 1: Year of birth ─────────────────────────────────────────
+- waitForAnimationsToEnd
+- takeScreenshot: screenshots/01-onboarding-yob
+
+- tapOn:
+    id: "Continue"
+- waitForAnimationsToEnd
+
+# ── Step 2: Ora introduction ──────────────────────────────────────
+- takeScreenshot: screenshots/02-onboarding-ora
+
+- tapOn:
+    id: "Continue to conditions"
+- waitForAnimationsToEnd
+
+# ── Step 3: Condition picker (PMDD pre-selected) ──────────────────
+- takeScreenshot: screenshots/03-onboarding-conditions
+
+- tapOn:
+    id: "Continue"
+- waitForAnimationsToEnd
+
+# ── Step 3.7: Endometriosis question ─────────────────────────────
+- takeScreenshot: screenshots/04-onboarding-ed-question
+
+- tapOn:
+    id: "Continue"
+- waitForAnimationsToEnd
+
+# ── Step 3.8: Tracking history ────────────────────────────────────
+- takeScreenshot: screenshots/05-onboarding-tracking-history
+
+- tapOn:
+    id: "Continue"
+- waitForAnimationsToEnd
+
+# ── Step 4: Cycle basics ──────────────────────────────────────────
+- takeScreenshot: screenshots/06-onboarding-cycle-basics
+
+- tapOn:
+    id: "Continue to notifications"
+- waitForAnimationsToEnd
+
+# ── Step 5: Notifications ─────────────────────────────────────────
+- takeScreenshot: screenshots/07-onboarding-notifications
+
+- tapOn:
+    id: "Begin using HormonaIQ"
+- waitForAnimationsToEnd
+
+# ── Landed on Home tab ────────────────────────────────────────────
+- takeScreenshot: screenshots/08-home-after-onboarding

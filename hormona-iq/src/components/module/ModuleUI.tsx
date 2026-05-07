@@ -663,7 +663,7 @@ const s = StyleSheet.create({
 
   // Stat
   statCard: {
-    padding: 14,
+    padding: 16,
     flex: 1,
   },
   statLabel: {
@@ -703,9 +703,9 @@ const s = StyleSheet.create({
   },
   nrsCell: {
     flex: 1,
-    minWidth: 0,
+    minHeight: 44,
     height: 44,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
@@ -827,7 +827,7 @@ const s = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: colors.border,
     justifyContent: 'center',
-    paddingHorizontal: 3,
+    paddingHorizontal: 4,
   },
   switchTrackOn: {
     backgroundColor: colors.eucalyptus,
@@ -844,7 +844,7 @@ const s = StyleSheet.create({
 
   // MSection
   sectionWrap: {
-    marginBottom: 18,
+    marginBottom: 16,
   },
   sectionHeader: {
     flexDirection: 'row',

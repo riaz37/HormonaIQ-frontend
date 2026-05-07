@@ -1,6 +1,8 @@
 // Morning Garden design tokens — single source of truth for all visual decisions.
 // Mirrors DESIGN.md and HormonaIQ.html CSS variables.
 
+import { useColorScheme } from 'react-native';
+
 export const colors = {
   // Brand greens
   eucalyptus: '#3F6F5A',
@@ -124,6 +126,51 @@ export const fonts = {
   mono: 'JetBrainsMono_400Regular',
   monoMedium: 'JetBrainsMono_500Medium',
 } as const;
+
+export const darkColors = {
+  // Backgrounds
+  cream: '#141918',
+  creamWarm: '#1A1F1C',
+  creamAlpha: 'rgba(20, 25, 24, 0.95)',
+  paper: '#1E2422',
+  paperOverlay: 'rgba(30, 36, 34, 0.92)',
+
+  // Ink (text)
+  ink: '#EEF2EE',
+  ink2: '#B8C4B8',
+  ink3: '#7A8E7A',
+  inkDisabled: '#3A4A3A',
+
+  // Brand — eucalyptus family (keep relatively similar, slight desaturation)
+  eucalyptus: '#4A9E6A',
+  eucalyptusDeep: '#3A8A5A',
+  eucalyptusSoft: '#2A5A3A',
+  eucalyptusLight: '#1E3A28',
+
+  // Accent palette (desaturated for dark mode)
+  mintMist: '#1A2E22',
+  mintPale: '#162018',
+  sageLight: '#1E2E20',
+  butter: '#2E2A18',
+  butterDeep: '#3A3210',
+  coralSoft: '#2E1A1A',
+  coral: '#C05050',
+  rose: '#8A3040',
+  lavender: '#9090C0',
+
+  // Borders
+  border: '#2A3A2A',
+  borderMint: '#1E3028',
+  tabbarBorder: '#2A3A2A',
+
+  // Shadows (dark mode shadows are subtle)
+  shadowColor: '#000000',
+} as const;
+
+export function useThemeColors() {
+  const scheme = useColorScheme();
+  return scheme === 'dark' ? darkColors : colors;
+}
 
 export type ColorToken = keyof typeof colors;
 export type PhaseToken = keyof typeof phase;

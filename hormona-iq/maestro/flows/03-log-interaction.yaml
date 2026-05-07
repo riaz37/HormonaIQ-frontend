@@ -1,0 +1,29 @@
+appId: com.hormonaiq.app
+---
+# Log screen — interactive states: vibe check, DRSP scale, physical symptoms.
+# Shows how the log form looks mid-interaction.
+
+- runFlow: 01-setup-state.yaml
+
+- tapOn:
+    id: "Log"
+- waitForAnimationsToEnd
+- takeScreenshot: screenshots/20-log-empty
+
+# Tap a vibe option (the first mood option)
+- tapOn:
+    index: 0
+    text: ".*"
+    optional: true
+- waitForAnimationsToEnd
+- takeScreenshot: screenshots/21-log-vibe-selected
+
+# Scroll to see DRSP scale
+- scrollDown
+- takeScreenshot: screenshots/22-log-drsp-scale
+
+- scrollDown
+- takeScreenshot: screenshots/23-log-physical-symptoms
+
+- scrollDown
+- takeScreenshot: screenshots/24-log-sleep-section

@@ -7,6 +7,7 @@
 import { useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import {
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -154,6 +155,16 @@ const PHASE_VIBE_WORDS: Record<PhaseCode, string> = {
   Ls: 'Late luteal',
   M: 'Menstrual',
   '?': 'Variable',
+};
+
+const PHASE_CONTEXT_NOTE: Record<PhaseCode, string> = {
+  F: 'Follicular phase is typically when energy and focus are higher. Plan with it.',
+  O: "Ovulatory window. Energy is often higher here — or it isn't. Either is valid.",
+  L: "Luteal phase — many people notice mood and energy shifts here. You're not imagining it.",
+  Lm: 'Entering luteal. Symptoms often build gradually through this phase.',
+  Ls: "Late luteal is where PMDD symptoms typically peak. You're not imagining it.",
+  M: 'Menstrual phase. Your body just did a lot. Rest is productive.',
+  '?': 'Your cycle runs on its own clock. We track it where it is.',
 };
 
 const PHASE_FILL: Record<PhaseCode, string> = {
@@ -337,6 +348,16 @@ function greetingForHour(): string {
   return 'Good evening';
 }
 
+function last14Days(): string[] {
+  const days: string[] = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+  return days;
+}
+
 function buildLogEntries(entries: Record<string, DayEntry>): LogEntry[] {
   return Object.entries(entries).map(([date, e]) => ({
     date,
@@ -508,13 +529,6 @@ export default function HomeScreen(): ReactElement {
   const patternState: 'empty' | 'early' | 'confirmed' =
     loggedDays < 7 ? 'empty' : loggedDays < 35 ? 'early' : 'confirmed';
 
-  // ── T-24 community pulse ───────────────────────────────────────────────
-  const communityCount =
-    ({ F: 4213, O: 1847, L: 2896, Lm: 2896, Ls: 2896, M: 1432, '?': 2200 } as Record<
-      PhaseCode,
-      number
-    >)[phaseCode];
-
   const phaseChipText = irregular
     ? 'Phase: variable'
     : `${PHASE_NAMES[phaseCode]} phase`;
@@ -621,15 +635,20 @@ export default function HomeScreen(): ReactElement {
         </View>
       )}
 
-      {/* T-24 community pulse */}
+      {/* Phase-contextual note */}
       <Text
         style={[
           typography.caption,
-          { textAlign: 'center', marginTop: 18, marginBottom: 18, fontSize: 12 },
+          {
+            textAlign: 'center',
+            marginTop: 18,
+            marginBottom: 18,
+            fontSize: 12,
+            fontStyle: 'italic',
+          },
         ]}
       >
-        {communityCount.toLocaleString()} others are in their{' '}
-        {PHASE_NAMES[phaseCode].toLowerCase()} phase today
+        {PHASE_CONTEXT_NOTE[phaseCode]}
       </Text>
 
       {/* 7-day forecast strip */}
@@ -648,6 +667,27 @@ export default function HomeScreen(): ReactElement {
           </View>
         ))}
       </View>
+
+      {/* 14-day activity heatmap */}
+      <View style={s.heatmapRow}>
+        {last14Days().map((dateKey) => {
+          const logged = !!state.entries[dateKey];
+          const isToday = dateKey === todayKey;
+          return (
+            <View
+              key={dateKey}
+              style={[
+                s.heatDot,
+                logged && s.heatDotFilled,
+                isToday && s.heatDotToday,
+              ]}
+            />
+          );
+        })}
+      </View>
+      <Text style={[typography.caption, { textAlign: 'center', marginBottom: 18, fontSize: 11 }]}>
+        {Object.keys(state.entries).length} days logged
+      </Text>
 
       {/* T-09 — endometrial 75 */}
       {showEndo75 && (
@@ -780,8 +820,8 @@ export default function HomeScreen(): ReactElement {
         </View>
       )}
 
-      {/* T-06 — Tier-1 inline link */}
-      {loggedToday && tier === 'tier1' && (
+      {/* Unified support link — one at most */}
+      {loggedToday && tier === 'tier1' ? (
         <View style={s.tier1Wrap}>
           <Pressable
             onPress={() => setShowTier2(true)}
@@ -794,10 +834,7 @@ export default function HomeScreen(): ReactElement {
             </Text>
           </Pressable>
         </View>
-      )}
-
-      {/* T-07 — luteal Tier-1 persistent Support link */}
-      {phaseCode === 'L' && (
+      ) : phaseCode === 'L' || phaseCode === 'Lm' || phaseCode === 'Ls' ? (
         <View style={s.tier1Wrap}>
           <Pressable
             onPress={() => setShowTier2(true)}
@@ -810,19 +847,29 @@ export default function HomeScreen(): ReactElement {
             </Text>
           </Pressable>
         </View>
-      )}
+      ) : null}
 
       {/* Log CTA */}
       <Pressable
-        style={[buttons.primary, { height: 60, marginTop: 24, marginBottom: 8 }]}
+        style={[
+          loggedToday ? buttons.soft : buttons.primary,
+          { height: 60, marginTop: 24, marginBottom: 8 },
+        ]}
         onPress={() => router.push('/(app)/log')}
         {...(Platform.OS === 'web'
           ? { onClick: () => router.push('/(app)/log') }
           : {})}
         accessibilityRole="button"
-        accessibilityLabel="Log today"
+        accessibilityLabel={loggedToday ? "Update today's log" : 'Log today'}
       >
-        <Text style={[buttons.primaryLabel, { fontSize: 16 }]}>+ Log today</Text>
+        <Text
+          style={[
+            loggedToday ? buttons.softLabel : buttons.primaryLabel,
+            { fontSize: 16 },
+          ]}
+        >
+          {loggedToday ? "Update today's log" : '+ Log today'}
+        </Text>
       </Pressable>
       <Text
         style={[
@@ -830,8 +877,9 @@ export default function HomeScreen(): ReactElement {
           { textAlign: 'center', marginBottom: 24 },
         ]}
       >
-        Fast: ~30s · Full: ~90s
-        {irregular ? '' : ` · Day ${cycleDay}, ${PHASE_NAMES[phaseCode]}`}
+        {loggedToday
+          ? "Today's log is saved · Tap to update"
+          : `Fast: ~30s · Full: ~90s${irregular ? '' : ` · Day ${cycleDay}, ${PHASE_NAMES[phaseCode]}`}`}
       </Text>
 
       {/* Quick tools row — T-21 episode tile */}
@@ -882,6 +930,20 @@ export default function HomeScreen(): ReactElement {
           <Text style={s.toolBody}>Built when well, ready now</Text>
         </Pressable>
       </View>
+
+      {/* Milestone moments */}
+      {loggedDays === 1 && (
+        <View style={[cards.cardMint, { marginBottom: 16 }]}>
+          <Text style={[typography.eyebrow, { marginBottom: 4 }]}>First one done</Text>
+          <Text style={typography.body}>That's the hardest one. Each log teaches ORA something new about your pattern.</Text>
+        </View>
+      )}
+      {loggedDays === 7 && (
+        <View style={[cards.cardMint, { marginBottom: 16 }]}>
+          <Text style={[typography.eyebrow, { marginBottom: 4 }]}>First full week tracked</Text>
+          <Text style={typography.body}>One week of data. ORA is starting to notice things. Keep going — the pattern gets clearer every cycle.</Text>
+        </View>
+      )}
 
       {/* T-14 Ora pattern card */}
       {state.oraEnabled && patternState === 'empty' && (
@@ -962,17 +1024,28 @@ export default function HomeScreen(): ReactElement {
               You don't have to ride this out alone.
             </Text>
             <Text style={[typography.body, { marginBottom: 18 }]}>
-              If you're in crisis, call or text 988 (US) for the Suicide &
-              Crisis Lifeline. Outside the US, contact your local emergency
+              If you need support right now, call or text{' '}
+              <Text style={typography.italicDisplay}>988</Text> (US). Free,
+              confidential, 24/7. Outside the US, contact your local emergency
               services.
             </Text>
             <Pressable
-              style={buttons.primary}
+              style={[buttons.primary, { marginBottom: 12 }]}
+              onPress={() => {
+                Linking.openURL('tel:988');
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Call or text 988"
+            >
+              <Text style={buttons.primaryLabel}>Call or text 988</Text>
+            </Pressable>
+            <Pressable
+              style={buttons.soft}
               onPress={() => setShowTier2(false)}
               accessibilityRole="button"
               accessibilityLabel="Close support sheet"
             >
-              <Text style={buttons.primaryLabel}>Close</Text>
+              <Text style={buttons.softLabel}>Close</Text>
             </Pressable>
           </View>
         </View>
@@ -1041,6 +1114,26 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
     marginBottom: 14,
+  },
+  heatmapRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 5,
+    marginBottom: 6,
+    marginTop: 14,
+  },
+  heatDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.border,
+  },
+  heatDotFilled: {
+    backgroundColor: colors.eucalyptus,
+  },
+  heatDotToday: {
+    borderWidth: 2,
+    borderColor: colors.eucalyptusDeep,
   },
   dayPill: {
     flex: 1,

@@ -117,7 +117,7 @@ export function ModuleSheet({
       >
         {/* Sheet — React Native has no touch event bubbling — modal structure prevents backdrop press */}
         <Animated.View style={[s.sheet, animatedSheetStyle]}>
-          <Pressable>
+          <Pressable accessibilityLabel="Module sheet content">
             {/* Sticky header with grab handle */}
             <Pressable
               style={s.header}
@@ -188,7 +188,7 @@ const s = StyleSheet.create({
     backgroundColor: colors.paper,
     paddingTop: 16,
     paddingBottom: 8,
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     alignItems: 'center',
@@ -207,9 +207,9 @@ const s = StyleSheet.create({
     flexShrink: 1,
   },
   contentContainer: {
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
     paddingTop: spacing.sm,
-    paddingBottom: 28,
+    paddingBottom: 24,
   },
 
   // Fallback

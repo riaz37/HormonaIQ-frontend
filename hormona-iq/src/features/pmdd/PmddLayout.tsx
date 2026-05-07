@@ -70,7 +70,7 @@ function LutealPredModule() {
   return (
     <View>
       <MHeader
-        eyebrow="F34 · LUTEAL PREDICTOR"
+        eyebrow="Coming up"
         title="Heads up: "
         titleAccent="your luteal"
         sub="Predicted from your cycle history. Never overdue language."
@@ -81,7 +81,7 @@ function LutealPredModule() {
           ± 1 day · 87% confidence
         </Text>
       </View>
-      <View style={[cards.cardMint, { padding: 14 }]}>
+      <View style={[cards.cardMint, { padding: 16 }]}>
         <Text style={[typography.eyebrow, { marginBottom: 6 }]}>
           WHILE YOU'RE WELL
         </Text>
@@ -189,7 +189,7 @@ function SSRIModule({ state, setState }: SSRIModuleProps) {
   return (
     <View>
       <MHeader
-        eyebrow="F36 · SSRI LUTEAL DOSING"
+        eyebrow="Medication timing"
         title="Your meds, "
         titleAccent="tracked against DRSP."
       />
@@ -424,7 +424,7 @@ function SuppsModule({ reduceMotion: _reduceMotion }: SuppsModuleProps) {
   return (
     <View>
       <MHeader
-        eyebrow="F37 · SUPPLEMENTS"
+        eyebrow="Supplements"
         title="Evidence ratings, "
         titleAccent="not vibes."
         sub="Peer-reviewed strength of evidence for each."
@@ -534,7 +534,7 @@ function RelImpactModule() {
   return (
     <View>
       <MHeader
-        eyebrow="F39 · RELATIONSHIP IMPACT"
+        eyebrow="Relationships"
         title="Conflicts, "
         titleAccent="logged briefly."
         sub="Builds the documentation for Criterion B and couples therapy."
@@ -587,7 +587,7 @@ function WorkImpactModule() {
   return (
     <View>
       <MHeader
-        eyebrow="F40 · WORK / ACADEMIC"
+        eyebrow="Work impact"
         title="Hours lost, "
         titleAccent="tracked honestly."
         sub="For accommodations, FMLA, or disability documentation."
@@ -724,13 +724,13 @@ function TriggersModule({ state, setState }: TriggersModuleProps) {
   return (
     <View>
       <MHeader
-        eyebrow="F41 · TRIGGER CORRELATION"
+        eyebrow="Triggers"
         title="Your "
         titleAccent="specific"
         sub="Daily inputs correlated against your next-day DRSP."
       />
       <MSection title="LOG TODAY'S TRIGGERS">
-        <View style={[cards.cardWarm, { padding: 14 }]}>
+        <View style={[cards.cardWarm, { padding: 16 }]}>
           <Text style={[typography.caption, sl.fieldLabel]}>Sleep hours</Text>
           <TextInput
             style={[sl.textInput, { marginBottom: 10 }]}
@@ -809,7 +809,7 @@ function TriggersModule({ state, setState }: TriggersModuleProps) {
         }
       >
         {!enough ? (
-          <View style={[cards.cardWarm, { padding: 14 }]}>
+          <View style={[cards.cardWarm, { padding: 16 }]}>
             <Text style={[typography.body, { fontSize: 13, marginBottom: 4 }]}>
               Tracking 30+ days unlocks correlations.
             </Text>
@@ -908,7 +908,7 @@ function CommunityModule({ state, setState }: CommunityModuleProps) {
   return (
     <View>
       <MHeader
-        eyebrow="F42 · PHASE-MATCHED COMMUNITY"
+        eyebrow="Community"
         title="You're "
         titleAccent="not alone"
         sub="Anonymous. No profiles. No feed. Just numbers."
@@ -925,7 +925,7 @@ function CommunityModule({ state, setState }: CommunityModuleProps) {
           <Text style={sl.communityStatValue}>{r.v}</Text>
         </View>
       ))}
-      <Text style={[typography.caption, { marginTop: 14, fontSize: 11 }]}>
+      <Text style={[typography.caption, { marginTop: 16, fontSize: 11 }]}>
         Aggregated {'>'} 100 users · no individual data shared.
       </Text>
 
@@ -1252,7 +1252,7 @@ const sl = StyleSheet.create({
     alignItems: 'center',
   },
   tab: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: radius.pill,
     minHeight: 44,
@@ -1283,7 +1283,7 @@ const sl = StyleSheet.create({
   },
   ghostBtn: {
     minHeight: 44,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
@@ -1320,7 +1320,7 @@ const sl = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 14,
+    marginBottom: 16,
   },
   modalBackdrop: {
     flex: 1,
@@ -1332,7 +1332,7 @@ const sl = StyleSheet.create({
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     padding: 24,
-    paddingBottom: 36,
+    paddingBottom: 32,
   },
   disclaimer: {
     fontFamily: fonts.sans,
@@ -1345,7 +1345,7 @@ const sl = StyleSheet.create({
   patternBanner: {
     flexDirection: 'row',
     gap: 10,
-    padding: 14,
+    padding: 16,
     marginBottom: 10,
   },
   patternBannerTitle: {
@@ -1357,7 +1357,7 @@ const sl = StyleSheet.create({
   patternCard: {
     flexDirection: 'row',
     gap: 10,
-    padding: 14,
+    padding: 16,
     marginBottom: 10,
   },
   patternCardHeader: {
@@ -1375,8 +1375,8 @@ const sl = StyleSheet.create({
 
   // Luteal predictor
   centeredCard: {
-    padding: 18,
-    marginBottom: 14,
+    padding: 16,
+    marginBottom: 16,
     alignItems: 'center',
   },
   lutealCountdown: {
@@ -1387,7 +1387,7 @@ const sl = StyleSheet.create({
 
   // SSRI
   ssriCfgCard: {
-    padding: 14,
+    padding: 16,
     marginBottom: 12,
   },
   ssriCfgHeader: {
@@ -1402,7 +1402,7 @@ const sl = StyleSheet.create({
     color: colors.ink,
   },
   ssriEditorCard: {
-    padding: 14,
+    padding: 16,
     marginBottom: 12,
   },
   editBtn: {
@@ -1469,20 +1469,20 @@ const sl = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 30,
+    minHeight: 44,
   },
   adherenceMark: {
     fontFamily: fonts.mono,
     fontSize: 11,
   },
   adherenceDrsp: {
-    fontSize: 10,
+    fontSize: 11,
     marginTop: 4,
   },
 
   // Supplements
   suppCard: {
-    padding: 14,
+    padding: 16,
     marginBottom: 8,
   },
   suppRow: {
@@ -1523,7 +1523,7 @@ const sl = StyleSheet.create({
 
   // Relationship
   conflictCard: {
-    padding: 14,
+    padding: 16,
     marginBottom: 8,
   },
   conflictHeader: {
@@ -1587,8 +1587,8 @@ const sl = StyleSheet.create({
 
   // Community
   communityCount: {
-    padding: 18,
-    marginBottom: 14,
+    padding: 16,
+    marginBottom: 16,
     alignItems: 'center',
   },
   communityNumber: {
@@ -1609,8 +1609,8 @@ const sl = StyleSheet.create({
     color: colors.eucalyptus,
   },
   lutealWallCard: {
-    marginTop: 18,
-    padding: 14,
+    marginTop: 16,
+    padding: 16,
     flexDirection: 'row',
     gap: 10,
   },

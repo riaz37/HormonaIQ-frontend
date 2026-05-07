@@ -3,12 +3,13 @@
 // Wave 1: T-01 full DRSP, T-04 persistence, T-05 SI as item 12, T-06 crisis post-save
 // Wave 2: T-11 fast-log mode + voice note, T-22 ADHD check-in 4th step, T-26 functional quick-links
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { ReactElement } from 'react';
 import {
+  Linking,
   Modal,
   Pressable,
-  ScrollView,
+  SectionList,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -17,6 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useReducedMotion } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import Svg, { Path as SvgPath, Rect as SvgRect } from 'react-native-svg';
 
 import {
@@ -29,9 +31,18 @@ import { colors, fonts, radius, spacing } from '../../constants/tokens';
 import { useAppStore, useLogStore } from '../../stores';
 import type { LogEntry, NewLogEntry } from '../../stores';
 import { PillButton } from '../../components/ui/PillButton';
+import { SectionCard } from '../../components/ui/SectionCard';
 
 import { VibeCheck } from './VibeCheck';
-import { DrspScale, DRSP_SI, FAST_LOG_KEYS, DRSP_ITEMS } from './DrspScale';
+import {
+  ScaleRow,
+  DRSP_SI,
+  FAST_LOG_KEYS,
+  DRSP_ITEMS,
+  DRSP_SECTIONS,
+  FUNCTIONAL_ITEMS,
+  ADHD_EF,
+} from './DrspScale';
 import { PhysicalSymptoms, PHYSICAL_LIST } from './PhysicalSymptoms';
 import { SleepScale } from './SleepScale';
 
@@ -75,6 +86,26 @@ interface AppState {
   fastLogMode: boolean;
   entries: Record<string, SavedEntry>;
   spottingLog: Record<string, SpottingEntry>;
+}
+
+// ─────────────────────────────────────────────
+// SectionList item types
+// ─────────────────────────────────────────────
+
+type LogListItem =
+  | { kind: 'drsp'; key: string; label: string }
+  | { kind: 'si' }
+  | { kind: 'fn_grid'; key: string; label: string }
+  | { kind: 'fn_single' }
+  | { kind: 'adhd_ef'; efKey: string; label: string }
+  | { kind: 'adhd_meds' };
+
+interface LogSection {
+  key: string;
+  title: string;
+  note?: string;
+  isAdhdHeader?: boolean;
+  data: LogListItem[];
 }
 
 // ─────────────────────────────────────────────
@@ -124,6 +155,22 @@ const INITIAL_STATE: AppState = {
 };
 
 // ─────────────────────────────────────────────
+// Phase-aware confirmation helper
+// ─────────────────────────────────────────────
+
+function getConfirmationNote(phase: PhaseCode, drsp: DrspScores): string {
+  const moodVal = Math.max(drsp['mood_swings'] ?? 0, drsp['irritability'] ?? 0);
+  if (phase === 'Ls' || phase === 'M') {
+    return moodVal >= 4
+      ? 'Hard day logged. This data helps your provider see the pattern.'
+      : 'Logged. Rest counts in this phase.';
+  }
+  if (phase === 'F') return 'Follicular phase — a good window for your patterns to build.';
+  if (phase === 'O') return 'Ovulatory window logged.';
+  return 'Logged and saved.';
+}
+
+// ─────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────
 
@@ -147,10 +194,18 @@ export default function LogScreen(): ReactElement {
   }));
 
   const todayKey = new Date().toISOString().slice(0, 10);
+  const yesterdayKey = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().slice(0, 10);
+  })();
 
   // Hydrate today's draft from the persistent log store on mount.
   const persistedToday: LogEntry | undefined = getEntryForDate(todayKey);
   const existing = state.entries[todayKey] ?? ({} as Partial<SavedEntry>);
+  const yesterdayEntry = state.entries[yesterdayKey];
+  const yesterdayDrsp: Record<string, number> | undefined =
+    yesterdayEntry?.drsp ?? undefined;
 
   const [storedEntryId, setStoredEntryId] = useState<string | null>(
     persistedToday ? persistedToday.id : null,
@@ -175,7 +230,13 @@ export default function LogScreen(): ReactElement {
   const [saved, setSaved] = useState(false);
   const [crisisTier, setCrisisTier] = useState<'tier2' | 'tier3' | null>(null);
   const [savedEntry, setSavedEntry] = useState<SavedEntry | null>(null);
-  const [fastLog, setFastLog] = useState(state.fastLogMode ?? false);
+
+  // Auto-enable fast log when in late luteal or menstrual phase
+  const initialPhase = phaseForDay(state.cycleDay, state.cycleLen);
+  const shouldAutoFastLog = initialPhase === 'Ls' || initialPhase === 'M';
+  const [fastLog, setFastLog] = useState(
+    state.fastLogMode ?? shouldAutoFastLog,
+  );
   const [spottingFlow, setSpottingFlow] = useState<string | null | undefined>(
     state.spottingLog[todayKey]?.flow,
   );
@@ -187,11 +248,21 @@ export default function LogScreen(): ReactElement {
 
   // ── Callbacks ───────────────────────────────────────────────────────────
 
-  const setSym = (key: string, n: number): void =>
-    setDrsp((prev) => ({ ...prev, [key]: n }));
+  const setSym = useCallback(
+    (key: string, n: number): void => setDrsp((prev) => ({ ...prev, [key]: n })),
+    [],
+  );
 
-  const setEF = (key: string, n: number): void =>
-    setAdhdEF((prev) => ({ ...prev, [key]: n }));
+  const carryForward = (): void => {
+    if (yesterdayDrsp != null) {
+      setDrsp((prev) => ({ ...yesterdayDrsp, ...prev }));
+    }
+  };
+
+  const setEF = useCallback(
+    (key: string, n: number): void => setAdhdEF((prev) => ({ ...prev, [key]: n })),
+    [],
+  );
 
   const togglePhysical = (p: string): void => {
     setPhysical((prev) =>
@@ -241,7 +312,7 @@ export default function LogScreen(): ReactElement {
 
   const save = (): void => {
     const entry: SavedEntry = {
-      drsp: { ...drsp, [DRSP_SI.key]: si ?? 1 },
+      drsp: si != null ? { ...drsp, [DRSP_SI.key]: si } : { ...drsp },
       feeling,
       physical,
       adhdRating,
@@ -249,7 +320,7 @@ export default function LogScreen(): ReactElement {
       voiceNote,
       adhdEF: isAdhdUser ? adhdEF : undefined,
       fnImpair,
-      suicidal_ideation: si ?? 1,
+      suicidal_ideation: si ?? 0,
       savedAt: Date.now(),
     };
 
@@ -258,7 +329,7 @@ export default function LogScreen(): ReactElement {
     // Persist to the global log store (creates or updates today's entry).
     const persistPayload: NewLogEntry = {
       date: todayKey,
-      drspScores: { ...drsp, [DRSP_SI.key]: si ?? 1 },
+      drspScores: si != null ? { ...drsp, [DRSP_SI.key]: si } : { ...drsp },
       mood: null,
       energy: null,
       pain: null,
@@ -277,16 +348,18 @@ export default function LogScreen(): ReactElement {
       const nextEntries = { ...s.entries, [todayKey]: entry };
       const nextState: AppState = { ...s, entries: nextEntries, fastLogMode: fastLog };
 
-      // Simplified crisis tier logic
-      const siVal = si ?? 1;
+      // Crisis tier logic — null SI means not answered, treat as 0
+      const siVal = si ?? 0;
       if (siVal >= 5) {
         if (!reduceMotion) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
           setTimeout(() => setCrisisTier('tier3'), 50);
         } else {
           setCrisisTier('tier3');
         }
       } else if (siVal >= 3) {
         if (!reduceMotion) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
           setTimeout(() => setCrisisTier('tier2'), 50);
         } else {
           setCrisisTier('tier2');
@@ -297,6 +370,9 @@ export default function LogScreen(): ReactElement {
     });
 
     setSaved(true);
+    if (!reduceMotion) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
   };
 
   const closeCrisis = (): void => {
@@ -306,6 +382,200 @@ export default function LogScreen(): ReactElement {
   const openModule = (id: string): void => {
     setSavedEntry((prev) => (prev ? { ...prev, _openModule: id } : prev));
   };
+
+  // ── SectionList data / render ────────────────────────────────────────────
+
+  const hasYesterday = yesterdayDrsp != null && Object.keys(yesterdayDrsp).length > 0;
+
+  const sections = useMemo((): LogSection[] => {
+    if (fastLog) {
+      const fastItems = FAST_LOG_KEYS.map((k) => {
+        const item = DRSP_ITEMS.find((i) => i.key === k);
+        return item ? { kind: 'drsp' as const, key: item.key, label: item.label } : null;
+      }).filter((x): x is { kind: 'drsp'; key: string; label: string } => x !== null);
+      return [{
+        key: 'fast',
+        title: '',
+        data: [...fastItems, { kind: 'si' as const }, { kind: 'fn_single' as const }],
+      }];
+    }
+
+    const result: LogSection[] = DRSP_SECTIONS.map((section) => ({
+      key: section.title,
+      title: section.title,
+      data: [
+        ...section.keys
+          .filter((k) => k !== DRSP_SI.key)
+          .map((k) => {
+            const item = DRSP_ITEMS.find((i) => i.key === k);
+            return item ? { kind: 'drsp' as const, key: item.key, label: item.label } : null;
+          })
+          .filter(
+            (x): x is { kind: 'drsp'; key: string; label: string } => x !== null,
+          ),
+        ...(section.keys.includes(DRSP_SI.key) ? [{ kind: 'si' as const }] : []),
+      ],
+    }));
+
+    result.push({
+      key: 'functional',
+      title: 'Did symptoms interfere?',
+      note: 'The DRSP needs this for diagnosis.',
+      data: FUNCTIONAL_ITEMS.map((it) => ({
+        kind: 'fn_grid' as const,
+        key: it.key,
+        label: it.label,
+      })),
+    });
+
+    if (isAdhdUser) {
+      result.push({
+        key: 'adhd_ef',
+        title: 'ADHD check-in (optional)',
+        note: '5 EF dimensions · 1–5 · skip without warning',
+        isAdhdHeader: true,
+        data: showAdhdSection
+          ? ADHD_EF.map((d) => ({ kind: 'adhd_ef' as const, efKey: d.key, label: d.label }))
+          : [],
+      });
+      result.push({
+        key: 'adhd_meds',
+        title: 'How well did your ADHD meds work today?',
+        note: 'Estrogen affects dopamine — your meds may feel weaker before your period.',
+        data: [{ kind: 'adhd_meds' as const }],
+      });
+    }
+
+    return result;
+  }, [fastLog, isAdhdUser, showAdhdSection]);
+
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: LogSection }): ReactElement | null => {
+      if (!section.title) return null;
+      return (
+        <View style={s.drspSectionHeader}>
+          <View style={s.drspSectionHeaderInner}>
+            <Text style={s.drspSectionTitle}>{section.title}</Text>
+            {section.isAdhdHeader === true && (
+              <TouchableOpacity
+                style={s.ghostBtn}
+                onPress={() => setShowAdhdSection((v) => !v)}
+                accessibilityLabel={showAdhdSection ? 'Skip ADHD section' : 'Show ADHD section'}
+                accessibilityRole="button"
+              >
+                <Text style={s.ghostBtnLabel}>
+                  {showAdhdSection ? 'Skip this section' : 'Show'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          {section.note != null && (
+            <Text style={s.drspSectionNote}>{section.note}</Text>
+          )}
+        </View>
+      );
+    },
+    [showAdhdSection],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: LogListItem }): ReactElement | null => {
+      switch (item.kind) {
+        case 'drsp':
+          return (
+            <View style={s.drspItem}>
+              <ScaleRow
+                label={item.label}
+                value={drsp[item.key]}
+                onSet={(n) => setSym(item.key, n)}
+                yesterdayValue={yesterdayDrsp?.[item.key]}
+              />
+            </View>
+          );
+        case 'si':
+          return (
+            <View style={[s.drspItem, s.siBox]}>
+              <Text style={s.siNote}>
+                Item 12 — important to track. There's no judgement here.
+              </Text>
+              <ScaleRow
+                label={DRSP_SI.label}
+                value={si}
+                onSet={setSi}
+                yesterdayValue={yesterdayDrsp?.[DRSP_SI.key]}
+                isSI
+              />
+            </View>
+          );
+        case 'fn_grid':
+          return (
+            <View style={s.drspItem}>
+              <ScaleRow
+                label={item.label}
+                value={drsp[item.key]}
+                onSet={(n) => setSym(item.key, n)}
+                yesterdayValue={yesterdayDrsp?.[item.key]}
+              />
+            </View>
+          );
+        case 'fn_single':
+          return (
+            <View style={s.drspItem}>
+              <Text style={[typography.h2, { marginTop: 8, marginBottom: 6 }]}>
+                Did symptoms interfere today?
+              </Text>
+              <ScaleRow
+                label="Overall functional impairment"
+                value={fnImpair}
+                onSet={setFnImpair}
+                max={6}
+              />
+            </View>
+          );
+        case 'adhd_ef':
+          return (
+            <View style={s.drspItem}>
+              <ScaleRow
+                label={item.label}
+                value={adhdEF[item.efKey]}
+                onSet={(n) => setEF(item.efKey, n)}
+                max={5}
+              />
+            </View>
+          );
+        case 'adhd_meds':
+          return (
+            <View style={s.drspItem}>
+              <ScaleRow
+                label="Effectiveness today (1–5)"
+                value={adhdRating}
+                onSet={setAdhdRating}
+                max={5}
+              />
+            </View>
+          );
+        default:
+          return null;
+      }
+    },
+    // setSym, setEF, setSi, setFnImpair, setAdhdRating are stable (useCallback / React dispatch)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [drsp, si, fnImpair, adhdEF, adhdRating, yesterdayDrsp, setSym, setEF],
+  );
+
+  const keyExtractor = useCallback(
+    (item: LogListItem, index: number): string => {
+      if ('key' in item) return `${item.kind}-${item.key}`;
+      if ('efKey' in item) return `adhd_ef-${item.efKey}`;
+      return `${item.kind}-${index}`;
+    },
+    [],
+  );
+
+  const extraData = useMemo(
+    () => ({ drsp, si, fnImpair, adhdEF, adhdRating }),
+    [drsp, si, fnImpair, adhdEF, adhdRating],
+  );
 
   // ── Saved / confirm screen ───────────────────────────────────────────────
   if (saved) {
@@ -324,6 +594,9 @@ export default function LogScreen(): ReactElement {
           </View>
           <Text style={[typography.bodyL, { textAlign: 'center', color: colors.ink }]}>
             Day {cycleDay} recorded.
+          </Text>
+          <Text style={[typography.caption, { textAlign: 'center', marginTop: 8, color: colors.ink2 }]}>
+            {getConfirmationNote(phase, drspE)}
           </Text>
 
           {/* T-26 functional impairment quick links */}
@@ -381,21 +654,55 @@ export default function LogScreen(): ReactElement {
               <Text style={[typography.eyebrow, { marginBottom: 8 }]}>Support</Text>
               <Text style={[typography.h2, { marginBottom: 8 }]}>
                 {crisisTier === 'tier3'
-                  ? "This is a hard one. You don't have to ride it out alone."
-                  : "Some days in this phase can feel really dark."}
+                  ? 'This is serious and you deserve support right now.'
+                  : 'Some days in this phase can feel really dark.'}
               </Text>
-              <Text style={[typography.body, { marginBottom: 18 }]}>
-                If you're in crisis, call or text 988 (US) for the Suicide &
-                Crisis Lifeline. Outside the US, contact your local emergency services.
+              <Text style={[typography.body, { marginBottom: 16 }]}>
+                {crisisTier === 'tier3'
+                  ? 'If you need support right now, call or text 988 (US). Free, confidential, 24/7.'
+                  : "You don't have to navigate this alone. Your safety plan is here when you need it."}
               </Text>
-              <TouchableOpacity
-                style={buttons.primary}
-                onPress={closeCrisis}
-                accessibilityLabel="Close support sheet"
-                accessibilityRole="button"
-              >
-                <Text style={buttons.primaryLabel}>Close</Text>
-              </TouchableOpacity>
+              {crisisTier === 'tier3' ? (
+                <>
+                  <TouchableOpacity
+                    style={buttons.primary}
+                    onPress={() => {
+                      void Linking.openURL('tel:988');
+                    }}
+                    accessibilityLabel="Call or text 988"
+                    accessibilityRole="button"
+                  >
+                    <Text style={buttons.primaryLabel}>Call or text 988</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[s.ghostBtn, { marginTop: 8 }]}
+                    onPress={closeCrisis}
+                    accessibilityLabel="Close"
+                    accessibilityRole="button"
+                  >
+                    <Text style={s.ghostBtnLabel}>Close</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={buttons.soft}
+                    onPress={closeCrisis}
+                    accessibilityLabel="Open safety plan"
+                    accessibilityRole="button"
+                  >
+                    <Text style={buttons.softLabel}>Open safety plan</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[s.ghostBtn, { marginTop: 8 }]}
+                    onPress={closeCrisis}
+                    accessibilityLabel="Close"
+                    accessibilityRole="button"
+                  >
+                    <Text style={s.ghostBtnLabel}>Close</Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
           </View>
         </Modal>
@@ -412,26 +719,19 @@ export default function LogScreen(): ReactElement {
   const longAmenorrhea = daysSincePeriod >= 35;
   const showSpotting = isPostmeno || longAmenorrhea || state.irregular;
 
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.cream }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={layout.screen}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <Text style={[typography.display, { marginBottom: 4 }]}>Daily check-in</Text>
-        {!state.cyclePaused && (
-          <Text style={[typography.caption, { marginBottom: 16 }]}>
-            Day {cycleDay} · {PHASE_NAMES[phase]} phase
-          </Text>
-        )}
+  const listHeader = (
+    <View>
+      <Text style={[typography.display, { marginBottom: 4 }]}>Daily check-in</Text>
+      {!state.cyclePaused && (
+        <Text style={[typography.caption, { marginBottom: 16 }]}>
+          Day {cycleDay} · {PHASE_NAMES[phase]} phase
+        </Text>
+      )}
 
-        {/* R7 — F88 Spotting / unexpected bleeding capture */}
-        {showSpotting && (
-          <View style={[cards.cardWarm, s.spottingCard]}>
-            <View style={s.spottingAccent} />
-            <View style={s.spottingContent}>
+      {showSpotting && (
+        <View style={[cards.cardWarm, s.spottingCard]}>
+          <View style={s.spottingAccent} />
+          <View style={s.spottingContent}>
             <Text style={[typography.eyebrow, { marginBottom: 6 }]}>
               UNEXPECTED BLEEDING TODAY?
             </Text>
@@ -467,187 +767,265 @@ export default function LogScreen(): ReactElement {
                 );
               })}
             </View>
+          </View>
+        </View>
+      )}
+
+      {shouldAutoFastLog && fastLog && (
+        <View style={s.autoFastBanner}>
+          <Text style={s.autoFastBannerText}>Simplified log today</Text>
+          <Pressable
+            onPress={() => setFastLog(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Switch to full log"
+          >
+            <Text style={s.autoFastBannerLink}>Switch to full</Text>
+          </Pressable>
+        </View>
+      )}
+
+      <View style={[cards.cardWarm, s.fastLogRow]}>
+        <View style={{ flex: 1 }}>
+          <Text style={s.fastLogTitle}>Fast log mode</Text>
+          <Text style={[typography.caption, { fontSize: 12 }]}>
+            {fastLog ? '~30s · vibe + 3 items + impairment' : '~90s · full DRSP grid'}
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={[s.switchTrack, fastLog && s.switchTrackOn]}
+          onPress={() => setFastLog((v) => !v)}
+          accessibilityLabel={`Fast log mode — currently ${fastLog ? 'on' : 'off'}`}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: fastLog }}
+        >
+          <View style={[s.switchThumb, fastLog && s.switchThumbOn]} />
+        </TouchableOpacity>
+      </View>
+
+      <VibeCheck feeling={feeling} onFeelingChange={setFeeling} />
+
+      <View style={[cards.cardMint, s.cycleDayRow]}>
+        <TouchableOpacity
+          style={s.iconBtn}
+          onPress={() => setState((prev) => ({ ...prev, cycleDay: Math.max(1, prev.cycleDay - 1) }))}
+          accessibilityLabel="Previous cycle day"
+          accessibilityRole="button"
+        >
+          <Text style={s.iconBtnText}>←</Text>
+        </TouchableOpacity>
+        <View style={{ alignItems: 'center' }}>
+          <Text style={[typography.data, { fontSize: 15, color: colors.eucalyptusDeep }]}>
+            Day {cycleDay} · {PHASE_NAMES[phase]}
+          </Text>
+          <Text style={[typography.caption, { marginTop: 4 }]}>Tap to correct</Text>
+        </View>
+        <TouchableOpacity
+          style={s.iconBtn}
+          onPress={() => setState((prev) => ({ ...prev, cycleDay: Math.min(prev.cycleLen, prev.cycleDay + 1) }))}
+          accessibilityLabel="Next cycle day"
+          accessibilityRole="button"
+        >
+          <Text style={s.iconBtnText}>→</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={[typography.h2, { marginBottom: 4, marginTop: 24 }]}>
+        {fastLog ? 'Top symptoms' : "Today's symptoms"}
+      </Text>
+      <Text style={[typography.caption, { marginBottom: 12 }]}>
+        Daily Record of Severity of Problems · 1 = not at all, 6 = extreme
+      </Text>
+
+      <SectionCard style={s.anchorLegend}>
+        <View style={s.anchorRow}>
+          <Text style={s.anchorItem}><Text style={s.anchorNum}>1</Text> Not at all</Text>
+          <Text style={s.anchorItem}><Text style={s.anchorNum}>2</Text> Minimal</Text>
+          <Text style={s.anchorItem}><Text style={s.anchorNum}>3</Text> Mild</Text>
+        </View>
+        <View style={s.anchorRow}>
+          <Text style={s.anchorItem}><Text style={s.anchorNum}>4</Text> Moderate</Text>
+          <Text style={s.anchorItem}><Text style={s.anchorNum}>5</Text> Severe</Text>
+          <Text style={s.anchorItem}><Text style={s.anchorNum}>6</Text> Extreme</Text>
+        </View>
+      </SectionCard>
+
+      {hasYesterday && (
+        <TouchableOpacity
+          style={s.carryForwardBtn}
+          onPress={carryForward}
+          accessibilityRole="button"
+          accessibilityLabel="Copy yesterday's ratings as a starting point"
+        >
+          <Text style={s.carryForwardLabel}>Same as yesterday</Text>
+          <Text style={s.carryForwardSub}>Adjust anything that changed</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
+  const listFooter = (
+    <View>
+      {!fastLog && (
+        <PhysicalSymptoms
+          selected={physical}
+          onToggle={togglePhysical}
+          onSelectNone={() => setPhysical([])}
+        />
+      )}
+      {!fastLog && (
+        <SleepScale sleep={sleep} onSleepChange={setSleep} />
+      )}
+
+      <View style={[cards.cardWarm, s.voiceRow]}>
+        <View style={{ flex: 1 }}>
+          <Text style={s.voiceTitle}>Quick voice note (optional)</Text>
+          <Text style={[typography.caption, { fontSize: 12 }]}>
+            {voiceNote
+              ? 'Note saved · ' + voiceNote.slice(-6)
+              : recording
+                ? 'Listening… 3 sec'
+                : 'Tap mic to add'}
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={[s.micBtn, recording && s.micBtnRecording]}
+          onPress={recordVoiceNote}
+          accessibilityLabel={recording ? 'Recording in progress' : 'Record voice note'}
+          accessibilityRole="button"
+          disabled={recording}
+        >
+          <Text style={s.micBtnText}>{recording ? '●' : 'Rec'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={s.privacyFooter}>
+        <View style={s.privacyRow}>
+          <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+            <SvgRect
+              x={4}
+              y={10}
+              width={16}
+              height={11}
+              rx={2}
+              stroke={colors.ink3}
+              strokeWidth={1.6}
+            />
+            <SvgPath
+              d="M8 10V7a4 4 0 0 1 8 0v3"
+              stroke={colors.ink3}
+              strokeWidth={1.6}
+              strokeLinecap="round"
+            />
+          </Svg>
+          <Text style={s.privacyText}>On this device. Encrypted.</Text>
+        </View>
+        {si !== null && si >= 4 && (
+          <Text style={s.privacyText}>this entry is not stored beyond 72 hours</Text>
+        )}
+        <Pressable
+          style={{ marginTop: 6 }}
+          accessibilityRole="link"
+          accessibilityLabel="Your data privacy options"
+          onPress={() => {
+            // Placeholder — data & deletion options screen
+          }}
+        >
+          <Text style={[s.privacyText, { textDecorationLine: 'underline' }]}>
+            Your data & deletion options
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.cream }}>
+        <SectionList
+          sections={sections}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
+          stickySectionHeadersEnabled
+          extraData={extraData}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[layout.screen, { paddingBottom: 100 }]}
+          ListHeaderComponent={listHeader}
+          ListFooterComponent={listFooter}
+        />
+
+        <View style={s.stickyFooter}>
+          <PillButton
+            label="Save today's entry"
+            onPress={save}
+            variant="primary"
+            size="lg"
+          />
+        </View>
+
+        <Modal
+          visible={crisisTier !== null}
+          animationType={reduceMotion ? 'none' : 'slide'}
+          transparent
+          onRequestClose={closeCrisis}
+        >
+          <View style={s.modalBackdrop}>
+            <View style={s.modalSheet}>
+              <Text style={[typography.eyebrow, { marginBottom: 8 }]}>Support</Text>
+              <Text style={[typography.h2, { marginBottom: 8 }]}>
+                {crisisTier === 'tier3'
+                  ? 'This is serious and you deserve support right now.'
+                  : 'Some days in this phase can feel really dark.'}
+              </Text>
+              <Text style={[typography.body, { marginBottom: 16 }]}>
+                {crisisTier === 'tier3'
+                  ? 'If you need support right now, call or text 988 (US). Free, confidential, 24/7.'
+                  : "You don't have to navigate this alone. Your safety plan is here when you need it."}
+              </Text>
+              {crisisTier === 'tier3' ? (
+                <>
+                  <TouchableOpacity
+                    style={buttons.primary}
+                    onPress={() => { void Linking.openURL('tel:988'); }}
+                    accessibilityLabel="Call or text 988"
+                    accessibilityRole="button"
+                  >
+                    <Text style={buttons.primaryLabel}>Call or text 988</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[s.ghostBtn, { marginTop: 8 }]}
+                    onPress={closeCrisis}
+                    accessibilityLabel="Close"
+                    accessibilityRole="button"
+                  >
+                    <Text style={s.ghostBtnLabel}>Close</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={buttons.soft}
+                    onPress={closeCrisis}
+                    accessibilityLabel="Open safety plan"
+                    accessibilityRole="button"
+                  >
+                    <Text style={buttons.softLabel}>Open safety plan</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[s.ghostBtn, { marginTop: 8 }]}
+                    onPress={closeCrisis}
+                    accessibilityLabel="Close"
+                    accessibilityRole="button"
+                  >
+                    <Text style={s.ghostBtnLabel}>Close</Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
           </View>
-        )}
-
-        {/* T-11 — fast log toggle */}
-        <View style={[cards.cardWarm, s.fastLogRow]}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.fastLogTitle}>Fast log mode</Text>
-            <Text style={[typography.caption, { fontSize: 12 }]}>
-              {fastLog ? '~30s · vibe + 3 items + impairment' : '~90s · full DRSP grid'}
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={[s.switchTrack, fastLog && s.switchTrackOn]}
-            onPress={() => setFastLog((v) => !v)}
-            accessibilityLabel={`Fast log mode — currently ${fastLog ? 'on' : 'off'}`}
-            accessibilityRole="switch"
-            accessibilityState={{ checked: fastLog }}
-          >
-            <View style={[s.switchThumb, fastLog && s.switchThumbOn]} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Vibe check */}
-        <VibeCheck feeling={feeling} onFeelingChange={setFeeling} />
-
-        {/* Cycle day confirm strip */}
-        <View style={[cards.cardMint, s.cycleDayRow]}>
-          <TouchableOpacity
-            style={s.iconBtn}
-            onPress={() =>
-              setState((s) => ({
-                ...s,
-                cycleDay: Math.max(1, s.cycleDay - 1),
-              }))
-            }
-            accessibilityLabel="Previous cycle day"
-            accessibilityRole="button"
-          >
-            <Text style={s.iconBtnText}>←</Text>
-          </TouchableOpacity>
-          <View style={{ alignItems: 'center' }}>
-            <Text style={[typography.data, { fontSize: 16, color: colors.eucalyptusDeep }]}>
-              Day {cycleDay} · {PHASE_NAMES[phase]}
-            </Text>
-            <Text style={[typography.caption, { marginTop: 4 }]}>Tap to correct</Text>
-          </View>
-          <TouchableOpacity
-            style={s.iconBtn}
-            onPress={() =>
-              setState((s) => ({
-                ...s,
-                cycleDay: Math.min(s.cycleLen, s.cycleDay + 1),
-              }))
-            }
-            accessibilityLabel="Next cycle day"
-            accessibilityRole="button"
-          >
-            <Text style={s.iconBtnText}>→</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* DRSP scale */}
-        <DrspScale
-          drsp={drsp}
-          si={si}
-          fnImpair={fnImpair}
-          fastLog={fastLog}
-          adhdEF={adhdEF}
-          adhdRating={adhdRating}
-          isAdhdUser={isAdhdUser}
-          showAdhdSection={showAdhdSection}
-          onSetDrsp={setSym}
-          onSetSi={setSi}
-          onSetFnImpair={setFnImpair}
-          onSetAdhdEF={setEF}
-          onSetAdhdRating={setAdhdRating}
-          onToggleAdhdSection={() => setShowAdhdSection((v) => !v)}
-        />
-
-        {/* Physical chips */}
-        {!fastLog && (
-          <PhysicalSymptoms selected={physical} onToggle={togglePhysical} />
-        )}
-
-        {/* Sleep */}
-        {!fastLog && (
-          <SleepScale sleep={sleep} onSleepChange={setSleep} />
-        )}
-
-        {/* T-11 — voice note step (optional) */}
-        <View style={[cards.cardWarm, s.voiceRow]}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.voiceTitle}>Quick voice note (optional)</Text>
-            <Text style={[typography.caption, { fontSize: 12 }]}>
-              {voiceNote
-                ? 'Note saved · ' + voiceNote.slice(-6)
-                : recording
-                  ? 'Listening… 3 sec'
-                  : 'Tap mic to add'}
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={[s.micBtn, recording && s.micBtnRecording]}
-            onPress={recordVoiceNote}
-            accessibilityLabel={recording ? 'Recording in progress' : 'Record voice note'}
-            accessibilityRole="button"
-            disabled={recording}
-          >
-            <Text style={s.micBtnText}>{recording ? '●' : 'Rec'}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Save CTA */}
-        <PillButton
-          label="Save today's entry"
-          onPress={save}
-          variant="primary"
-          size="lg"
-          style={{ marginTop: 24 }}
-        />
-
-        {/* T-79 — privacy footer */}
-        <View style={s.privacyFooter}>
-          <View style={s.privacyRow}>
-            <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-              <SvgRect
-                x={4}
-                y={10}
-                width={16}
-                height={11}
-                rx={2}
-                stroke={colors.ink3}
-                strokeWidth={1.6}
-              />
-              <SvgPath
-                d="M8 10V7a4 4 0 0 1 8 0v3"
-                stroke={colors.ink3}
-                strokeWidth={1.6}
-                strokeLinecap="round"
-              />
-            </Svg>
-            <Text style={s.privacyText}>On this device. Encrypted.</Text>
-          </View>
-          {si !== null && si >= 4 && (
-            <Text style={s.privacyText}>this entry is not stored beyond 72 hours</Text>
-          )}
-        </View>
-      </ScrollView>
-
-      {/* T-06 crisis modal (shown during log flow) */}
-      <Modal
-        visible={crisisTier !== null}
-        animationType={reduceMotion ? 'none' : 'slide'}
-        transparent
-        onRequestClose={closeCrisis}
-      >
-        <View style={s.modalBackdrop}>
-          <View style={s.modalSheet}>
-            <Text style={[typography.eyebrow, { marginBottom: 8 }]}>Support</Text>
-            <Text style={[typography.h2, { marginBottom: 8 }]}>
-              {crisisTier === 'tier3'
-                ? "This is a hard one. You don't have to ride it out alone."
-                : 'Some days in this phase can feel really dark.'}
-            </Text>
-            <Text style={[typography.body, { marginBottom: 18 }]}>
-              If you're in crisis, call or text 988 (US) for the Suicide &
-              Crisis Lifeline. Outside the US, contact your local emergency services.
-            </Text>
-            <TouchableOpacity
-              style={buttons.primary}
-              onPress={closeCrisis}
-              accessibilityLabel="Close support sheet"
-              accessibilityRole="button"
-            >
-              <Text style={buttons.primaryLabel}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
+    </View>
   );
 }
 
@@ -659,7 +1037,7 @@ const s = StyleSheet.create({
   // Feeling buttons (used in saved screen area via VibeCheck)
   ghostBtn: {
     height: 44,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
@@ -668,6 +1046,39 @@ const s = StyleSheet.create({
     fontFamily: fonts.sansMedium,
     fontSize: 13,
     color: colors.eucalyptusDeep,
+  },
+
+  // Sticky footer
+  stickyFooter: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 12,
+    backgroundColor: colors.cream,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+
+  // Auto fast-log banner
+  autoFastBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: colors.mintMist,
+    borderRadius: radius.md,
+    marginBottom: 12,
+  },
+  autoFastBannerText: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 13,
+    color: colors.eucalyptusDeep,
+  },
+  autoFastBannerLink: {
+    fontFamily: fonts.sansSemibold,
+    fontSize: 13,
+    color: colors.eucalyptus,
+    textDecorationLine: 'underline',
   },
 
   // Cycle day confirm
@@ -680,7 +1091,7 @@ const s = StyleSheet.create({
   iconBtn: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 18,
     backgroundColor: 'rgba(255,255,255,0.6)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -694,7 +1105,7 @@ const s = StyleSheet.create({
 
   // Spotting card
   spottingCard: {
-    padding: 14,
+    padding: 16,
     marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'stretch',
@@ -720,8 +1131,8 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 9,
-    paddingHorizontal: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.paper,
@@ -745,7 +1156,7 @@ const s = StyleSheet.create({
   // Fast log toggle
   fastLogRow: {
     padding: 12,
-    marginBottom: 22,
+    marginBottom: 24,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -762,10 +1173,10 @@ const s = StyleSheet.create({
   switchTrack: {
     width: 44,
     height: 26,
-    borderRadius: 13,
+    borderRadius: 12,
     backgroundColor: colors.inkDisabled,
     justifyContent: 'center',
-    paddingHorizontal: 3,
+    paddingHorizontal: 4,
   },
   switchTrackOn: {
     backgroundColor: colors.eucalyptus,
@@ -783,9 +1194,9 @@ const s = StyleSheet.create({
 
   // Voice note
   voiceRow: {
-    padding: 14,
-    marginTop: 18,
-    marginBottom: 14,
+    padding: 16,
+    marginTop: 16,
+    marginBottom: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -800,7 +1211,7 @@ const s = StyleSheet.create({
   micBtn: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 18,
     backgroundColor: colors.eucalyptus,
     alignItems: 'center',
     justifyContent: 'center',
@@ -816,7 +1227,7 @@ const s = StyleSheet.create({
 
   // Privacy footer
   privacyFooter: {
-    marginTop: 18,
+    marginTop: 16,
     paddingVertical: 10,
     alignItems: 'center',
   },
@@ -843,7 +1254,7 @@ const s = StyleSheet.create({
   checkCircle: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 28,
     backgroundColor: colors.mintMist,
     alignItems: 'center',
     justifyContent: 'center',
@@ -855,11 +1266,103 @@ const s = StyleSheet.create({
     color: colors.eucalyptusDeep,
   },
   savedActions: {
-    marginTop: 18,
+    marginTop: 16,
     gap: 8,
     width: '100%',
     maxWidth: 360,
     alignItems: 'stretch',
+  },
+
+  // ── SectionList DRSP ─────────────────────────────────────────────────────
+  drspItem: {
+    paddingHorizontal: spacing.md,
+  },
+  drspSectionHeader: {
+    backgroundColor: colors.cream,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xs,
+  },
+  drspSectionHeaderInner: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+  },
+  drspSectionTitle: {
+    fontSize: 11,
+    fontFamily: fonts.sansMedium,
+    color: colors.eucalyptus,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase' as const,
+  },
+  drspSectionNote: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    color: colors.ink2,
+    marginTop: 2,
+    marginBottom: spacing.xs,
+  },
+
+  // ── Anchor legend ─────────────────────────────────────────────────────────
+  anchorLegend: {
+    padding: 10,
+    marginBottom: 16,
+  },
+  anchorRow: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    gap: 4,
+    marginBottom: 2,
+  },
+  anchorItem: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.ink2,
+    flex: 1,
+  },
+  anchorNum: {
+    fontFamily: fonts.monoMedium,
+    fontWeight: '700' as const,
+  },
+
+  // ── Carry-forward ─────────────────────────────────────────────────────────
+  carryForwardBtn: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    backgroundColor: colors.mintPale,
+    borderWidth: 1,
+    borderColor: colors.borderMint,
+    borderRadius: radius.md,
+    marginBottom: 18,
+    gap: 8,
+  },
+  carryForwardLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 13,
+    color: colors.eucalyptusDeep,
+  },
+  carryForwardSub: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    color: colors.ink3,
+  },
+
+  // ── SI box ────────────────────────────────────────────────────────────────
+  siBox: {
+    marginTop: spacing.xs,
+    padding: spacing.md,
+    backgroundColor: colors.creamWarm,
+    borderRadius: radius.md,
+    marginBottom: spacing.lg,
+  },
+  siNote: {
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    color: colors.ink2,
+    marginBottom: spacing.sm,
   },
 
   // Modal
@@ -873,6 +1376,6 @@ const s = StyleSheet.create({
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     padding: 24,
-    paddingBottom: 36,
+    paddingBottom: 32,
   },
 });

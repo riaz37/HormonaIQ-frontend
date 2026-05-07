@@ -10,6 +10,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -385,6 +386,9 @@ export default function CycleScreen(): ReactElement {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selected, setSelected] = useState<CalendarCell | null>(null);
   const [dateModalOpen, setDateModalOpen] = useState(false);
+  const [customDateInput, setCustomDateInput] = useState('');
+  const [customDateError, setCustomDateError] = useState<string | null>(null);
+  const [showCustomDateInput, setShowCustomDateInput] = useState(false);
 
   // T-85 — when cycle paused, calendar is disabled
   if (state.cyclePaused) {
@@ -609,9 +613,25 @@ export default function CycleScreen(): ReactElement {
                     onPress={onTapPhaseSegment}
                   />
                 </View>
-                <Text style={[typography.caption, { textAlign: 'center', marginBottom: 22 }]}>
+                <Text style={[typography.caption, { textAlign: 'center', marginBottom: 6 }]}>
                   Tap a phase segment to view that month
                 </Text>
+                <Pressable
+                  onPress={() => router.push('/(app)/log')}
+                  accessibilityRole="link"
+                  accessibilityLabel="Cycle day incorrect? Correct it in the Log screen"
+                  style={({ pressed }) => [
+                    s.cycleDayCorrectionHint,
+                    pressed && { opacity: 0.6 },
+                  ]}
+                >
+                  <Text style={s.cycleDayCorrectionText}>
+                    Cycle day incorrect?{' '}
+                    <Text style={s.cycleDayCorrectionLink}>
+                      Correct it in the Log screen →
+                    </Text>
+                  </Text>
+                </Pressable>
 
                 <View style={{ marginBottom: 20 }}>
                   <PhaseLegend />
@@ -750,11 +770,14 @@ export default function CycleScreen(): ReactElement {
                   },
                 ]}
               >
-                <Text style={s.weekColDayLabel}>
+                <Text style={s.weekColDayLabel} numberOfLines={1}>
                   {WEEK_DAY_LABELS[w.date.getDay()]}
                 </Text>
-                <Text style={s.weekColCycleDay}>
-                  Day {w.info?.cycleDay ?? '—'}
+                <Text style={s.weekColCycleNum} numberOfLines={1}>
+                  {w.info?.cycleDay ?? '—'}
+                </Text>
+                <Text style={s.weekColCycleSub} numberOfLines={1}>
+                  {w.info?.cycleDay != null ? 'day' : ''}
                 </Text>
                 <View style={{ flex: 1 }} />
                 {w.info?.sev != null && (
@@ -937,6 +960,9 @@ export default function CycleScreen(): ReactElement {
                     onPress={() => {
                       setState((prev) => ({ ...prev, lastPeriod: key }));
                       setDateModalOpen(false);
+                      setShowCustomDateInput(false);
+                      setCustomDateInput('');
+                      setCustomDateError(null);
                     }}
                     accessibilityRole="button"
                     accessibilityLabel={`Set last period to ${label}`}
@@ -946,9 +972,118 @@ export default function CycleScreen(): ReactElement {
                 );
               })}
             </View>
+
+            {/* Custom date entry — for periods 11–90 days ago */}
+            {!showCustomDateInput ? (
+              <Pressable
+                onPress={() => setShowCustomDateInput(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Enter a different date"
+                style={({ pressed }) => [
+                  s.customDateToggle,
+                  pressed && { opacity: 0.6 },
+                ]}
+              >
+                <Text style={s.customDateToggleLabel}>
+                  Enter a different date →
+                </Text>
+              </Pressable>
+            ) : (
+              <View style={s.customDateBlock}>
+                <Text style={s.customDateLabel}>
+                  Date (YYYY-MM-DD)
+                </Text>
+                <TextInput
+                  value={customDateInput}
+                  onChangeText={(t) => {
+                    setCustomDateInput(t);
+                    if (customDateError != null) setCustomDateError(null);
+                  }}
+                  placeholder="2026-04-15"
+                  placeholderTextColor={colors.ink3}
+                  keyboardType="numbers-and-punctuation"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  maxLength={10}
+                  style={s.customDateInput}
+                  accessibilityLabel="Enter date in YYYY-MM-DD format"
+                />
+                {customDateError != null && (
+                  <Text style={s.customDateErrorText}>{customDateError}</Text>
+                )}
+                <View style={s.customDateBtnRow}>
+                  <TouchableOpacity
+                    style={[buttons.outline, { flex: 1 }]}
+                    onPress={() => {
+                      setShowCustomDateInput(false);
+                      setCustomDateInput('');
+                      setCustomDateError(null);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel custom date"
+                  >
+                    <Text style={buttons.outlineLabel}>Back</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[buttons.soft, { flex: 1 }]}
+                    onPress={() => {
+                      const trimmed = customDateInput.trim();
+                      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+                      if (!match) {
+                        setCustomDateError('Use format YYYY-MM-DD (e.g. 2026-04-15).');
+                        return;
+                      }
+                      const yr = Number(match[1]);
+                      const mo = Number(match[2]);
+                      const dy = Number(match[3]);
+                      const parsed = new Date(yr, mo - 1, dy);
+                      if (
+                        parsed.getFullYear() !== yr ||
+                        parsed.getMonth() !== mo - 1 ||
+                        parsed.getDate() !== dy
+                      ) {
+                        setCustomDateError('That date does not exist.');
+                        return;
+                      }
+                      const startOfToday = new Date(
+                        today.getFullYear(),
+                        today.getMonth(),
+                        today.getDate(),
+                      );
+                      if (parsed.getTime() > startOfToday.getTime()) {
+                        setCustomDateError('Date cannot be in the future.');
+                        return;
+                      }
+                      const diffDays = Math.floor(
+                        (startOfToday.getTime() - parsed.getTime()) / 86400000,
+                      );
+                      if (diffDays > 90) {
+                        setCustomDateError('Please enter a date within the last 90 days.');
+                        return;
+                      }
+                      setState((prev) => ({ ...prev, lastPeriod: trimmed }));
+                      setDateModalOpen(false);
+                      setShowCustomDateInput(false);
+                      setCustomDateInput('');
+                      setCustomDateError(null);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Save custom date"
+                  >
+                    <Text style={buttons.softLabel}>Save date</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
             <TouchableOpacity
               style={[buttons.outline, { marginTop: 16 }]}
-              onPress={() => setDateModalOpen(false)}
+              onPress={() => {
+                setDateModalOpen(false);
+                setShowCustomDateInput(false);
+                setCustomDateInput('');
+                setCustomDateError(null);
+              }}
               accessibilityRole="button"
               accessibilityLabel="Cancel"
             >
@@ -1116,23 +1251,33 @@ const s = StyleSheet.create({
   weekCol: {
     flex: 1,
     minHeight: 220,
-    padding: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 10,
     borderRadius: radius.sm,
     flexDirection: 'column',
   },
   weekColDayLabel: {
     fontFamily: fonts.sansMedium,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '500',
     color: colors.charcoal,
     opacity: 0.7,
-    textTransform: 'capitalize',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
-  weekColCycleDay: {
-    fontFamily: fonts.mono,
-    fontSize: 18,
+  weekColCycleNum: {
+    fontFamily: fonts.display,
+    fontSize: 20,
     color: colors.charcoal,
-    marginTop: 2,
+    marginTop: 4,
+    lineHeight: 22,
+  },
+  weekColCycleSub: {
+    fontFamily: fonts.sans,
+    fontSize: 9,
+    color: colors.charcoal,
+    opacity: 0.6,
+    marginTop: 1,
   },
   weekColSevBar: {
     height: 4,
@@ -1213,5 +1358,67 @@ const s = StyleSheet.create({
     fontFamily: fonts.sansMedium,
     fontSize: 13,
     color: colors.ink,
+  },
+  customDateToggle: {
+    marginTop: 14,
+    paddingVertical: 8,
+    alignSelf: 'flex-start',
+  },
+  customDateToggleLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 13,
+    color: colors.eucalyptus,
+    textDecorationLine: 'underline',
+  },
+  customDateBlock: {
+    marginTop: 14,
+    gap: 8,
+  },
+  customDateLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 11,
+    letterSpacing: 0.8,
+    color: colors.ink2,
+    textTransform: 'uppercase',
+  },
+  customDateInput: {
+    fontFamily: fonts.sans,
+    fontSize: 16,
+    color: colors.ink,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    backgroundColor: colors.paper,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    minHeight: 44,
+  },
+  customDateErrorText: {
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    color: colors.coral,
+    lineHeight: 16,
+  },
+  customDateBtnRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 6,
+  },
+  cycleDayCorrectionHint: {
+    alignSelf: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    marginBottom: 18,
+  },
+  cycleDayCorrectionText: {
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    color: colors.ink3,
+    textAlign: 'center',
+  },
+  cycleDayCorrectionLink: {
+    fontFamily: fonts.sansMedium,
+    color: colors.eucalyptus,
+    textDecorationLine: 'underline',
   },
 });

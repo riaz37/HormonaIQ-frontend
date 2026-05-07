@@ -123,7 +123,7 @@ export default function EpisodesTab({ state, setState }: EpisodesTabProps) {
         style={[
           buttons.primary,
           s.fullWidth,
-          { marginBottom: 18 },
+          { marginBottom: 16 },
           !canSave && { opacity: 0.5 },
         ]}
         onPress={save}
