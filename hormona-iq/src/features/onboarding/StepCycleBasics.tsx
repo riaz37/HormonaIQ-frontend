@@ -26,6 +26,7 @@ import { buttons, typography } from '../../constants/styles';
 import { colors, fonts, radius } from '../../constants/tokens';
 import type { HbcType, PerimenopausalStatus, TrackingHistory } from './types';
 import { SelectPicker } from './SelectPicker';
+import { HorizonWaveSvg } from '../../components/illustrations/BotanicalEmpty';
 
 // ─────────────────────────────────────────────
 // Constants
@@ -726,6 +727,9 @@ export function StepCycleBasics({
 
   return (
     <View style={s.maxColumn}>
+      <View style={{ marginBottom: 16 }}>
+        <HorizonWaveSvg size={110} />
+      </View>
       <Text style={[typography.display, { marginBottom: 24 }]}>
         Cycle basics
       </Text>

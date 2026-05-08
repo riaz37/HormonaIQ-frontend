@@ -7,6 +7,7 @@ import { Text, View } from 'react-native';
 
 import { cards, typography } from '../../constants/styles';
 import { fonts } from '../../constants/tokens';
+import { SeedSproutSvg } from '../../components/illustrations/BotanicalEmpty';
 
 export interface GateCardProps {
   hasEnoughData: boolean;
@@ -30,12 +31,15 @@ export function GateCard({
         cards.cardWarm,
         {
           borderLeftWidth: 3,
-          borderLeftColor: '#E8C97A', // butterDeep token value
+          borderLeftColor: '#E8C97A',
           padding: 24,
           marginBottom: 16,
         },
       ]}
     >
+      <View style={{ alignItems: 'flex-start', marginBottom: 16 }}>
+        <SeedSproutSvg size={56} />
+      </View>
       <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
         YOUR DRSP REPORT
       </Text>

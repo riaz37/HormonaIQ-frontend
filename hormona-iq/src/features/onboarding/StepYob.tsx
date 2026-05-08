@@ -29,7 +29,7 @@ function Sprig({ size = 28 }: { size?: number }): ReactElement {
       <Path
         d="M 16 28 Q 16 18 16 6"
         stroke={colors.eucalyptus}
-        strokeWidth="1.6"
+        strokeWidth={1.5}
         strokeLinecap="round"
       />
       <Path

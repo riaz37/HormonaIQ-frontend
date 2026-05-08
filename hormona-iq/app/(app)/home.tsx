@@ -35,7 +35,9 @@ import {
   layout,
   typography,
 } from '../../src/constants/styles';
-import { colors, fonts, radius, spacing } from '../../src/constants/tokens';
+import { colors, fonts, phaseFill, radius, spacing, duration as dur } from '../../src/constants/tokens';
+import { OraMarkSvg } from '../../src/components/illustrations/OraMarkSvg';
+import { HorizonWaveSvg, OraCardAccentSvg } from '../../src/components/illustrations/BotanicalEmpty';
 import { phaseForDay } from '../../src/lib/phase';
 import type { Phase } from '../../src/lib/phase';
 import { assessCrisisTier } from '../../src/lib/crisis';
@@ -168,8 +170,8 @@ const PHASE_CONTEXT_NOTE: Record<PhaseCode, string> = {
 };
 
 const PHASE_FILL: Record<PhaseCode, string> = {
-  F: colors.sageLight,
-  O: colors.butter,
+  F: colors.sage,
+  O: colors.butterDeep,
   L: colors.coralSoft,
   Lm: colors.coralSoft,
   Ls: colors.coral,
@@ -178,13 +180,23 @@ const PHASE_FILL: Record<PhaseCode, string> = {
 };
 
 const PHASE_INK: Record<PhaseCode, string> = {
-  F: colors.eucalyptusDeep,
+  F: colors.paper,
   O: colors.ink,
   L: colors.eucalyptusDeep,
   Lm: colors.eucalyptusDeep,
   Ls: colors.paper,
   M: colors.paper,
   '?': colors.ink2,
+};
+
+const PHASE_BORDER: Record<PhaseCode, string> = {
+  F: colors.eucalyptus,
+  O: colors.butterDeep,
+  L: colors.coral,
+  Lm: colors.coral,
+  Ls: colors.eucalyptusDeep,
+  M: colors.eucalyptusDeep,
+  '?': colors.sage,
 };
 
 // ─────────────────────────────────────────────
@@ -261,58 +273,96 @@ function CycleRing({
   const progress = Math.max(0, Math.min(1, cycleDay / cycleLen));
   const dash = circumference * progress;
 
-  const scale = useSharedValue(1);
+  // Phase-aware interior fill — maps phaseCode to phaseFill token
+  const PHASE_INNER_FILL: Record<PhaseCode, string> = {
+    F:  phaseFill.follicular,
+    O:  phaseFill.ovulatory,
+    L:  phaseFill.luteal,
+    Lm: phaseFill.luteal,
+    Ls: phaseFill.luteal,
+    M:  phaseFill.menstrual,
+    '?': 'rgba(156, 184, 154, 0.18)',
+  };
+
+  // Breathing: gentle opacity pulse on the inner fill only — never scale the text
+  const fillOpacity = useSharedValue(0.75);
   useEffect(() => {
     if (!pulse) {
-      scale.value = 1;
+      fillOpacity.value = 1;
       return;
     }
-    scale.value = withRepeat(
-      withTiming(1.06, { duration: 3000, easing: Easing.inOut(Easing.quad) }),
+    fillOpacity.value = withRepeat(
+      withTiming(1, { duration: 3200, easing: Easing.inOut(Easing.sin) }),
       -1,
       true,
     );
-  }, [pulse, scale]);
+  }, [pulse, fillOpacity]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+  const animatedFill = useAnimatedStyle(() => ({
+    opacity: fillOpacity.value,
   }));
 
+  // Dot position at current day on the arc
+  const dotAngle = (progress * 2 * Math.PI) - (Math.PI / 2);
+  const dotX = cx + r * Math.cos(dotAngle);
+  const dotY = cy + r * Math.sin(dotAngle);
+
   return (
-    <Animated.View style={[{ width: size, height: size }, animatedStyle]}>
+    <View style={{ width: size, height: size }}>
       <Svg width={size} height={size}>
+        {/* Track ring */}
         <Circle
           cx={cx}
           cy={cy}
           r={r}
           stroke={colors.mintMist}
-          strokeWidth={6}
+          strokeWidth={5}
           fill="transparent"
         />
+        {/* Progress arc */}
         <Circle
           cx={cx}
           cy={cy}
           r={r}
           stroke={PHASE_FILL[phaseCode]}
-          strokeWidth={6}
+          strokeWidth={5}
           strokeLinecap="round"
           fill="transparent"
           strokeDasharray={`${dash} ${circumference}`}
           transform={`rotate(-90 ${cx} ${cy})`}
         />
+        {/* Phase-aware inner fill — the "breathing" element */}
+        <Circle
+          cx={cx}
+          cy={cy}
+          r={r - 8}
+          fill={PHASE_INNER_FILL[phaseCode]}
+        />
+        {/* Paper base so text sits cleanly */}
         <Circle
           cx={cx}
           cy={cy}
           r={r - 18}
           fill={colors.paper}
-          opacity={0.7}
+          opacity={0.55}
         />
+        {/* Current day marker dot on the arc */}
+        {progress > 0.02 && (
+          <Circle
+            cx={dotX}
+            cy={dotY}
+            r={4}
+            fill={colors.paper}
+            stroke={PHASE_FILL[phaseCode]}
+            strokeWidth={1.5}
+          />
+        )}
       </Svg>
       <View style={ringStyles.center} pointerEvents="none">
         <Text style={ringStyles.dayNum}>{cycleDay}</Text>
         <Text style={ringStyles.phaseName}>{PHASE_NAMES[phaseCode]}</Text>
       </View>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -544,7 +594,7 @@ export default function HomeScreen(): ReactElement {
     >
       {/* Greeting */}
       <View style={{ marginBottom: 20 }}>
-        <Text style={[typography.caption, { marginBottom: 4 }]}>
+        <Text style={[typography.body, { marginBottom: 4, color: colors.ink2, fontFamily: fonts.sansMedium }]}>
           {greeting}, you
         </Text>
         <Text style={typography.display}>
@@ -559,9 +609,12 @@ export default function HomeScreen(): ReactElement {
 
       {/* T-43 — Ora phase-aware greeting */}
       {phaseGreeting && state.oraEnabled && (
-        <View style={[cards.cardMint, { marginBottom: 16 }]}>
+        <View style={[cards.cardMint, s.oraCard, { marginBottom: 16 }]}>
+          <View style={s.oraCardAccent} pointerEvents="none">
+            <OraCardAccentSvg size={64} />
+          </View>
           <View style={s.oraLabel}>
-            <Text style={[typography.italicDisplay, s.oraGlyph]}>O</Text>
+            <OraMarkSvg size={22} state="listening" />
             <Text style={s.oraLabelText}>ORA</Text>
           </View>
           <Text style={[typography.body, { marginTop: 6 }]}>
@@ -583,9 +636,14 @@ export default function HomeScreen(): ReactElement {
           <View
             style={[
               cmp.phasePill,
-              { backgroundColor: PHASE_FILL[phaseCode], marginBottom: 8 },
+              {
+                backgroundColor: PHASE_FILL[phaseCode],
+                borderColor: PHASE_BORDER[phaseCode],
+                marginBottom: 8,
+              },
             ]}
           >
+            <View style={[cmp.phaseSeed, { backgroundColor: PHASE_INK[phaseCode] }]} />
             <Text
               style={[cmp.phasePillLabel, { color: PHASE_INK[phaseCode] }]}
             >
@@ -898,7 +956,7 @@ export default function HomeScreen(): ReactElement {
               <Path
                 d="M3 14 Q6 8 9 14 T15 14 T21 14"
                 stroke={colors.coral}
-                strokeWidth={1.8}
+                strokeWidth={1.5}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 fill="none"
@@ -919,7 +977,7 @@ export default function HomeScreen(): ReactElement {
               <Path
                 d="M12 3 L20 6 V12 Q20 17.5 12 21 Q4 17.5 4 12 V6 Z"
                 stroke={colors.eucalyptusDeep}
-                strokeWidth={1.6}
+                strokeWidth={1.5}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 fill="none"
@@ -947,9 +1005,12 @@ export default function HomeScreen(): ReactElement {
 
       {/* T-14 Ora pattern card */}
       {state.oraEnabled && patternState === 'empty' && (
-        <View style={[cards.cardMint, { marginBottom: 22 }]}>
+        <View style={[cards.cardMint, s.oraCard]}>
+          <View style={s.oraCardAccent} pointerEvents="none">
+            <OraCardAccentSvg size={64} />
+          </View>
           <View style={s.oraLabel}>
-            <Text style={[typography.italicDisplay, s.oraGlyph]}>O</Text>
+            <OraMarkSvg size={22} state="listening" />
             <Text style={s.oraLabelText}>ORA</Text>
           </View>
           <Text style={[typography.body, { marginTop: 6 }]}>
@@ -961,9 +1022,12 @@ export default function HomeScreen(): ReactElement {
         </View>
       )}
       {state.oraEnabled && patternState === 'early' && (
-        <View style={[cards.cardMint, { marginBottom: 22 }]}>
+        <View style={[cards.cardMint, s.oraCard]}>
+          <View style={s.oraCardAccent} pointerEvents="none">
+            <OraCardAccentSvg size={64} />
+          </View>
           <View style={s.oraLabel}>
-            <Text style={[typography.italicDisplay, s.oraGlyph]}>O</Text>
+            <OraMarkSvg size={22} state="insight" />
             <Text style={s.oraLabelText}>ORA · EARLY READ</Text>
           </View>
           <Text style={[typography.body, { marginTop: 6 }]}>
@@ -973,9 +1037,12 @@ export default function HomeScreen(): ReactElement {
         </View>
       )}
       {state.oraEnabled && patternState === 'confirmed' && loggedToday && (
-        <View style={[cards.cardMint, { marginBottom: 22 }]}>
+        <View style={[cards.cardMint, s.oraCard]}>
+          <View style={s.oraCardAccent} pointerEvents="none">
+            <OraCardAccentSvg size={64} />
+          </View>
           <View style={s.oraLabel}>
-            <Text style={[typography.italicDisplay, s.oraGlyph]}>O</Text>
+            <OraMarkSvg size={22} state="insight" />
             <Text style={s.oraLabelText}>ORA · PATTERN FOUND</Text>
           </View>
           <Text style={[typography.body, { marginTop: 6 }]}>
@@ -995,6 +1062,11 @@ export default function HomeScreen(): ReactElement {
             {loggedDays} {loggedDays === 1 ? 'day' : 'days'} logged
           </Text>
         </View>
+        {loggedDays === 0 && (
+          <View style={{ alignItems: 'center', paddingVertical: 12 }}>
+            <HorizonWaveSvg size={110} />
+          </View>
+        )}
         <Text style={[typography.caption, { marginTop: 4 }]}>
           {loggedDays === 0
             ? 'Your first log will show up here.'
@@ -1008,24 +1080,25 @@ export default function HomeScreen(): ReactElement {
         healthcare provider.
       </Text>
 
-      {/* Tier-2 modal sheet */}
+      {/* Tier-2 modal sheet — quieter, warmer, slower */}
       <Modal
         visible={showTier2}
-        animationType="slide"
+        animationType="fade"
         transparent
         onRequestClose={() => setShowTier2(false)}
       >
-        <View style={s.modalBackdrop}>
-          <View style={s.modalSheet}>
-            <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
-              Support
+        <View style={s.crisisBackdrop}>
+          <View style={s.crisisSheet}>
+            <View style={s.crisisAccentBar} />
+            <Text style={[typography.eyebrow, { marginBottom: 10, color: colors.eucalyptusDeep }]}>
+              You are not alone
             </Text>
-            <Text style={[typography.h2, { marginBottom: 8 }]}>
+            <Text style={[typography.h2, { marginBottom: 12 }]}>
               You don't have to ride this out alone.
             </Text>
-            <Text style={[typography.body, { marginBottom: 18 }]}>
+            <Text style={[typography.body, { marginBottom: 22, lineHeight: 24 }]}>
               If you need support right now, call or text{' '}
-              <Text style={typography.italicDisplay}>988</Text> (US). Free,
+              <Text style={{ fontFamily: fonts.sansSemibold }}>988</Text> (US). Free,
               confidential, 24/7. Outside the US, contact your local emergency
               services.
             </Text>
@@ -1045,7 +1118,7 @@ export default function HomeScreen(): ReactElement {
               accessibilityRole="button"
               accessibilityLabel="Close support sheet"
             >
-              <Text style={buttons.softLabel}>Close</Text>
+              <Text style={buttons.softLabel}>I'm okay for now</Text>
             </Pressable>
           </View>
         </View>
@@ -1166,14 +1239,19 @@ const s = StyleSheet.create({
     height: 6,
     borderRadius: 3,
   },
+  oraCard: {
+    marginBottom: 22,
+    overflow: 'hidden',
+  },
+  oraCardAccent: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+  },
   oraLabel: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-  },
-  oraGlyph: {
-    fontSize: 14,
-    color: colors.eucalyptus,
   },
   oraLabelText: {
     fontFamily: fonts.sansMedium,
@@ -1263,5 +1341,25 @@ const s = StyleSheet.create({
     borderTopRightRadius: radius.lg,
     padding: 24,
     paddingBottom: 36,
+  },
+  crisisBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(38, 26, 20, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  crisisSheet: {
+    backgroundColor: colors.creamWarm,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    padding: 28,
+    paddingBottom: 44,
+  },
+  crisisAccentBar: {
+    width: 32,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: colors.eucalyptus,
+    opacity: 0.45,
+    marginBottom: 20,
   },
 });

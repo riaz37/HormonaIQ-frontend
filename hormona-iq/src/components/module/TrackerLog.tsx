@@ -129,13 +129,13 @@ function PlusGlyph(): ReactElement {
       <Polyline
         points="8,2 8,14"
         stroke={colors.paper}
-        strokeWidth={1.75}
+        strokeWidth={1.5}
         strokeLinecap="round"
       />
       <Polyline
         points="2,8 14,8"
         stroke={colors.paper}
-        strokeWidth={1.75}
+        strokeWidth={1.5}
         strokeLinecap="round"
       />
     </Svg>

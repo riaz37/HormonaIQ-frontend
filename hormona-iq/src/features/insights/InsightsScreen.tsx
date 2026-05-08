@@ -42,6 +42,7 @@ import { useInsightsGate } from '../../hooks/useInsightsGate';
 import { GateCard } from './GateCard';
 import { DrspChart } from './DrspChart';
 import { CpassTable, DRSP_ITEM_LABELS } from './CpassTable';
+import { FloatingOrbsSvg } from '../../components/illustrations/BotanicalEmpty';
 import type {
   ChartDataPoint,
   CPASSResult,
@@ -445,10 +446,11 @@ export default function InsightsScreen(): ReactElement {
               { padding: 24, marginBottom: 16, alignItems: 'center' },
             ]}
           >
+            <FloatingOrbsSvg size={80} />
             <Text
               style={[
                 typography.h2,
-                { marginBottom: 8, textAlign: 'center' },
+                { marginBottom: 8, textAlign: 'center', marginTop: 16 },
               ]}
             >
               Your first chart will show up here.
@@ -865,22 +867,19 @@ const s = StyleSheet.create({
     marginRight: 8,
   },
   previewLogoText: {
-    fontFamily: fonts.displayItalic,
-    fontStyle: 'italic',
+    fontFamily: fonts.sansSemibold,
     fontSize: 13,
     color: colors.ink,
   },
   previewSubtitle: {
-    fontFamily: fonts.displayItalic,
-    fontStyle: 'italic',
+    fontFamily: fonts.sans,
     fontSize: 12,
     color: colors.ink2,
     marginBottom: 16,
     lineHeight: 18,
   },
   previewDisclaimer: {
-    fontFamily: fonts.displayItalic,
-    fontStyle: 'italic',
+    fontFamily: fonts.sans,
     fontSize: 11,
     color: colors.ink2,
     marginTop: 16,

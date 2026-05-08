@@ -98,7 +98,7 @@ function BackChevron(): ReactElement {
       <Polyline
         points="12.5,4 6.5,10 12.5,16"
         stroke={colors.eucalyptusDeep}
-        strokeWidth={1.75}
+        strokeWidth={1.5}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -168,7 +168,7 @@ function TrendArrow({ trend }: { trend: Trend }): ReactElement {
       <Polyline
         points={points}
         stroke={tint}
-        strokeWidth={1.75}
+        strokeWidth={1.5}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"

@@ -12,6 +12,9 @@ export interface SettingsState {
   reduceMotion: boolean;
   oraEnabled: boolean;
   edSafeMode: boolean;
+  notificationsEnabled: boolean;
+  notifHour: number;
+  notifMinute: number;
 }
 
 export interface SettingsActions {
@@ -19,6 +22,8 @@ export interface SettingsActions {
   setReduceMotion: (v: boolean) => void;
   setOraEnabled: (v: boolean) => void;
   setEdSafeMode: (v: boolean) => void;
+  setNotificationsEnabled: (v: boolean) => void;
+  setNotifTime: (hour: number, minute: number) => void;
   reset: () => void;
 }
 
@@ -29,6 +34,9 @@ const INITIAL_STATE: SettingsState = {
   reduceMotion: false,
   oraEnabled: true,
   edSafeMode: false,
+  notificationsEnabled: false,
+  notifHour: 20,
+  notifMinute: 0,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -39,6 +47,8 @@ export const useSettingsStore = create<SettingsStore>()(
       setReduceMotion: (v) => set(() => ({ reduceMotion: v })),
       setOraEnabled: (v) => set(() => ({ oraEnabled: v })),
       setEdSafeMode: (v) => set(() => ({ edSafeMode: v })),
+      setNotificationsEnabled: (v) => set(() => ({ notificationsEnabled: v })),
+      setNotifTime: (hour, minute) => set(() => ({ notifHour: hour, notifMinute: minute })),
       reset: () => set(() => ({ ...INITIAL_STATE })),
     }),
     {
@@ -49,6 +59,9 @@ export const useSettingsStore = create<SettingsStore>()(
         reduceMotion: state.reduceMotion,
         oraEnabled: state.oraEnabled,
         edSafeMode: state.edSafeMode,
+        notificationsEnabled: state.notificationsEnabled,
+        notifHour: state.notifHour,
+        notifMinute: state.notifMinute,
       }),
       version: 1,
     },

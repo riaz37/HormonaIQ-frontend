@@ -7,6 +7,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { buttons, cards, typography } from '../../constants/styles';
 import { colors, fonts, radius } from '../../constants/tokens';
+import { FloatingOrbsSvg } from '../../components/illustrations/BotanicalEmpty';
 import type {
   ConditionName,
   EdAnswer,
@@ -84,6 +85,9 @@ function ConditionPicker({
 
   return (
     <View>
+      <View style={{ marginBottom: 16 }}>
+        <FloatingOrbsSvg size={72} />
+      </View>
       <Text style={[typography.display, { marginBottom: 10 }]}>
         What brings you here?
       </Text>

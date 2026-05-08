@@ -23,6 +23,7 @@ import {
   layout,
   typography,
 } from '../../src/constants/styles';
+import { OraMarkSvg } from '../../src/components/illustrations/OraMarkSvg';
 import { colors, fonts, radius, spacing } from '../../src/constants/tokens';
 import { useAppStore, useSettingsStore } from '../../src/stores';
 
@@ -438,7 +439,6 @@ export default function ProfileScreen(): ReactElement {
             <View style={s.divider} />
             <Row
               label="Sign out"
-              right={<TextLink color={colors.danger}>Sign out</TextLink>}
               onPress={() => setShowSignOut(true)}
               danger
             />
@@ -777,7 +777,7 @@ export default function ProfileScreen(): ReactElement {
               accessibilityLabel="Pause cycle tracking dialog"
             >
               <View style={s.oraLabel}>
-                <Text style={[typography.italicDisplay, s.oraGlyph]}>O</Text>
+                <OraMarkSvg size={22} state="listening" />
                 <Text style={s.oraLabelText}>ORA</Text>
               </View>
               <Text style={[typography.body, { marginTop: 10, marginBottom: 18 }]}>

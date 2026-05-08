@@ -172,6 +172,42 @@ export function useThemeColors() {
   return scheme === 'dark' ? darkColors : colors;
 }
 
+// Phase-aware ring interior fills — warmer/more saturated than phase[] for filled areas
+export const phaseFill = {
+  follicular: 'rgba(156, 184, 154, 0.32)',  // sage @ 32%
+  ovulatory:  'rgba(245, 228, 184, 0.50)',  // butter @ 50%
+  luteal:     'rgba(232, 159, 134, 0.38)',  // coral @ 38%
+  menstrual:  'rgba(216, 138, 149, 0.32)',  // rose @ 32%
+} as const;
+
+// Ora identity mark — visual presence tokens
+export const oraTokens = {
+  breatheMin: 0.78,
+  breatheMax: 1.0,
+  breatheDuration: 4200,   // ms — slow deliberate breathing pace
+  scaleMin: 0.97,
+  scaleMax: 1.0,
+} as const;
+
+// Canonical animation durations — use everywhere instead of ad-hoc ms values
+export const duration = {
+  micro: 150,      // tap press feedback, toggle flick
+  standard: 250,   // navigation, screen transitions (iOS HIG compliant)
+  reveal: 350,     // data reveals, phase info appearing
+  ceremonial: 420, // milestones, Ora first appearance, save confirmation
+  accessible: 80,  // Reduce Motion mode — near-instant
+} as const;
+
+// Botanical geometry illustration colors (for SVG illustration components)
+export const botanical = {
+  primary:   colors.eucalyptus,   // '#3F6F5A'
+  secondary: colors.sage,          // '#9CB89A'
+  warm:      colors.coral,         // '#E89F86'
+  light:     colors.mintMist,      // '#DCEBDD'
+  ground:    colors.creamWarm,     // '#F4F0E5'
+  accent:    colors.butterDeep,    // '#E8C97A'
+} as const;
+
 export type ColorToken = keyof typeof colors;
 export type PhaseToken = keyof typeof phase;
 export type RadiusToken = keyof typeof radius;

@@ -147,8 +147,7 @@ const s = StyleSheet.create({
     color: colors.ink,
   },
   clinicalItalic: {
-    fontFamily: fonts.displayItalic,
-    fontStyle: 'italic',
+    fontFamily: fonts.sansMedium,
     fontSize: 12,
     marginBottom: 10,
     color: colors.ink2,

@@ -7,6 +7,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { buttons, typography } from '../../constants/styles';
 import { colors, fonts, radius } from '../../constants/tokens';
 import type { NotifChoice } from './types';
+import { SeedSproutSvg } from '../../components/illustrations/BotanicalEmpty';
 
 // ─────────────────────────────────────────────
 // Constants
@@ -39,6 +40,9 @@ export function StepNotifications({
 }: StepNotificationsProps): ReactElement {
   return (
     <View style={s.maxColumn}>
+      <View style={{ marginBottom: 16 }}>
+        <SeedSproutSvg size={56} />
+      </View>
       <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
         NOTIFICATIONS
       </Text>

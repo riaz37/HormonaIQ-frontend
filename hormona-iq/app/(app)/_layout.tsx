@@ -10,6 +10,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 import type { ReactElement, ReactNode } from 'react';
 
 import { colors, fonts, radius, shadows } from '../../src/constants/tokens';
+import { useNotificationScheduler } from '../../src/hooks/useNotificationScheduler';
 
 // ─────────────────────────────────────────────
 // Scroll-to-top registry
@@ -126,6 +127,7 @@ const TABS: readonly TabConfig[] = [
 
 export default function AppTabsLayout(): ReactElement {
   const insets = useSafeAreaInsets();
+  useNotificationScheduler();
   return (
     <Tabs
       screenOptions={{

@@ -96,6 +96,7 @@ export const cardGradient = {
 
 export const cards = StyleSheet.create({
   card: {
+    backgroundColor: colors.paper,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
@@ -235,14 +236,23 @@ export const components = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 5,
+    paddingHorizontal: 11,
     borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'transparent',
     alignSelf: 'flex-start',
   },
   phasePillLabel: {
-    fontFamily: fonts.sansMedium,
+    fontFamily: fonts.sansSemibold,
     fontSize: 12,
+    letterSpacing: 0.2,
+  },
+  phaseSeed: {
+    width: 4,
+    height: 8,
+    borderRadius: 2,
+    opacity: 0.55,
   },
   phaseDot: {
     width: 8,

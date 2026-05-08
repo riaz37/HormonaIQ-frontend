@@ -23,6 +23,7 @@ import Animated, {
   useReducedMotion,
 } from 'react-native-reanimated';
 import Svg, { Path, Rect, Circle, Ellipse, Line } from 'react-native-svg';
+import { FloatingOrbsSvg } from '../../src/components/illustrations/BotanicalEmpty';
 
 import {
   cards,
@@ -921,9 +922,12 @@ export default function ToolsScreen(): ReactElement {
           const hasResults = renderedGroups.some((el) => el !== null);
           if (query.length > 0 && !hasResults) {
             return (
-              <Text style={s.emptyState}>
-                No tools match &ldquo;{query}&rdquo;
-              </Text>
+              <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+                <FloatingOrbsSvg size={72} />
+                <Text style={[s.emptyState, { marginTop: 12 }]}>
+                  No tools match &ldquo;{query}&rdquo;
+                </Text>
+              </View>
             );
           }
           return renderedGroups;

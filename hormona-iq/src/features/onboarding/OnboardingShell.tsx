@@ -16,8 +16,11 @@ import { useReducedMotion } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { buttons, cards, typography } from '../../constants/styles';
+import { OraMarkSvg } from '../../components/illustrations/OraMarkSvg';
 import { colors, fonts, radius, shadows, spacing } from '../../constants/tokens';
 import { useAppStore } from '../../stores';
+import { useSettingsStore } from '../../stores/useSettingsStore';
+import { requestNotificationPermission } from '../../lib/notifications';
 
 import { StepYob } from './StepYob';
 import { StepConditions } from './StepConditions';
@@ -239,6 +242,12 @@ export default function OnboardingShell(): ReactElement {
     app.setCycleLen(cycleLen);
     app.setLastPeriod(lastPeriod ? new Date(lastPeriod) : null);
 
+    if (notifChoice === 'allow') {
+      void requestNotificationPermission().then((granted) => {
+        useSettingsStore.getState().setNotificationsEnabled(granted);
+      });
+    }
+
     router.replace('/(app)/home');
   };
 
@@ -290,7 +299,10 @@ export default function OnboardingShell(): ReactElement {
         {/* ─── STEP 2: Ora introduction ─────────────────────────────────── */}
         {step === 2 && (
           <View style={s.maxColumn}>
-            <Text style={[typography.italicDisplay, s.oraName]}>Ora</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <OraMarkSvg size={36} state="listening" />
+              <Text style={[typography.italicDisplay, s.oraName, { marginBottom: 0 }]}>Ora</Text>
+            </View>
             <Text style={[typography.display, { marginBottom: 16 }]}>
               Hi. I'm Ora.
             </Text>
@@ -417,7 +429,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.6)',
   },
   chevron: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.sans,
     fontSize: 22,
     color: colors.ink,
     lineHeight: 24,

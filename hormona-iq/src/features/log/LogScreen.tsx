@@ -3,9 +3,10 @@
 // Wave 1: T-01 full DRSP, T-04 persistence, T-05 SI as item 12, T-06 crisis post-save
 // Wave 2: T-11 fast-log mode + voice note, T-22 ADHD check-in 4th step, T-26 functional quick-links
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import type { ReactElement } from 'react';
 import {
+  Animated,
   Linking,
   Modal,
   Pressable,
@@ -20,6 +21,7 @@ import { useRouter } from 'expo-router';
 import { useReducedMotion } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import Svg, { Path as SvgPath, Rect as SvgRect } from 'react-native-svg';
+import { OraMarkSvg } from '../../components/illustrations/OraMarkSvg';
 
 import {
   buttons,
@@ -168,6 +170,44 @@ function getConfirmationNote(phase: PhaseCode, drsp: DrspScores): string {
   if (phase === 'F') return 'Follicular phase — a good window for your patterns to build.';
   if (phase === 'O') return 'Ovulatory window logged.';
   return 'Logged and saved.';
+}
+
+// ─────────────────────────────────────────────
+// SaveCelebration — animated botanical mark for save confirmation.
+// Scale 0.6→1 + opacity 0→1 over 420ms. Skips animation if reduceMotion.
+// ─────────────────────────────────────────────
+
+function SaveCelebration({ reduceMotion }: { reduceMotion: boolean }): ReactElement {
+  const scale = useRef(new Animated.Value(reduceMotion ? 1 : 0.6)).current;
+  const opacity = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    Animated.parallel([
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 5,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 280,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [opacity, reduceMotion, scale]);
+
+  return (
+    <Animated.View
+      style={[
+        s.checkCircle,
+        { transform: [{ scale }], opacity },
+      ]}
+    >
+      <OraMarkSvg size={28} state="insight" color="#3F6F5A" />
+    </Animated.View>
+  );
 }
 
 // ─────────────────────────────────────────────
@@ -589,9 +629,7 @@ export default function LogScreen(): ReactElement {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.cream }}>
         <View style={s.savedContainer}>
-          <View style={s.checkCircle}>
-            <Text style={s.checkGlyph}>✓</Text>
-          </View>
+          <SaveCelebration reduceMotion={reduceMotion ?? false} />
           <Text style={[typography.bodyL, { textAlign: 'center', color: colors.ink }]}>
             Day {cycleDay} recorded.
           </Text>
@@ -651,7 +689,7 @@ export default function LogScreen(): ReactElement {
         >
           <View style={s.modalBackdrop}>
             <View style={s.modalSheet}>
-              <Text style={[typography.eyebrow, { marginBottom: 8 }]}>Support</Text>
+              <Text style={[typography.caption, { marginBottom: 8, color: colors.ink3, letterSpacing: 0.4 }]}>Support</Text>
               <Text style={[typography.h2, { marginBottom: 8 }]}>
                 {crisisTier === 'tier3'
                   ? 'This is serious and you deserve support right now.'
@@ -908,12 +946,12 @@ export default function LogScreen(): ReactElement {
               height={11}
               rx={2}
               stroke={colors.ink3}
-              strokeWidth={1.6}
+              strokeWidth={1.5}
             />
             <SvgPath
               d="M8 10V7a4 4 0 0 1 8 0v3"
               stroke={colors.ink3}
-              strokeWidth={1.6}
+              strokeWidth={1.5}
               strokeLinecap="round"
             />
           </Svg>
@@ -971,7 +1009,7 @@ export default function LogScreen(): ReactElement {
         >
           <View style={s.modalBackdrop}>
             <View style={s.modalSheet}>
-              <Text style={[typography.eyebrow, { marginBottom: 8 }]}>Support</Text>
+              <Text style={[typography.caption, { marginBottom: 8, color: colors.ink3, letterSpacing: 0.4 }]}>Support</Text>
               <Text style={[typography.h2, { marginBottom: 8 }]}>
                 {crisisTier === 'tier3'
                   ? 'This is serious and you deserve support right now.'
@@ -1252,18 +1290,15 @@ const s = StyleSheet.create({
     padding: spacing.xl,
   },
   checkCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 28,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: colors.mintMist,
+    borderWidth: 1,
+    borderColor: colors.borderMint,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
-  },
-  checkGlyph: {
-    fontFamily: fonts.sansSemibold,
-    fontSize: 22,
-    color: colors.eucalyptusDeep,
+    marginBottom: 20,
   },
   savedActions: {
     marginTop: 16,
@@ -1372,10 +1407,10 @@ const s = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalSheet: {
-    backgroundColor: colors.cream,
+    backgroundColor: colors.creamWarm,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
-    padding: 24,
-    paddingBottom: 32,
+    padding: 28,
+    paddingBottom: 40,
   },
 });

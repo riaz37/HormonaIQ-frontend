@@ -2,7 +2,7 @@
 // Renders the anchor legend, symptom scale rows, SI item, and functional impairment.
 // Receives all state and callbacks via props; no direct store access.
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import {
   Linking,
@@ -114,6 +114,16 @@ const ANCHORS: Record<number, string> = {
   6: 'Extreme',
 };
 
+// Short display labels that fit inside narrow buttons
+const ANCHOR_SHORT: Record<number, string> = {
+  1: 'None',
+  2: 'Min',
+  3: 'Mild',
+  4: 'Mod',
+  5: 'Severe',
+  6: 'Extreme',
+};
+
 // Graduated color palette: cool mint → warm coral along the severity scale
 const BTN_ACTIVE_BG: Record<number, string> = {
   1: colors.mintPale,
@@ -134,6 +144,16 @@ const BTN_ACTIVE_TEXT: Record<number, string> = {
   6: colors.paper,
 };
 
+// Subtle inactive tints — communicates the spectrum before selection
+const BTN_INACTIVE_TINT: Record<number, string> = {
+  1: 'rgba(107, 185, 148, 0.10)',
+  2: 'rgba(107, 185, 148, 0.16)',
+  3: 'rgba(180, 210, 160, 0.16)',
+  4: 'rgba(245, 228, 184, 0.40)',
+  5: 'rgba(245, 200, 181, 0.40)',
+  6: 'rgba(232, 159, 134, 0.30)',
+};
+
 // SI uses a calm neutral ramp — never alarm/coral
 const SI_ACTIVE_BG: Record<number, string> = {
   1: '#F0F0F0',
@@ -151,6 +171,15 @@ const SI_ACTIVE_TEXT: Record<number, string> = {
   4: '#222',
   5: '#FFF',
   6: '#FFF',
+};
+
+const SI_INACTIVE_TINT: Record<number, string> = {
+  1: 'rgba(200,200,200,0.12)',
+  2: 'rgba(200,200,200,0.18)',
+  3: 'rgba(180,180,180,0.18)',
+  4: 'rgba(160,160,160,0.20)',
+  5: 'rgba(130,130,130,0.20)',
+  6: 'rgba(80,80,80,0.15)',
 };
 
 // ─────────────────────────────────────────────
@@ -212,24 +241,14 @@ export function ScaleRow({
     );
   }
 
-  return (
-    <View style={s.scaleRowWrap}>
-      <Text style={[typography.body, s.scaleRowLabel]}>{label}</Text>
+  const inactiveTintMap = isSI ? SI_INACTIVE_TINT : BTN_INACTIVE_TINT;
 
-      {/* Yesterday ghost indicators — sits above the button row */}
+  return (
+    <View style={s.scaleCard}>
+      <Text style={s.scaleCardLabel}>{label}</Text>
+
       {yesterdayValue != null && (
-        <View style={s.yesterdayStrip}>
-          {Array.from({ length: max }, (_, i) => i + 1).map((n) => (
-            <View key={n} style={s.yesterdayCell}>
-              {yesterdayValue === n && (
-                <>
-                  <View style={s.yesterdayDot} />
-                  <Text style={s.yesterdayText}>was {n}</Text>
-                </>
-              )}
-            </View>
-          ))}
-        </View>
+        <Text style={s.yesterdayHint}>Yesterday: {ANCHORS[yesterdayValue]} ({yesterdayValue})</Text>
       )}
 
       <View style={s.scaleRow}>
@@ -244,7 +263,7 @@ export function ScaleRow({
                 s.scaleBtnFlex,
                 isActive
                   ? { backgroundColor: activeBgMap[n], borderColor: 'transparent' }
-                  : s.scaleBtnInactive,
+                  : [s.scaleBtnInactive, { backgroundColor: inactiveTintMap[n] }],
               ]}
               onPress={() => handlePress(n)}
               accessibilityLabel={`${label} — ${ANCHORS[n] ?? String(n)}`}
@@ -261,14 +280,15 @@ export function ScaleRow({
               >
                 {n}
               </Text>
-              {isActive && (
-                <Text
-                  style={[s.scaleBtnAnchor, { color: activeTextMap[n] }]}
-                  numberOfLines={1}
-                >
-                  {ANCHORS[n]}
-                </Text>
-              )}
+              <Text
+                style={[
+                  s.scaleBtnAnchor,
+                  isActive ? { color: activeTextMap[n], fontFamily: fonts.sansMedium } : s.scaleBtnAnchorInactive,
+                ]}
+                numberOfLines={1}
+              >
+                {ANCHOR_SHORT[n]}
+              </Text>
             </TouchableOpacity>
           );
         })}
@@ -336,6 +356,42 @@ export const ADHD_EF: AdhdefItem[] = [
 ];
 
 // ─────────────────────────────────────────────
+// Wizard step types and builder
+// ─────────────────────────────────────────────
+
+type WizardStep =
+  | { kind: 'drsp'; key: string; label: string; section: string; isSI?: false }
+  | { kind: 'si'; label: string; section: string; isSI: true }
+  | { kind: 'fn_impair'; label: string; section: string; isSI?: false }
+  | { kind: 'fn_drsp'; key: string; label: string; section: string; isSI?: false };
+
+function buildWizardSteps(fastLog: boolean): WizardStep[] {
+  if (fastLog) {
+    return [
+      ...DRSP_ITEMS
+        .filter((it) => FAST_LOG_KEYS.includes(it.key))
+        .map((it): WizardStep => ({ kind: 'drsp', key: it.key, label: it.label, section: 'Top symptoms' })),
+      { kind: 'si', label: DRSP_SI.label, section: 'Wellbeing check', isSI: true },
+      { kind: 'fn_impair', label: 'Did symptoms get in the way today?', section: 'Impact' },
+    ];
+  }
+
+  const steps: WizardStep[] = [];
+  for (const section of DRSP_SECTIONS) {
+    for (const it of DRSP_ITEMS.filter((i) => section.keys.includes(i.key))) {
+      steps.push({ kind: 'drsp', key: it.key, label: it.label, section: section.title });
+    }
+    if (section.keys.includes('suicidal_ideation')) {
+      steps.push({ kind: 'si', label: DRSP_SI.label, section: section.title, isSI: true });
+    }
+  }
+  for (const fn of FUNCTIONAL_ITEMS) {
+    steps.push({ kind: 'fn_drsp', key: fn.key, label: fn.label, section: 'Did symptoms interfere?' });
+  }
+  return steps;
+}
+
+// ─────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────
 
@@ -357,41 +413,166 @@ export function DrspScale({
   onSetAdhdRating,
   onToggleAdhdSection,
 }: DrspScaleProps): ReactElement {
-  const drspToRender = fastLog
-    ? DRSP_ITEMS.filter((it) => FAST_LOG_KEYS.includes(it.key))
-    : DRSP_ITEMS;
+  const steps = useMemo(() => buildWizardSteps(fastLog), [fastLog]);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [drspDone, setDrspDone] = useState(false);
+  const reduceMotion = false; // useReducedMotion not needed at DrspScale level
 
-  const showFunctionalGrid = !fastLog;
-  const showFnImpairRow = fastLog;
+  const hasYesterday = yesterdayDrsp != null && Object.keys(yesterdayDrsp).length > 0;
 
-  const hasYesterday =
-    yesterdayDrsp != null && Object.keys(yesterdayDrsp).length > 0;
+  const getStepValue = (step: WizardStep): number | null | undefined => {
+    if (step.kind === 'si') return si;
+    if (step.kind === 'fn_impair') return fnImpair;
+    return drsp[step.key];
+  };
+
+  const handleRate = (step: WizardStep, n: number): void => {
+    if (step.kind === 'drsp' || step.kind === 'fn_drsp') onSetDrsp(step.key, n);
+    else if (step.kind === 'si') onSetSi(n);
+    else if (step.kind === 'fn_impair') onSetFnImpair(n);
+
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    setTimeout(() => {
+      if (currentIdx < steps.length - 1) {
+        setCurrentIdx((i) => i + 1);
+      } else {
+        setDrspDone(true);
+      }
+    }, 240);
+  };
+
+  // ── After all DRSP steps done — ADHD section (optional) ───────────────
+  if (drspDone) {
+    return (
+      <>
+        {isAdhdUser && !fastLog && (
+          <View style={s.adhdSection}>
+            <View style={s.adhdHeader}>
+              <Text style={typography.h2}>ADHD check-in (optional)</Text>
+              <TouchableOpacity
+                style={s.ghostBtn}
+                onPress={onToggleAdhdSection}
+                accessibilityLabel={showAdhdSection ? 'Skip ADHD section' : 'Show ADHD section'}
+                accessibilityRole="button"
+              >
+                <Text style={[s.ghostBtnLabel, s.adhdNote]}>
+                  {showAdhdSection ? 'Skip' : 'Show'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={[typography.caption, s.adhdNote, { marginBottom: 12 }]}>
+              5 EF dimensions · 1–5
+            </Text>
+            {showAdhdSection &&
+              ADHD_EF.map((d) => (
+                <ScaleRow
+                  key={d.key}
+                  label={d.label}
+                  value={adhdEF[d.key]}
+                  onSet={(n) => onSetAdhdEF(d.key, n)}
+                  max={5}
+                />
+              ))}
+          </View>
+        )}
+        {isAdhdUser && !fastLog && (
+          <View style={{ marginBottom: 32 }}>
+            <Text style={[typography.h2, { marginBottom: 8 }]}>
+              How well did your ADHD meds work today?
+            </Text>
+            <Text style={[typography.caption, { marginBottom: 12 }]}>
+              Estrogen affects dopamine — your meds may feel weaker before your period.
+            </Text>
+            <View style={s.scaleRow}>
+              {[1, 2, 3, 4, 5].map((n) => {
+                const isActive = adhdRating === n;
+                return (
+                  <TouchableOpacity
+                    key={n}
+                    activeOpacity={0.72}
+                    style={[
+                      s.scaleBtn,
+                      s.scaleBtnFlex,
+                      isActive
+                        ? { backgroundColor: BTN_ACTIVE_BG[n] ?? colors.sageLight, borderColor: 'transparent' }
+                        : s.scaleBtnInactive,
+                    ]}
+                    onPress={() => onSetAdhdRating(n)}
+                    accessibilityLabel={`ADHD meds effectiveness: ${n} of 5`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isActive }}
+                  >
+                    <Text
+                      style={[
+                        s.scaleBtnNum,
+                        isActive
+                          ? { color: BTN_ACTIVE_TEXT[n] ?? colors.ink, fontFamily: fonts.sansBold }
+                          : s.scaleBtnNumInactive,
+                      ]}
+                    >
+                      {n}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        )}
+      </>
+    );
+  }
+
+  // ── Wizard render — one question at a time ─────────────────────────────
+  const step = steps[currentIdx];
+  const value = getStepValue(step);
+  const isSIStep = step.kind === 'si';
+  const activeBgMap = isSIStep ? SI_ACTIVE_BG : BTN_ACTIVE_BG;
+  const activeTextMap = isSIStep ? SI_ACTIVE_TEXT : BTN_ACTIVE_TEXT;
+  const inactiveTintMap = isSIStep ? SI_INACTIVE_TINT : BTN_INACTIVE_TINT;
+  const progress = (currentIdx + 1) / steps.length;
+  const yesterdayValue = step.kind !== 'si' && step.kind !== 'fn_impair'
+    ? yesterdayDrsp?.[step.key]
+    : yesterdayDrsp?.['suicidal_ideation'];
+
+  // Section changed — compute label
+  const prevSection = currentIdx > 0 ? steps[currentIdx - 1].section : null;
+  const sectionChanged = step.section !== prevSection;
 
   return (
-    <>
-      <Text style={[typography.h2, { marginBottom: 4, marginTop: 24 }]}>
-        {fastLog ? 'Top symptoms' : "Today's symptoms"}
-      </Text>
-      <Text style={[typography.caption, { marginBottom: 12 }]}>
-        Daily Record of Severity of Problems · 1 = not at all, 6 = extreme
-      </Text>
-
-      {/* Anchor legend */}
-      <SectionCard style={s.anchorLegend}>
-        <View style={s.anchorRow}>
-          <Text style={s.anchorItem}><Text style={s.anchorNum}>1</Text> Not at all</Text>
-          <Text style={s.anchorItem}><Text style={s.anchorNum}>2</Text> Minimal</Text>
-          <Text style={s.anchorItem}><Text style={s.anchorNum}>3</Text> Mild</Text>
+    <View style={s.wizard}>
+      {/* Progress */}
+      <View style={s.wizardProgressRow}>
+        <View style={s.wizardTrack}>
+          <View style={[s.wizardFill, { width: `${progress * 100}%` as any }]} />
         </View>
-        <View style={s.anchorRow}>
-          <Text style={s.anchorItem}><Text style={s.anchorNum}>4</Text> Moderate</Text>
-          <Text style={s.anchorItem}><Text style={s.anchorNum}>5</Text> Severe</Text>
-          <Text style={s.anchorItem}><Text style={s.anchorNum}>6</Text> Extreme</Text>
-        </View>
-      </SectionCard>
+        <Text style={s.wizardCounter}>{currentIdx + 1} / {steps.length}</Text>
+      </View>
 
-      {/* Same as yesterday carry-forward */}
-      {hasYesterday && onCarryForward != null && (
+      {/* Section label */}
+      {sectionChanged && (
+        <Text style={s.wizardSection}>{step.section.toUpperCase()}</Text>
+      )}
+
+      {/* Question */}
+      <Text style={s.wizardQuestion}>{step.label}</Text>
+
+      {/* SI safety note */}
+      {isSIStep && (
+        <Text style={s.wizardSINote}>
+          Important to track. There's no judgement here.
+        </Text>
+      )}
+
+      {/* Yesterday reference */}
+      {yesterdayValue != null && (
+        <Text style={s.wizardYesterday}>
+          Yesterday: {ANCHORS[yesterdayValue]} ({yesterdayValue})
+        </Text>
+      )}
+
+      {/* Same-as-yesterday shortcut — shown only on step 0 */}
+      {currentIdx === 0 && hasYesterday && onCarryForward != null && (
         <TouchableOpacity
           style={s.carryForwardBtn}
           onPress={onCarryForward}
@@ -399,188 +580,78 @@ export function DrspScale({
           accessibilityLabel="Copy yesterday's ratings as a starting point"
         >
           <Text style={s.carryForwardLabel}>Same as yesterday</Text>
-          <Text style={s.carryForwardSub}>Adjust anything that changed</Text>
+          <Text style={s.carryForwardSub}>Adjust anything that changed →</Text>
         </TouchableOpacity>
       )}
 
-      {fastLog ? (
-        drspToRender.map((it) => (
-          <ScaleRow
-            key={it.key}
-            label={it.label}
-            value={drsp[it.key]}
-            onSet={(n) => onSetDrsp(it.key, n)}
-            yesterdayValue={yesterdayDrsp?.[it.key]}
-          />
-        ))
-      ) : (
-        DRSP_SECTIONS.map((section) => {
-          const sectionItems = DRSP_ITEMS.filter((it) =>
-            section.keys.includes(it.key),
-          );
-          const siInSection = section.keys.includes(DRSP_SI.key);
-
+      {/* Option list */}
+      <View style={s.optionList}>
+        {[1, 2, 3, 4, 5, 6].map((n) => {
+          const isActive = value === n;
           return (
-            <View key={section.title}>
-              <Text style={s.anchorHint}>1 = Not at all  ·  6 = Extreme</Text>
-              <Text style={s.sectionHeader}>{section.title}</Text>
-              {sectionItems.map((it) => (
-                <ScaleRow
-                  key={it.key}
-                  label={it.label}
-                  value={drsp[it.key]}
-                  onSet={(n) => onSetDrsp(it.key, n)}
-                  yesterdayValue={yesterdayDrsp?.[it.key]}
-                />
-              ))}
-              {siInSection && (
-                <View style={s.siBox}>
-                  <Text style={s.siNote}>
-                    Item 12 — important to track. There's no judgement here.
-                  </Text>
-                  <ScaleRow
-                    label={DRSP_SI.label}
-                    value={si}
-                    onSet={onSetSi}
-                    yesterdayValue={yesterdayDrsp?.[DRSP_SI.key]}
-                    isSI
-                  />
-                </View>
-              )}
-            </View>
-          );
-        })
-      )}
-
-      {/* SI box for fast log — always visible for safety */}
-      {fastLog && (
-        <View style={s.siBox}>
-          <Text style={s.siNote}>
-            Item 12 — important to track. There's no judgement here.
-          </Text>
-          <ScaleRow
-            label={DRSP_SI.label}
-            value={si}
-            onSet={onSetSi}
-            yesterdayValue={yesterdayDrsp?.[DRSP_SI.key]}
-            isSI
-          />
-        </View>
-      )}
-
-      {/* Functional impairment — full grid (non-fast log) */}
-      {showFunctionalGrid && (
-        <>
-          <Text style={[typography.h2, { marginTop: 8, marginBottom: 6 }]}>
-            Did symptoms interfere?
-          </Text>
-          <Text style={[typography.caption, { marginBottom: 12 }]}>
-            The DRSP needs this for diagnosis.
-          </Text>
-          {FUNCTIONAL_ITEMS.map((it) => (
-            <ScaleRow
-              key={it.key}
-              label={it.label}
-              value={drsp[it.key]}
-              onSet={(n) => onSetDrsp(it.key, n)}
-              yesterdayValue={yesterdayDrsp?.[it.key]}
-            />
-          ))}
-        </>
-      )}
-
-      {/* Functional impairment — single row (fast log) */}
-      {showFnImpairRow && (
-        <>
-          <Text style={[typography.h2, { marginTop: 8, marginBottom: 6 }]}>
-            Did symptoms interfere today?
-          </Text>
-          <ScaleRow
-            label="Overall functional impairment"
-            value={fnImpair}
-            onSet={onSetFnImpair}
-            max={6}
-          />
-        </>
-      )}
-
-      {/* T-22 — ADHD check-in 4th step (BEFORE save) */}
-      {isAdhdUser && !fastLog && (
-        <View style={s.adhdSection}>
-          <View style={s.adhdHeader}>
-            <Text style={typography.h2}>ADHD check-in (optional)</Text>
             <TouchableOpacity
-              style={s.ghostBtn}
-              onPress={onToggleAdhdSection}
-              accessibilityLabel={showAdhdSection ? 'Skip ADHD section' : 'Show ADHD section'}
-              accessibilityRole="button"
+              key={n}
+              activeOpacity={0.75}
+              style={[
+                s.optionRow,
+                { backgroundColor: isActive ? activeBgMap[n] : inactiveTintMap[n] },
+                isActive && s.optionRowActive,
+              ]}
+              onPress={() => handleRate(step, n)}
+              accessibilityLabel={`${ANCHORS[n]}`}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: isActive }}
             >
-              <Text style={[s.ghostBtnLabel, s.adhdNote]}>
-                {showAdhdSection ? 'Skip this section' : 'Show'}
+              <View style={[s.optionRadio, isActive && { backgroundColor: activeTextMap[n] }]}>
+                {isActive && <View style={s.optionRadioDot} />}
+              </View>
+              <Text
+                style={[
+                  s.optionLabel,
+                  isActive
+                    ? { color: activeTextMap[n], fontFamily: fonts.sansSemibold }
+                    : s.optionLabelInactive,
+                ]}
+              >
+                {ANCHORS[n]}
+              </Text>
+              <Text style={[s.optionNum, isActive && { color: activeTextMap[n] }]}>
+                {n}
               </Text>
             </TouchableOpacity>
-          </View>
-          <Text style={[typography.caption, s.adhdNote, { marginBottom: 12 }]}>
-            5 EF dimensions · 1–5 · skip without warning
-          </Text>
-          {showAdhdSection &&
-            ADHD_EF.map((d) => (
-              <ScaleRow
-                key={d.key}
-                label={d.label}
-                value={adhdEF[d.key]}
-                onSet={(n) => onSetAdhdEF(d.key, n)}
-                max={5}
-              />
-            ))}
-        </View>
+          );
+        })}
+      </View>
+
+      {/* Back button */}
+      {currentIdx > 0 && (
+        <TouchableOpacity
+          style={s.backBtn}
+          onPress={() => setCurrentIdx((i) => i - 1)}
+          accessibilityRole="button"
+          accessibilityLabel="Go back to previous question"
+        >
+          <Text style={s.backBtnLabel}>← Back</Text>
+        </TouchableOpacity>
       )}
 
-      {/* ADHD med rating */}
-      {isAdhdUser && !fastLog && (
-        <View style={{ marginBottom: 32 }}>
-          <Text style={[typography.h2, { marginBottom: 8 }]}>
-            How well did your ADHD meds work today?
+      {/* SI crisis prompt */}
+      {isSIStep && value != null && value >= 5 && (
+        <View style={s.siInlinePrompt}>
+          <Text style={s.siInlinePromptText}>
+            If you're struggling right now, support is one tap away.
           </Text>
-          <Text style={[typography.caption, { marginBottom: 12 }]}>
-            Estrogen affects dopamine — your meds may feel weaker before your period.
-          </Text>
-          <View style={s.scaleRow}>
-            {[1, 2, 3, 4, 5].map((n) => {
-              const isActive = adhdRating === n;
-              return (
-                <TouchableOpacity
-                  key={n}
-                  activeOpacity={0.72}
-                  style={[
-                    s.scaleBtn,
-                    s.scaleBtnFlex,
-                    isActive
-                      ? { backgroundColor: BTN_ACTIVE_BG[n] ?? colors.sageLight, borderColor: 'transparent' }
-                      : s.scaleBtnInactive,
-                  ]}
-                  onPress={() => onSetAdhdRating(n)}
-                  accessibilityLabel={`ADHD meds effectiveness: ${n} of 5`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: isActive }}
-                >
-                  <Text
-                    style={[
-                      s.scaleBtnNum,
-                      isActive
-                        ? { color: BTN_ACTIVE_TEXT[n] ?? colors.ink, fontFamily: fonts.sansBold }
-                        : s.scaleBtnNumInactive,
-                    ]}
-                  >
-                    {n}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          <Pressable
+            onPress={() => { void Linking.openURL('tel:988'); }}
+            accessibilityRole="button"
+            accessibilityLabel="Open support — call or text 988"
+            style={s.siInlinePromptBtn}
+          >
+            <Text style={s.siInlinePromptBtnLabel}>Open support →</Text>
+          </Pressable>
         </View>
       )}
-    </>
+    </View>
   );
 }
 
@@ -589,6 +660,31 @@ export function DrspScale({
 // ─────────────────────────────────────────────
 
 const s = StyleSheet.create({
+  // ── Scale card (per-item wrapper) ─────────────────────────────────────
+  scaleCard: {
+    marginBottom: 10,
+    backgroundColor: colors.paper,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 12,
+  },
+  scaleCardLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
+    color: colors.ink,
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  yesterdayHint: {
+    fontFamily: fonts.mono,
+    fontSize: 10,
+    color: colors.ink3,
+    marginBottom: 8,
+  },
+
   // ── Scale row ─────────────────────────────────────────────────────────
   scaleRowWrap: {
     marginBottom: 14,
@@ -600,38 +696,40 @@ const s = StyleSheet.create({
   },
   scaleRow: {
     flexDirection: 'row',
-    gap: 5,
+    gap: 4,
   },
   scaleBtnFlex: {
     flex: 1,
   },
   scaleBtn: {
-    height: 52,
+    height: 58,
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
-    gap: 1,
+    paddingVertical: 6,
+    gap: 3,
   },
   scaleBtnInactive: {
-    backgroundColor: colors.paper,
     borderWidth: 1,
     borderColor: colors.border,
   },
   scaleBtnNum: {
     fontFamily: fonts.sansMedium,
-    fontSize: 15,
-    lineHeight: 18,
+    fontSize: 16,
+    lineHeight: 19,
   },
   scaleBtnNumInactive: {
     color: colors.ink2,
     fontFamily: fonts.sansMedium,
   },
   scaleBtnAnchor: {
-    fontFamily: fonts.sans,
-    fontSize: 7,
-    lineHeight: 9,
+    fontSize: 9,
+    lineHeight: 11,
     textAlign: 'center',
+  },
+  scaleBtnAnchorInactive: {
+    fontFamily: fonts.sans,
+    color: colors.ink3,
   },
 
   // ── Collapsed row ─────────────────────────────────────────────────────
@@ -640,10 +738,10 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     backgroundColor: colors.paper,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,
     gap: 10,
@@ -671,30 +769,11 @@ const s = StyleSheet.create({
     fontSize: 11,
   },
 
-  // ── Yesterday ghost ───────────────────────────────────────────────────
-  yesterdayStrip: {
-    flexDirection: 'row',
-    gap: 5,
-    marginBottom: 3,
-  },
-  yesterdayCell: {
-    flex: 1,
-    alignItems: 'center',
-    minHeight: 14,
-  },
-  yesterdayDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.ink3,
-    marginBottom: 1,
-  },
-  yesterdayText: {
-    fontFamily: fonts.mono,
-    fontSize: 7,
-    color: colors.ink3,
-    letterSpacing: 0,
-  },
+  // ── Yesterday ghost (kept for any legacy references) ──────────────────
+  yesterdayStrip: { flexDirection: 'row', gap: 5, marginBottom: 3 },
+  yesterdayCell: { flex: 1, alignItems: 'center', minHeight: 14 },
+  yesterdayDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.ink3, marginBottom: 1 },
+  yesterdayText: { fontFamily: fonts.mono, fontSize: 7, color: colors.ink3 },
 
   // ── Carry-forward ─────────────────────────────────────────────────────
   carryForwardBtn: {
@@ -827,6 +906,128 @@ const s = StyleSheet.create({
   ghostBtnLabel: {
     fontFamily: fonts.sansMedium,
     fontSize: 13,
+    color: colors.eucalyptusDeep,
+  },
+
+  // ── Wizard ────────────────────────────────────────────────────────────
+  wizard: {
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+  wizardProgressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20,
+  },
+  wizardTrack: {
+    flex: 1,
+    height: 4,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  wizardFill: {
+    height: 4,
+    backgroundColor: colors.eucalyptus,
+    borderRadius: 2,
+  },
+  wizardCounter: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.ink3,
+    minWidth: 36,
+    textAlign: 'right',
+  },
+  wizardSection: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 10,
+    letterSpacing: 1.2,
+    color: colors.eucalyptus,
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  wizardQuestion: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 18,
+    lineHeight: 26,
+    color: colors.ink,
+    marginBottom: 12,
+  },
+  wizardSINote: {
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    color: colors.ink3,
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  wizardYesterday: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.ink3,
+    marginBottom: 12,
+  },
+
+  // ── Option list ───────────────────────────────────────────────────────
+  optionList: {
+    gap: 6,
+    marginBottom: 20,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minHeight: 52,
+  },
+  optionRowActive: {
+    borderColor: 'transparent',
+  },
+  optionRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  optionRadioDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.paper,
+  },
+  optionLabel: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  optionLabelInactive: {
+    fontFamily: fonts.sans,
+    color: colors.ink,
+  },
+  optionNum: {
+    fontFamily: fonts.mono,
+    fontSize: 13,
+    color: colors.ink3,
+  },
+
+  // ── Back button ───────────────────────────────────────────────────────
+  backBtn: {
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  backBtnLabel: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 14,
     color: colors.eucalyptusDeep,
   },
 });
