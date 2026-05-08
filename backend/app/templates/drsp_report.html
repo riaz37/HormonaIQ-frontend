@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>HormonaIQ Clinical Summary</title>
+<style>
+  /* WeasyPrint-compatible CSS — table layout only, no flexbox */
+  @page {
+    margin: 2.5cm 2cm 2.5cm 2cm;
+    size: A4;
+  }
+
+  body {
+    font-family: "Liberation Serif", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    color: #1a1a1a;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1 {
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 4pt;
+    letter-spacing: 0.5pt;
+  }
+
+  h2 {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-top: 18pt;
+    margin-bottom: 6pt;
+    border-bottom: 1pt solid #444;
+    padding-bottom: 3pt;
+  }
+
+  .header-rule {
+    border: none;
+    border-top: 2pt solid #1a1a1a;
+    margin: 8pt 0;
+  }
+
+  .meta-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8pt;
+  }
+
+  .meta-table td {
+    padding: 3pt 0;
+    vertical-align: top;
+  }
+
+  .meta-label {
+    font-weight: bold;
+    width: 40%;
+    color: #333;
+  }
+
+  .meta-value {
+    width: 60%;
+  }
+
+  /* DRSP scores table */
+  .drsp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8pt;
+    margin-bottom: 12pt;
+    font-size: 10pt;
+  }
+
+  .drsp-table thead tr {
+    background-color: #2c2c2c;
+    color: #ffffff;
+  }
+
+  .drsp-table thead th {
+    padding: 5pt 8pt;
+    text-align: left;
+    font-weight: bold;
+  }
+
+  .drsp-table thead th.num {
+    text-align: right;
+  }
+
+  .drsp-table tbody tr:nth-child(even) {
+    background-color: #f5f5f5;
+  }
+
+  .drsp-table tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+  }
+
+  .drsp-table tbody td {
+    padding: 4pt 8pt;
+    border-bottom: 0.5pt solid #ddd;
+    vertical-align: middle;
+  }
+
+  .drsp-table tbody td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .drsp-table tbody td.diff-positive {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: #8b0000;
+    font-weight: bold;
+  }
+
+  .drsp-table tbody td.diff-neutral {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: #555;
+  }
+
+  .drsp-table tfoot td {
+    padding: 5pt 8pt;
+    font-weight: bold;
+    border-top: 1pt solid #888;
+    background-color: #e8e8e8;
+  }
+
+  .drsp-table tfoot td.num {
+    text-align: right;
+  }
+
+  /* C-PASS criteria */
+  .cpass-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8pt;
+    margin-bottom: 12pt;
+  }
+
+  .cpass-table tbody td {
+    padding: 5pt 8pt;
+    border-bottom: 0.5pt solid #ddd;
+    vertical-align: top;
+  }
+
+  .cpass-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .cpass-checkbox {
+    width: 24pt;
+    font-size: 13pt;
+    color: #2c6e2c;
+    vertical-align: middle;
+  }
+
+  .cpass-checkbox.unmet {
+    color: #999;
+  }
+
+  .cpass-label {
+    font-weight: bold;
+    width: 45%;
+  }
+
+  .cpass-desc {
+    color: #444;
+    font-size: 10pt;
+  }
+
+  /* Pattern summary */
+  .pattern-box {
+    border: 1pt solid #888;
+    padding: 8pt 12pt;
+    margin-top: 10pt;
+    margin-bottom: 10pt;
+    background-color: #fafafa;
+  }
+
+  .pattern-box p {
+    margin: 0;
+    font-style: italic;
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    font-size: 9pt;
+    color: #555;
+    border-top: 0.5pt solid #bbb;
+    padding-top: 8pt;
+    margin-top: 16pt;
+  }
+
+  /* Footer */
+  .footer {
+    font-size: 9pt;
+    color: #777;
+    text-align: center;
+    margin-top: 10pt;
+    padding-top: 6pt;
+    border-top: 0.5pt solid #ccc;
+  }
+
+  /* SI warning row */
+  .si-row {
+    background-color: #fff8f0 !important;
+  }
+
+  .si-row td {
+    color: #6b2c00;
+  }
+
+  /* Page break control */
+  .page-break {
+    page-break-before: always;
+  }
+
+  .no-break {
+    page-break-inside: avoid;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- HEADER                                                       -->
+<!-- ============================================================ -->
+<h1>HormonaIQ Clinical Summary</h1>
+<hr class="header-rule" />
+
+<table class="meta-table">
+  <tbody>
+    <tr>
+      <td class="meta-label">Patient Reference:</td>
+      <td class="meta-value">Anonymous — no name, no DOB, no email</td>
+    </tr>
+    <tr>
+      <td class="meta-label">Tracking Period:</td>
+      <td class="meta-value">{{ start_date }} — {{ end_date }}</td>
+    </tr>
+    <tr>
+      <td class="meta-label">Cycles Analyzed:</td>
+      <td class="meta-value">{{ cycle_count }}</td>
+    </tr>
+    <tr>
+      <td class="meta-label">Instrument:</td>
+      <td class="meta-value">Daily Record of Severity of Problems (DRSP)</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="header-rule" />
+
+<!-- ============================================================ -->
+<!-- DRSP PHASE AVERAGES TABLE                                    -->
+<!-- ============================================================ -->
+<h2>DRSP Phase Averages (Cycles 1–{{ cycle_count }})</h2>
+
+{% set luteal = chart_data.get("luteal_averages", {}) %}
+{% set follicular = chart_data.get("follicular_averages", {}) %}
+
+{% set drsp_items = [
+  ("mood_shifts",                      "Mood Shifts"),
+  ("irritability",                     "Irritability"),
+  ("anxiety_tension",                  "Anxiety / Tension"),
+  ("depressed_mood",                   "Depressed Mood"),
+  ("hopelessness",                     "Hopelessness"),
+  ("self_critical",                    "Self-Critical"),
+  ("feeling_overwhelmed",              "Feeling Overwhelmed"),
+  ("feeling_out_of_control",           "Feeling Out of Control"),
+  ("breast_tenderness",                "Breast Tenderness"),
+  ("bloating",                         "Bloating"),
+  ("headache",                         "Headache"),
+  ("joint_muscle_pain",                "Joint / Muscle Pain"),
+  ("hypersomnia_insomnia",             "Hypersomnia / Insomnia"),
+  ("appetite_change",                  "Appetite Change"),
+  ("difficulty_concentrating",         "Difficulty Concentrating"),
+  ("fatigue_lethargy",                 "Fatigue / Lethargy"),
+  ("decreased_interest_activities",    "Decreased Interest in Activities"),
+  ("decreased_interest_relationships", "Decreased Interest in Relationships"),
+  ("difficulty_with_usual_activities", "Difficulty with Usual Activities"),
+  ("relationship_conflict",            "Relationship Conflict"),
+  ("social_withdrawal",                "Social Withdrawal"),
+  ("productivity_reduced",             "Productivity Reduced"),
+  ("subjective_difficulty",            "Subjective Difficulty"),
+] %}
+
+<table class="drsp-table">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th class="num">Luteal Avg</th>
+      <th class="num">Follicular Avg</th>
+      <th class="num">Differential</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for key, label in drsp_items %}
+      {% set l_val = luteal.get(key) %}
+      {% set f_val = follicular.get(key) %}
+      {% if l_val is not none and f_val is not none %}
+        {% set diff = l_val - f_val %}
+        <tr>
+          <td>{{ label }}</td>
+          <td class="num">{{ "%.1f"|format(l_val) }}</td>
+          <td class="num">{{ "%.1f"|format(f_val) }}</td>
+          {% if diff >= 1.0 %}
+            <td class="diff-positive">+{{ "%.1f"|format(diff) }}</td>
+          {% else %}
+            <td class="diff-neutral">{{ "%+.1f"|format(diff) }}</td>
+          {% endif %}
+        </tr>
+      {% endif %}
+    {% endfor %}
+
+    {# Suicidal Ideation — only rendered if includes_si is True #}
+    {% if includes_si %}
+      {% set l_si = luteal.get("suicidal_ideation") %}
+      {% set f_si = follicular.get("suicidal_ideation") %}
+      {% if l_si is not none and f_si is not none %}
+        {% set diff_si = l_si - f_si %}
+        <tr class="si-row">
+          <td>Suicidal Ideation (Item 22)</td>
+          <td class="num">{{ "%.1f"|format(l_si) }}</td>
+          <td class="num">{{ "%.1f"|format(f_si) }}</td>
+          {% if diff_si >= 1.0 %}
+            <td class="diff-positive">+{{ "%.1f"|format(diff_si) }}</td>
+          {% else %}
+            <td class="diff-neutral">{{ "%+.1f"|format(diff_si) }}</td>
+          {% endif %}
+        </tr>
+      {% endif %}
+    {% endif %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td>Scale range: 1 (not at all) — 6 (extreme)</td>
+      <td class="num" colspan="3">Higher luteal differential = greater cyclical severity</td>
+    </tr>
+  </tfoot>
+</table>
+
+<!-- ============================================================ -->
+<!-- C-PASS DIAGNOSTIC CRITERIA                                   -->
+<!-- ============================================================ -->
+<div class="no-break">
+<h2>C-PASS Diagnostic Criteria</h2>
+
+{% set cpass = chart_data.get("c_pass", {}) %}
+{% set absolute_severity  = cpass.get("absolute_severity", false) %}
+{% set core_mood          = cpass.get("core_mood", false) %}
+{% set absolute_clearance = cpass.get("absolute_clearance", false) %}
+{% set cyclicity          = cpass.get("cyclicity", false) %}
+
+<table class="cpass-table">
+  <tbody>
+    <tr>
+      <td class="cpass-checkbox {% if not absolute_severity %}unmet{% endif %}">
+        {% if absolute_severity %}&#9745;{% else %}&#9744;{% endif %}
+      </td>
+      <td class="cpass-label">Absolute Severity</td>
+      <td class="cpass-desc">&#8805;5 DRSP items rated &#8805;4 during the luteal phase</td>
+    </tr>
+    <tr>
+      <td class="cpass-checkbox {% if not core_mood %}unmet{% endif %}">
+        {% if core_mood %}&#9745;{% else %}&#9744;{% endif %}
+      </td>
+      <td class="cpass-label">Core Mood Item Present</td>
+      <td class="cpass-desc">At least one core affective item (mood shifts, irritability, depressed mood, anxiety/tension, or hopelessness) rated &#8805;4 in luteal phase</td>
+    </tr>
+    <tr>
+      <td class="cpass-checkbox {% if not absolute_clearance %}unmet{% endif %}">
+        {% if absolute_clearance %}&#9745;{% else %}&#9744;{% endif %}
+      </td>
+      <td class="cpass-label">Absolute Clearance</td>
+      <td class="cpass-desc">Core mood items rated &#8804;3 during the follicular phase</td>
+    </tr>
+    <tr>
+      <td class="cpass-checkbox {% if not cyclicity %}unmet{% endif %}">
+        {% if cyclicity %}&#9745;{% else %}&#9744;{% endif %}
+      </td>
+      <td class="cpass-label">Cyclicity</td>
+      <td class="cpass-desc">&gt;30% differential between luteal and follicular phases on core items</td>
+    </tr>
+  </tbody>
+</table>
+
+{% set met_count = [absolute_severity, core_mood, absolute_clearance, cyclicity] | select | list | length %}
+
+<div class="pattern-box">
+  {% if met_count == 4 %}
+    <p>Pattern: Consistent with PMDD criteria across all {{ cycle_count }} cycle{% if cycle_count != 1 %}s{% endif %}. All four C-PASS criteria met.</p>
+  {% elif met_count >= 2 %}
+    <p>Pattern: {{ met_count }} of 4 C-PASS criteria met across {{ cycle_count }} cycle{% if cycle_count != 1 %}s{% endif %}. Data is suggestive but does not meet full threshold. Clinical evaluation recommended.</p>
+  {% else %}
+    <p>Pattern: Fewer than 2 C-PASS criteria met across {{ cycle_count }} cycle{% if cycle_count != 1 %}s{% endif %}. Data does not suggest a cyclical pattern consistent with PMDD at this time.</p>
+  {% endif %}
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- DISCLAIMER & FOOTER                                         -->
+<!-- ============================================================ -->
+<div class="disclaimer">
+  <p>This summary was generated from self-reported tracking data using a validated clinical
+  instrument. It does not constitute a diagnosis. A licensed healthcare provider should
+  review this data in the context of a full clinical evaluation before any diagnostic or
+  treatment decision is made.</p>
+  {% if includes_si %}
+  <p><strong>Note:</strong> This report includes Item 22 (Suicidal Ideation) per the user's
+  explicit opt-in. This item is included for clinical completeness only. If you are in
+  crisis, please contact the 988 Suicide and Crisis Lifeline by calling or texting
+  <strong>988</strong>.</p>
+  {% endif %}
+</div>
+
+<div class="footer">
+  Generated by HormonaIQ | hormonaiq.com<br />
+  For clinical questions, consult a licensed healthcare provider.
+</div>
+
+</body>
+</html>

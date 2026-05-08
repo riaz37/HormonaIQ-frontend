@@ -5,6 +5,8 @@
 import { useState } from 'react';
 import type { ReactElement } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -16,6 +18,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useReducedMotion } from 'react-native-reanimated';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+
+import { supabase } from '../../src/lib/supabase';
 
 import {
   buttons,
@@ -159,6 +165,63 @@ export default function ProfileScreen(): ReactElement {
   const setOraEnabledStore = useSettingsStore((s) => s.setOraEnabled);
   const edSafeMode = useSettingsStore((s) => s.edSafeMode);
   const setEdSafeModeStore = useSettingsStore((s) => s.setEdSafeMode);
+  const isPro = useSettingsStore((s) => s.isPro);
+
+  // ── Report download (Phase 8) ──────────────────────────────────────────
+  const [downloadingReport, setDownloadingReport] = useState(false);
+
+  const handleDownloadReport = async (): Promise<void> => {
+    if (downloadingReport) return;
+    setDownloadingReport(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) {
+        Alert.alert(
+          'Sign in needed',
+          'Please sign in again to download your report.',
+        );
+        return;
+      }
+
+      const apiBase = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
+      const url = `${apiBase}/api/v1/report/generate`;
+      const fileUri = `${FileSystem.cacheDirectory ?? ''}drsp-report.pdf`;
+
+      const result = await FileSystem.downloadAsync(url, fileUri, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (result.status !== 200) {
+        Alert.alert(
+          'Couldn\'t prepare your report',
+          'The server returned an error. Please try again in a moment.',
+        );
+        return;
+      }
+
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(result.uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Your DRSP Report',
+          UTI: 'com.adobe.pdf',
+        });
+      } else {
+        Alert.alert(
+          'Saved',
+          'Your report was saved, but sharing isn\'t available on this device.',
+        );
+      }
+    } catch {
+      Alert.alert(
+        'Something went sideways',
+        'We couldn\'t download your report. Check your connection and try again.',
+      );
+    } finally {
+      setDownloadingReport(false);
+    }
+  };
 
   // ── Local UI / transient state ────────────────────────────────────────
   const [state, setState] = useState<ProfileState>(INITIAL_STATE);
@@ -409,6 +472,81 @@ export default function ProfileScreen(): ReactElement {
             </View>
           </>
         </Group>
+
+        {/* ── Clinician report (Phase 8 — Pro) ─────────────────────────── */}
+        <View style={s.group}>
+          <Text style={[typography.eyebrow, s.groupTitle]}>CLINICIAN REPORT</Text>
+          {isPro ? (
+            <View style={[s.groupCard, cards.cardMint, s.reportCard]}>
+              <Text
+                style={[
+                  typography.body,
+                  { fontFamily: fonts.sansSemibold, marginBottom: 4 },
+                ]}
+              >
+                Download your DRSP report
+              </Text>
+              <Text style={[typography.caption, { fontSize: 12, marginBottom: 14 }]}>
+                A clinician-ready PDF — your prospective record across cycles,
+                with C-PASS criteria. Generated fresh each time.
+              </Text>
+              <Pressable
+                style={[
+                  buttons.primary,
+                  downloadingReport && { opacity: 0.7 },
+                ]}
+                onPress={handleDownloadReport}
+                disabled={downloadingReport}
+                accessibilityRole="button"
+                accessibilityLabel="Download DRSP report PDF"
+              >
+                {downloadingReport ? (
+                  <View style={s.reportBtnContent}>
+                    <ActivityIndicator color={colors.cream} size="small" />
+                    <Text style={buttons.primaryLabel}>Preparing…</Text>
+                  </View>
+                ) : (
+                  <Text style={buttons.primaryLabel}>Download report</Text>
+                )}
+              </Pressable>
+            </View>
+          ) : (
+            <View
+              style={[
+                s.groupCard,
+                cards.cardWarm,
+                s.reportCard,
+                { borderLeftWidth: 3, borderLeftColor: colors.butterDeep },
+              ]}
+            >
+              <Text
+                style={[
+                  typography.body,
+                  { fontFamily: fonts.sansSemibold, marginBottom: 4 },
+                ]}
+              >
+                Clinician PDF reports are a Pro feature
+              </Text>
+              <Text style={[typography.caption, { fontSize: 12, marginBottom: 14 }]}>
+                Upgrade to Pro to download a clinician-ready DRSP report you can
+                share with your provider — plus unlimited Ora insights.
+              </Text>
+              <Pressable
+                style={buttons.outline}
+                onPress={() =>
+                  Alert.alert(
+                    'Upgrade to Pro',
+                    'Pro upgrade is coming soon. Thanks for your patience.',
+                  )
+                }
+                accessibilityRole="button"
+                accessibilityLabel="Learn about Pro upgrade"
+              >
+                <Text style={buttons.outlineLabel}>Learn about Pro</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
 
         {/* ── Account ──────────────────────────────────────────────────── */}
         <Group title="Account" cardStyle={cards.card}>
@@ -929,6 +1067,15 @@ const s = StyleSheet.create({
   groupCardOverride: {
     paddingHorizontal: 18,
     paddingVertical: 0,
+  },
+  reportCard: {
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+  },
+  reportBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
 
   // ── Setting rows ───────────────────────────────────────────────────────

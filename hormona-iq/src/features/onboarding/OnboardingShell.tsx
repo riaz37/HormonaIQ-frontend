@@ -21,6 +21,7 @@ import { colors, fonts, radius, shadows, spacing } from '../../constants/tokens'
 import { useAppStore } from '../../stores';
 import { useSettingsStore } from '../../stores/useSettingsStore';
 import { requestNotificationPermission } from '../../lib/notifications';
+import { supabase } from '../../lib/supabase';
 
 import { StepYob } from './StepYob';
 import { StepConditions } from './StepConditions';
@@ -247,6 +248,26 @@ export default function OnboardingShell(): ReactElement {
         useSettingsStore.getState().setNotificationsEnabled(granted);
       });
     }
+
+    // Non-blocking — profile sync failure doesn't block navigation
+    void supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return;
+      const apiBase = process.env.EXPO_PUBLIC_API_BASE_URL;
+      if (!apiBase) return;
+      await fetch(`${apiBase}/api/v1/user/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          conditions,
+          primary_condition: primaryCondition ?? (conditions[0] ?? null),
+          cycle_len: cycleLen,
+          last_period_date: lastPeriod ?? null,
+        }),
+      }).catch(() => undefined);
+    });
 
     router.replace('/(app)/home');
   };

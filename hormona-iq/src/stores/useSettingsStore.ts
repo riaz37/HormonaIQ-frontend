@@ -15,6 +15,7 @@ export interface SettingsState {
   notificationsEnabled: boolean;
   notifHour: number;
   notifMinute: number;
+  isPro: boolean;
 }
 
 export interface SettingsActions {
@@ -24,6 +25,7 @@ export interface SettingsActions {
   setEdSafeMode: (v: boolean) => void;
   setNotificationsEnabled: (v: boolean) => void;
   setNotifTime: (hour: number, minute: number) => void;
+  setIsPro: (v: boolean) => void;
   reset: () => void;
 }
 
@@ -37,6 +39,7 @@ const INITIAL_STATE: SettingsState = {
   notificationsEnabled: false,
   notifHour: 20,
   notifMinute: 0,
+  isPro: false,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -49,6 +52,7 @@ export const useSettingsStore = create<SettingsStore>()(
       setEdSafeMode: (v) => set(() => ({ edSafeMode: v })),
       setNotificationsEnabled: (v) => set(() => ({ notificationsEnabled: v })),
       setNotifTime: (hour, minute) => set(() => ({ notifHour: hour, notifMinute: minute })),
+      setIsPro: (v) => set(() => ({ isPro: v })),
       reset: () => set(() => ({ ...INITIAL_STATE })),
     }),
     {
@@ -62,6 +66,7 @@ export const useSettingsStore = create<SettingsStore>()(
         notificationsEnabled: state.notificationsEnabled,
         notifHour: state.notifHour,
         notifMinute: state.notifMinute,
+        isPro: state.isPro,
       }),
       version: 1,
     },

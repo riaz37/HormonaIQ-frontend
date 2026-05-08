@@ -34,6 +34,7 @@ import { useAppStore, useLogStore } from '../../stores';
 import type { LogEntry, NewLogEntry } from '../../stores';
 import { PillButton } from '../../components/ui/PillButton';
 import { SectionCard } from '../../components/ui/SectionCard';
+import { useSymptomLog } from '../../hooks/useSymptomLog';
 
 import { VibeCheck } from './VibeCheck';
 import {
@@ -226,6 +227,7 @@ export default function LogScreen(): ReactElement {
   const getEntryForDate = useLogStore((s) => s.getEntryForDate);
   const addEntryToStore = useLogStore((s) => s.addEntry);
   const updateEntryInStore = useLogStore((s) => s.updateEntry);
+  const { saveLog: saveLogToDB } = useSymptomLog();
 
   const [state, setState] = useState<AppState>(() => ({
     ...INITIAL_STATE,
@@ -383,6 +385,10 @@ export default function LogScreen(): ReactElement {
       const created = addEntryToStore(persistPayload);
       setStoredEntryId(created.id);
     }
+
+    // Parallel durable write to WatermelonDB. Zustand remains the fast-read
+    // cache that powers existing UI; SQLite is the source of truth for sync.
+    void saveLogToDB(persistPayload);
 
     setState((s) => {
       const nextEntries = { ...s.entries, [todayKey]: entry };

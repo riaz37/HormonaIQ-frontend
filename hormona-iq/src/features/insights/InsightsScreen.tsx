@@ -42,7 +42,10 @@ import { useInsightsGate } from '../../hooks/useInsightsGate';
 import { GateCard } from './GateCard';
 import { DrspChart } from './DrspChart';
 import { CpassTable, DRSP_ITEM_LABELS } from './CpassTable';
+import { OraInsightModal } from './OraInsightModal';
 import { FloatingOrbsSvg } from '../../components/illustrations/BotanicalEmpty';
+import { OraMarkSvg } from '../../components/illustrations/OraMarkSvg';
+import { useLogStore } from '../../stores/useLogStore';
 import type {
   ChartDataPoint,
   CPASSResult,
@@ -259,6 +262,11 @@ export default function InsightsScreen(): ReactElement {
   const [showReport, setShowReport] = useState(false);
   const [acknowledged, setAcknowledged] = useState(state.drspAcknowledged);
   const [showInterstitial, setShowInterstitial] = useState(false);
+  const [showOra, setShowOra] = useState(false);
+
+  // ── Ora "Ask Ora" gate — minimum 14 days of logged data ────────────────
+  const realLogEntries = useLogStore((store) => store.entries);
+  const canAskOra = realLogEntries.length >= 14;
 
   // ── useInsightsGate — real gate from stores ────────────────────────────
   const gate = useInsightsGate();
@@ -515,6 +523,28 @@ export default function InsightsScreen(): ReactElement {
                 cycleAnalysis.cycles[0]?.totalDaysLogged ?? 0
               }
             />
+
+            {/* Ask Ora — botanical companion insight (requires 14+ days) */}
+            {canAskOra && (
+              <Pressable
+                style={s.askOraCard}
+                onPress={() => setShowOra(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Ask Ora to explain this chart"
+              >
+                <View style={s.askOraMark}>
+                  <OraMarkSvg size={28} state="listening" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.askOraEyebrow}>ORA</Text>
+                  <Text style={s.askOraTitle}>Ask me to explain this chart</Text>
+                  <Text style={s.askOraCaption}>
+                    A short, gentle reading of your last cycle.
+                  </Text>
+                </View>
+                <Text style={s.askOraArrow}>→</Text>
+              </Pressable>
+            )}
 
             {/* T-03 — Explicit SI export opt-in */}
             <View style={[cards.cardWarm, { padding: 16, marginBottom: 16 }]}>
@@ -796,6 +826,14 @@ export default function InsightsScreen(): ReactElement {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Ora — explain-chart modal */}
+      <OraInsightModal
+        visible={showOra}
+        onClose={() => setShowOra(false)}
+        cycleNumber={Math.max(1, cycleAnalysis.completedCycles)}
+        reduceMotion={reduceMotion ?? false}
+      />
     </SafeAreaView>
   );
 }
@@ -931,6 +969,51 @@ const s = StyleSheet.create({
   checkGlyph: {
     fontFamily: fonts.sansSemibold,
     fontSize: 24,
+    color: colors.eucalyptus,
+  },
+  askOraCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: 18,
+    marginBottom: 16,
+    backgroundColor: colors.mintPale,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderMint,
+    minHeight: 64,
+  },
+  askOraMark: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.cream,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  askOraEyebrow: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 10,
+    letterSpacing: 1.6,
+    color: colors.eucalyptus,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  askOraTitle: {
+    fontFamily: fonts.sansSemibold,
+    fontSize: 15,
+    color: colors.ink,
+    marginBottom: 2,
+  },
+  askOraCaption: {
+    fontFamily: fonts.sans,
+    fontSize: 12,
+    color: colors.ink2,
+    lineHeight: 16,
+  },
+  askOraArrow: {
+    fontFamily: fonts.sansMedium,
+    fontSize: 18,
     color: colors.eucalyptus,
   },
 });
