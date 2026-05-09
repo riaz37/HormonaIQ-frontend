@@ -91,6 +91,7 @@ expo-font or @expo-google-fonts/instrument-serif
 | `coral-soft` | `#F5C8B5` | Gentle coral tint |
 | `rose` | `#D88A95` | Menstrual phase |
 | `danger` | `#B95446` | Irreversible actions ONLY (not phase colors) |
+| `lavender` | `#5C4A7A` | Crisis Tier-1 soft link text ONLY — never for decoration |
 
 ### Phase Colors (carry meaning, never decoration)
 | Token | Hex | Phase |
