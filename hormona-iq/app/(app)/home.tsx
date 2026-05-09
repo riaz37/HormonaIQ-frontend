@@ -1332,7 +1332,7 @@ const s = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(27, 46, 37, 0.45)',
+    backgroundColor: colors.overlayModal,
     justifyContent: 'flex-end',
   },
   modalSheet: {
@@ -1344,7 +1344,7 @@ const s = StyleSheet.create({
   },
   crisisBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(38, 26, 20, 0.5)',
+    backgroundColor: colors.overlayModal,
     justifyContent: 'flex-end',
   },
   crisisSheet: {
