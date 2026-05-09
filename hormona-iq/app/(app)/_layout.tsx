@@ -2,8 +2,7 @@
 // Insights / Profile). Mirrors the `.tabbar` rules in HormonaIQ.html (lines
 // 240-274): warm gradient, sage outer border, pill radius, eucalyptus active.
 
-import { useEffect } from 'react';
-import { Tabs, router } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,10 +12,7 @@ import type { ReactElement, ReactNode } from 'react';
 import { colors, fonts, radius, shadows } from '../../src/constants/tokens';
 import { useNotificationScheduler } from '../../src/hooks/useNotificationScheduler';
 import { useProStatus } from '../../src/hooks/useProStatus';
-import { supabase } from '../../src/lib/supabase';
-import { initRevenueCat } from '../../src/lib/revenuecat';
 import { useSyncDB } from '../../src/hooks/useSyncDB';
-import { migrateFromAsyncStorage } from '../../src/db/migrateFromAsyncStorage';
 
 // ─────────────────────────────────────────────
 // Scroll-to-top registry
@@ -135,28 +131,6 @@ export default function AppTabsLayout(): ReactElement {
   const insets = useSafeAreaInsets();
   useNotificationScheduler();
   useProStatus();
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.replace('/(auth)/login');
-        return;
-      }
-      initRevenueCat(session.user.id);
-      // Fire-and-forget: copy any pre-WatermelonDB Zustand log entries into
-      // the durable SQLite store. Idempotent and non-blocking.
-      void migrateFromAsyncStorage();
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.replace('/(auth)/login');
-        return;
-      }
-      initRevenueCat(session.user.id);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
   useSyncDB();
 
   return (

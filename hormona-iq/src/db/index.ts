@@ -1,20 +1,4 @@
-import { Database } from '@nozbe/watermelondb';
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
+// WatermelonDB removed for mock-data mode.
+// Data layer: useLogStore (Zustand + AsyncStorage).
 
-import SymptomLog from './models/SymptomLog';
-import { dbSchema } from './schema';
-
-const adapter = new SQLiteAdapter({
-  schema: dbSchema,
-  jsi: false,
-  onSetUpError: (error) => {
-    console.error('WatermelonDB setup error:', error);
-  },
-});
-
-export const database = new Database({
-  adapter,
-  modelClasses: [SymptomLog],
-});
-
-export type { SymptomLog };
+export type { default as SymptomLog } from './models/SymptomLog';
