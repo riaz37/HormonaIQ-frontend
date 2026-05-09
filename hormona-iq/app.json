@@ -32,8 +32,16 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-dev-client",
       "expo-router",
-      ["expo-font", {}]
+      ["expo-font", {}],
+      [
+        "expo-notifications",
+        {
+          "color": "#6B9E8C",
+          "defaultChannel": "default"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -6,7 +6,7 @@ import { dbSchema } from './schema';
 
 const adapter = new SQLiteAdapter({
   schema: dbSchema,
-  jsi: true,
+  jsi: false,
   onSetUpError: (error) => {
     console.error('WatermelonDB setup error:', error);
   },
