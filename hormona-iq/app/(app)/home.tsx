@@ -650,7 +650,7 @@ export default function HomeScreen(): ReactElement {
               {phaseChipText}
             </Text>
           </View>
-          <Text style={[typography.body, { fontSize: 14 }]}>
+          <Text style={typography.body}>
             {phaseTone[phaseCode]}
           </Text>
         </View>
@@ -667,7 +667,7 @@ export default function HomeScreen(): ReactElement {
               A quick check
             </Text>
             <Text
-              style={[typography.body, { fontSize: 14, marginBottom: 12 }]}
+              style={[typography.body, { marginBottom: 12 }]}
             >
               Did your period start today?
             </Text>
@@ -761,7 +761,7 @@ export default function HomeScreen(): ReactElement {
               A note on cycle length
             </Text>
             <Text
-              style={[typography.body, { fontSize: 14, marginBottom: 12 }]}
+              style={[typography.body, { marginBottom: 12 }]}
             >
               It's been 75 days since your last logged period. In PCOS, longer
               cycles are common — but cycles over 90 days without a withdrawal
@@ -793,7 +793,7 @@ export default function HomeScreen(): ReactElement {
               Worth a conversation
             </Text>
             <Text
-              style={[typography.body, { fontSize: 14, marginBottom: 14 }]}
+              style={[typography.body, { marginBottom: 16 }]}
             >
               You've been in an extended cycle for 90+ days. In PCOS, prolonged
               amenorrhea without progestogen protection can cause endometrial
@@ -829,7 +829,7 @@ export default function HomeScreen(): ReactElement {
               Want to simplify?
             </Text>
             <Text
-              style={[typography.body, { fontSize: 14, marginBottom: 10 }]}
+              style={[typography.body, { marginBottom: 8 }]}
             >
               Want to simplify the app for today? Brain Fog Mode hides extras.
             </Text>
@@ -1307,7 +1307,7 @@ const s = StyleSheet.create({
   },
   toolTitle: {
     fontFamily: fonts.sansSemibold,
-    fontSize: 14,
+    fontSize: 15,
     color: colors.ink,
     marginBottom: 2,
   },
