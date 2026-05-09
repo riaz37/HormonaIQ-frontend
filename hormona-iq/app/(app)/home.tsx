@@ -433,10 +433,10 @@ export default function HomeScreen(): ReactElement {
         style={{ flex: 1, backgroundColor: colors.cream }}
         contentContainerStyle={layout.screen}
       >
-        <Text style={[typography.display, { marginBottom: 18 }]}>
+        <Text style={[typography.display, { marginBottom: 16 }]}>
           Welcome back.
         </Text>
-        <View style={[cards.cardWarm, { marginBottom: 18 }]}>
+        <View style={[cards.cardWarm, { marginBottom: 16 }]}>
           <Text style={[typography.eyebrow, { marginBottom: 8 }]}>
             Cycle tracking paused
           </Text>
@@ -593,7 +593,7 @@ export default function HomeScreen(): ReactElement {
       showsVerticalScrollIndicator={false}
     >
       {/* Greeting */}
-      <View style={{ marginBottom: 20 }}>
+      <View style={{ marginBottom: 24 }}>
         <Text style={[typography.body, { marginBottom: 4, color: colors.ink2, fontFamily: fonts.sansMedium }]}>
           {greeting}, you
         </Text>
@@ -617,7 +617,7 @@ export default function HomeScreen(): ReactElement {
             <OraMarkSvg size={22} state="listening" />
             <Text style={s.oraLabelText}>ORA</Text>
           </View>
-          <Text style={[typography.body, { marginTop: 6 }]}>
+          <Text style={[typography.body, { marginTop: 8 }]}>
             {phaseGreeting}
           </Text>
         </View>
@@ -658,7 +658,7 @@ export default function HomeScreen(): ReactElement {
 
       {/* Period-start prompt */}
       {showPeriodStartPrompt && (
-        <View style={[cards.cardWarm, { marginTop: 18, flexDirection: 'row', gap: 14 }]}>
+        <View style={[cards.cardWarm, { marginTop: 16, flexDirection: 'row', gap: 16 }]}>
           <View style={[s.accentBar, { backgroundColor: colors.rose }]} />
           <View style={{ flex: 1 }}>
             <Text
@@ -699,8 +699,8 @@ export default function HomeScreen(): ReactElement {
           typography.caption,
           {
             textAlign: 'center',
-            marginTop: 18,
-            marginBottom: 18,
+            marginTop: 16,
+            marginBottom: 16,
             fontSize: 12,
             fontStyle: 'italic',
           },
@@ -743,13 +743,13 @@ export default function HomeScreen(): ReactElement {
           );
         })}
       </View>
-      <Text style={[typography.caption, { textAlign: 'center', marginBottom: 18, fontSize: 11 }]}>
+      <Text style={[typography.caption, { textAlign: 'center', marginBottom: 16, fontSize: 11 }]}>
         {Object.keys(state.entries).length} days logged
       </Text>
 
       {/* T-09 — endometrial 75 */}
       {showEndo75 && (
-        <View style={[cards.cardWarm, { marginTop: 18, flexDirection: 'row', gap: 14 }]}>
+        <View style={[cards.cardWarm, { marginTop: 16, flexDirection: 'row', gap: 16 }]}>
           <View style={[s.accentBar, { backgroundColor: colors.butterDeep }]} />
           <View style={{ flex: 1 }}>
             <Text
@@ -781,7 +781,7 @@ export default function HomeScreen(): ReactElement {
 
       {/* T-09 — endometrial 90+ */}
       {showEndo90 && (
-        <View style={[cards.cardWarm, { marginTop: 18, flexDirection: 'row', gap: 14 }]}>
+        <View style={[cards.cardWarm, { marginTop: 16, flexDirection: 'row', gap: 16 }]}>
           <View style={[s.accentBar, { backgroundColor: colors.eucalyptus }]} />
           <View style={{ flex: 1 }}>
             <Text
@@ -822,7 +822,7 @@ export default function HomeScreen(): ReactElement {
 
       {/* T-16 brain fog suggest */}
       {showBfSuggest && (
-        <View style={[cards.cardWarm, { marginTop: 18, flexDirection: 'row', gap: 14 }]}>
+        <View style={[cards.cardWarm, { marginTop: 16, flexDirection: 'row', gap: 16 }]}>
           <View style={[s.accentBar, { backgroundColor: colors.eucalyptusSoft }]} />
           <View style={{ flex: 1 }}>
             <Text style={[typography.eyebrow, { marginBottom: 6 }]}>
@@ -865,7 +865,7 @@ export default function HomeScreen(): ReactElement {
 
       {/* T-02 — heads-up card (only if logged today) */}
       {loggedToday && (phaseCode === 'L' || phaseCode === 'M') && (
-        <View style={[cards.cardWarm, { marginTop: 18 }]}>
+        <View style={[cards.cardWarm, { marginTop: 16 }]}>
           <Text style={[typography.eyebrow, { marginBottom: 6 }]}>
             A heads-up, not a diagnosis
           </Text>
@@ -1013,7 +1013,7 @@ export default function HomeScreen(): ReactElement {
             <OraMarkSvg size={22} state="listening" />
             <Text style={s.oraLabelText}>ORA</Text>
           </View>
-          <Text style={[typography.body, { marginTop: 6 }]}>
+          <Text style={[typography.body, { marginTop: 8 }]}>
             I haven't seen enough of your cycle yet to say anything useful —
             about 2 weeks in, I'll start noticing things, and by your second
             luteal I'll have a real pattern to show you. Until then I'm here if
@@ -1030,7 +1030,7 @@ export default function HomeScreen(): ReactElement {
             <OraMarkSvg size={22} state="insight" />
             <Text style={s.oraLabelText}>ORA · EARLY READ</Text>
           </View>
-          <Text style={[typography.body, { marginTop: 6 }]}>
+          <Text style={[typography.body, { marginTop: 8 }]}>
             One cycle in. I'm seeing what looks like a luteal-phase shift around
             day 22, but I want one more cycle before I trust it. Hold tight.
           </Text>
@@ -1045,7 +1045,7 @@ export default function HomeScreen(): ReactElement {
             <OraMarkSvg size={22} state="insight" />
             <Text style={s.oraLabelText}>ORA · PATTERN FOUND</Text>
           </View>
-          <Text style={[typography.body, { marginTop: 6 }]}>
+          <Text style={[typography.body, { marginTop: 8 }]}>
             Across 3 cycles, your focus and irritability scores get measurably
             worse from Day 22 onward — the late luteal window. This is the
             biological signal your prescriber needs to discuss luteal-phase
@@ -1139,7 +1139,7 @@ export default function HomeScreen(): ReactElement {
             <Text style={[typography.h2, { marginBottom: 8 }]}>
               What's happening right now?
             </Text>
-            <Text style={[typography.body, { marginBottom: 18 }]}>
+            <Text style={[typography.body, { marginBottom: 16 }]}>
               Rage, panic, and dissociation logs help your prescriber see what
               the cycle is doing. Full module coming soon.
             </Text>
@@ -1163,7 +1163,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-    padding: 20,
+    padding: 16,
     marginBottom: 0,
   },
   row: {
@@ -1185,15 +1185,15 @@ const s = StyleSheet.create({
   },
   weekStrip: {
     flexDirection: 'row',
-    gap: 6,
-    marginBottom: 14,
+    gap: 8,
+    marginBottom: 16,
   },
   heatmapRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 5,
-    marginBottom: 6,
-    marginTop: 14,
+    gap: 4,
+    marginBottom: 8,
+    marginTop: 16,
   },
   heatDot: {
     width: 10,
@@ -1240,7 +1240,7 @@ const s = StyleSheet.create({
     borderRadius: 3,
   },
   oraCard: {
-    marginBottom: 22,
+    marginBottom: 24,
     overflow: 'hidden',
   },
   oraCardAccent: {
@@ -1285,8 +1285,8 @@ const s = StyleSheet.create({
   },
   toolsGrid: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 22,
+    gap: 12,
+    marginBottom: 24,
   },
   toolCard: {
     flex: 1,
@@ -1340,7 +1340,7 @@ const s = StyleSheet.create({
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     padding: 24,
-    paddingBottom: 36,
+    paddingBottom: 40,
   },
   crisisBackdrop: {
     flex: 1,
@@ -1360,6 +1360,6 @@ const s = StyleSheet.create({
     borderRadius: 1.5,
     backgroundColor: colors.eucalyptus,
     opacity: 0.45,
-    marginBottom: 20,
+    marginBottom: 24,
   },
 });
